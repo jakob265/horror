@@ -110,14 +110,13 @@ class Shape(Entity):
 
     def slow_head_turn(self, target_y, duration=2.0, then_back=True):
         """Lerp the head_pivot rotation_y to target then optionally back."""
-        self.head_pivot.animate("rotation_y", target_y, duration=duration,
-                curve=None)
+        self.head_pivot.animate("rotation_y", target_y, duration=duration)
         if then_back:
             invoke(self._head_return, delay=duration + 2.0)
 
     def _head_return(self):
         """Return the head to neutral."""
-        self.head_pivot.animate("rotation_y", 0, duration=1.4, curve=None)
+        self.head_pivot.animate("rotation_y", 0, duration=1.4)
 
 
 # ----------------------------------------------------------------------------
@@ -206,8 +205,7 @@ class HargroveShape(Shape):
         if self.audio is not None:
             self.audio.shape_sting()
         # Turn to face player (assume player is in front of tower base ~ z+)
-        self.animate("rotation_y", self.rotation_y + 180, duration=2.0,
-                curve=None)
+        self.animate("rotation_y", self.rotation_y + 180, duration=2.0)
         # Lift the right arm pivot from default down to outstretched (wave)
         invoke(self._raise_arm, delay=2.1)
         invoke(self._walk_away, on_complete, delay=5.5)
@@ -215,14 +213,14 @@ class HargroveShape(Shape):
     def _raise_arm(self):
         """Slow upward lerp of right-arm pivot to a wave pose."""
         self.right_arm_pivot.animate("rotation_x", -110,
-                duration=1.4, curve=None)
+                duration=1.4)
 
     def _walk_away(self, on_complete):
         """Pathfind into the dark corner of the room (off-camera) and despawn."""
         # Lower arm
         self.right_arm_pivot.animate("rotation_x", 0, duration=1.0)
         target = self.position + Vec3(-7, 0, -9)
-        self.animate("position", target, duration=4.0, curve=None)
+        self.animate("position", target, duration=4.0)
         # Fade out
         for c in self.children:
             try:

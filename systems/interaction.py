@@ -263,7 +263,7 @@ class InteractionManager:
         """Animate the entity to a small offset; mark it used; play scrape."""
         offset = data.get("offset", Vec3(0.6, 0, 0))
         new_pos = ent.position + offset
-        ent.animate("position", new_pos, duration=0.5, curve=None)
+        ent.animate("position", new_pos, duration=0.5)
         if self.audio is not None:
             self.audio.scrape()
         ent.interact_used = True
@@ -357,7 +357,7 @@ class InteractionManager:
         pivot = data.get("pivot", ent)
         opened = getattr(pivot, "_door_opened", False)
         target_y = 0 if opened else 90
-        pivot.animate("rotation_y", target_y, duration=0.4, curve=None)
+        pivot.animate("rotation_y", target_y, duration=0.4)
         pivot._door_opened = not opened
         if self.audio is not None:
             self.audio.door()
