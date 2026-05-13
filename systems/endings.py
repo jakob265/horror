@@ -152,10 +152,10 @@ class EndingPlayer:
             def make_line(_line=line, _y=current_y):
                 t = Text(parent=self.root, text=_line,
                          position=(0, _y), origin=(0, 0),
-                         scale=0.85,
+                         scale=0.75,
                          color=color.rgba(230, 230, 235, 0),
                          font="VeraMono.ttf",
-                         wordwrap=80)
+                         wordwrap=68)
                 self._line_entities.append(t)
                 self._fade_in(t)
 

@@ -224,12 +224,16 @@ def build(game):
                           position=(-3.05, 0.05, 2.05),
                           color=color.rgba(180, 200, 240, 255),
                           collider="box")
-    keycard_root.enabled = False
+    # Hide the keycard until the crate is moved; using visible_self/visible
+    # rather than enabled to avoid Panda3D's stash assertion on fresh nodes.
+    keycard_root.visible = False
+    keycard_root.collision = False
     created.append(keycard_root)
 
     def reveal_keycard():
-        """Enable the keycard after the crate has been moved."""
-        keycard_root.enabled = True
+        """Reveal the keycard after the crate has been moved."""
+        keycard_root.visible = True
+        keycard_root.collision = True
     make_interactable(crate, "Move crate", "move_object",
                       offset=Vec3(0.9, 0, 0.5), after=reveal_keycard)
     created.append(crate)
@@ -255,8 +259,11 @@ def build(game):
         unlock_exit_door()
         game.show_examine(
             "Keycard registered. The exit door slides open.")
+    # The keycard is interactable but hidden + non-colliding until the
+    # crate is moved, so the raycast won't pick it up early.
     make_interactable(keycard_root, "Take keycard", "trigger_event",
                       callback=collect_keycard)
+    keycard_root.collision = False  # re-disable until revealed
 
     def try_open_door():
         """Door reader: 'locked' message until keycard collected."""

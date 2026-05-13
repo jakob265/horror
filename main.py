@@ -221,8 +221,17 @@ class MainMenu:
 # Pause menu
 # ----------------------------------------------------------------------------
 
+RESOLUTION_OPTIONS = [
+    (1280, 720),
+    (1600, 900),
+    (1920, 1080),
+    (2560, 1440),
+    (3840, 2160),
+]
+
+
 class PauseMenu:
-    """Resume + Mouse sensitivity slider + Quit to Main Menu."""
+    """Resume + Mouse sensitivity + Resolution / fullscreen + Quit to Main Menu."""
 
     def __init__(self, game):
         """Build the pause overlay; mark game as modal."""
@@ -230,47 +239,119 @@ class PauseMenu:
         self.root = Entity(parent=camera.ui)
         Entity(parent=self.root, model="quad",
                color=color.rgba(0, 0, 0, 220),
-               scale=(2.2, 1.4), position=(0, 0, 0.5))
+               scale=(1.4, 1.1), position=(0, 0, 0.5))
         Text(parent=self.root, text="-- PAUSED --",
-             position=(0, 0.30), origin=(0, 0), scale=1.6,
+             position=(0, 0.42), origin=(0, 0), scale=1.4,
              color=color.rgb(220, 220, 230), font="VeraMono.ttf")
+        # Mouse sensitivity row
+        Text(parent=self.root,
+             text="Mouse sensitivity",
+             position=(-0.30, 0.27), origin=(-0.5, 0), scale=0.75,
+             color=color.rgb(200, 215, 230), font="VeraMono.ttf")
+        self.sens_label = Text(
+            parent=self.root, text=str(int(game.mouse_sens)),
+            position=(0.30, 0.27), origin=(0.5, 0), scale=0.85,
+            color=color.rgb(220, 230, 245), font="VeraMono.ttf")
+        try:
+            Button(parent=self.root, text="-",
+                   position=(0.05, 0.27), scale=(0.05, 0.06),
+                   color=color.rgba(50, 55, 70, 255),
+                   text_color=color.rgb(225, 235, 245),
+                   on_click=lambda: game.adjust_mouse_sens(-5))
+            Button(parent=self.root, text="+",
+                   position=(0.14, 0.27), scale=(0.05, 0.06),
+                   color=color.rgba(50, 55, 70, 255),
+                   text_color=color.rgb(225, 235, 245),
+                   on_click=lambda: game.adjust_mouse_sens(+5))
+        except Exception:
+            pass
+
+        # Resolution row
+        Text(parent=self.root, text="Resolution",
+             position=(-0.30, 0.15), origin=(-0.5, 0), scale=0.75,
+             color=color.rgb(200, 215, 230), font="VeraMono.ttf")
+        self.res_label = Text(
+            parent=self.root, text=self._res_text(),
+            position=(0.30, 0.15), origin=(0.5, 0), scale=0.75,
+            color=color.rgb(220, 230, 245), font="VeraMono.ttf")
+        try:
+            Button(parent=self.root, text="<",
+                   position=(-0.06, 0.15), scale=(0.05, 0.06),
+                   color=color.rgba(50, 55, 70, 255),
+                   text_color=color.rgb(225, 235, 245),
+                   on_click=lambda: game.cycle_resolution(-1))
+            Button(parent=self.root, text=">",
+                   position=(0.02, 0.15), scale=(0.05, 0.06),
+                   color=color.rgba(50, 55, 70, 255),
+                   text_color=color.rgb(225, 235, 245),
+                   on_click=lambda: game.cycle_resolution(+1))
+        except Exception:
+            pass
+
+        # Fullscreen row
+        Text(parent=self.root, text="Fullscreen",
+             position=(-0.30, 0.03), origin=(-0.5, 0), scale=0.75,
+             color=color.rgb(200, 215, 230), font="VeraMono.ttf")
+        self.fs_label = Text(
+            parent=self.root, text=("ON" if game.fullscreen else "OFF"),
+            position=(0.30, 0.03), origin=(0.5, 0), scale=0.85,
+            color=color.rgb(220, 230, 245), font="VeraMono.ttf")
+        try:
+            Button(parent=self.root, text="Toggle",
+                   position=(0.00, 0.03), scale=(0.18, 0.06),
+                   color=color.rgba(50, 55, 70, 255),
+                   text_color=color.rgb(225, 235, 245),
+                   on_click=game.toggle_fullscreen)
+        except Exception:
+            pass
+
         try:
             Button(parent=self.root, text="RESUME",
-                   position=(0, 0.10), scale=(0.45, 0.08),
+                   position=(0, -0.16), scale=(0.45, 0.08),
                    color=color.rgba(60, 60, 80, 255),
                    text_color=color.rgb(225, 235, 245),
                    on_click=game.resume_from_pause)
             Button(parent=self.root, text="QUIT TO MAIN MENU",
-                   position=(0, -0.22), scale=(0.45, 0.08),
+                   position=(0, -0.30), scale=(0.45, 0.08),
                    color=color.rgba(60, 50, 60, 255),
                    text_color=color.rgb(225, 215, 220),
                    on_click=game.quit_to_menu)
         except Exception:
             Text(parent=self.root,
                  text="[R] Resume     [Q] Quit to menu",
-                 position=(0, 0.10), origin=(0, 0), scale=1.0,
+                 position=(0, -0.16), origin=(0, 0), scale=0.9,
                  color=color.rgb(220, 230, 245),
                  font="VeraMono.ttf")
-        # Mouse sensitivity slider (digits 1..9 set sensitivity directly)
         Text(parent=self.root,
-             text="Mouse sensitivity:",
-             position=(-0.25, -0.05), origin=(-0.5, 0), scale=0.9,
-             color=color.rgb(200, 215, 230), font="VeraMono.ttf")
-        self.sens_label = Text(
-            parent=self.root, text=str(int(game.mouse_sens)),
-            position=(0.18, -0.05), origin=(0, 0), scale=1.0,
-            color=color.rgb(220, 230, 245), font="VeraMono.ttf")
-        Text(parent=self.root,
-             text="[-] decrease    [+ / =] increase",
-             position=(0, -0.12), origin=(0, 0), scale=0.8,
-             color=color.rgba(180, 190, 210, 200),
+             text="(keys: [-]/[+] sens   [<]/[>] res   [B] fullscreen)",
+             position=(0, -0.42), origin=(0, 0), scale=0.6,
+             color=color.rgba(160, 175, 195, 200),
              font="VeraMono.ttf")
         mouse.locked = False
         mouse.visible = True
 
+    def _res_text(self):
+        """Format the current resolution string."""
+        w, h = self.game.resolution
+        return f"{w} x {h}"
+
     def update_sens(self, new_val):
         """Reflect new mouse sensitivity in the label and on the controller."""
         self.sens_label.text = str(int(new_val))
+
+    def update_resolution(self, w, h):
+        """Reflect new resolution selection in the label."""
+        try:
+            self.res_label.text = f"{w} x {h}"
+        except Exception:
+            pass
+
+    def update_fullscreen(self, on):
+        """Reflect new fullscreen state in the label."""
+        try:
+            self.fs_label.text = "ON" if on else "OFF"
+        except Exception:
+            pass
 
     def close(self):
         """Destroy the pause overlay."""
@@ -325,6 +406,12 @@ class Game:
     def __init__(self):
         """Wire up subsystems but leave the player + scenes uninstantiated."""
         self.mouse_sens = 40
+        # Resolution / fullscreen tracking - default matches the size used
+        # at Ursina() init.
+        self.resolution = (1280, 720)
+        self.resolution_idx = RESOLUTION_OPTIONS.index((1280, 720)) \
+            if (1280, 720) in RESOLUTION_OPTIONS else 0
+        self.fullscreen = False
         self.audio = AudioManager()
         self.notes = NotesManager(
             on_open=lambda: self._set_player_freeze(True),
@@ -561,6 +648,47 @@ class Game:
             self.pause_menu.update_sens(self.mouse_sens)
 
     # ------------------------------------------------------------------
+    # Resolution / fullscreen
+    # ------------------------------------------------------------------
+
+    def cycle_resolution(self, direction):
+        """Step through RESOLUTION_OPTIONS by `direction` (-1 or +1)."""
+        self.resolution_idx = (self.resolution_idx + direction) \
+            % len(RESOLUTION_OPTIONS)
+        w, h = RESOLUTION_OPTIONS[self.resolution_idx]
+        self.resolution = (w, h)
+        try:
+            window.size = (w, h)
+        except Exception:
+            try:
+                from panda3d.core import WindowProperties
+                import builtins as _b
+                wp = WindowProperties()
+                wp.set_size(w, h)
+                _b.base.win.request_properties(wp)
+            except Exception:
+                pass
+        if self.pause_menu is not None:
+            self.pause_menu.update_resolution(w, h)
+
+    def toggle_fullscreen(self):
+        """Toggle fullscreen mode."""
+        self.fullscreen = not self.fullscreen
+        try:
+            window.fullscreen = self.fullscreen
+        except Exception:
+            try:
+                from panda3d.core import WindowProperties
+                import builtins as _b
+                wp = WindowProperties()
+                wp.set_fullscreen(self.fullscreen)
+                _b.base.win.request_properties(wp)
+            except Exception:
+                pass
+        if self.pause_menu is not None:
+            self.pause_menu.update_fullscreen(self.fullscreen)
+
+    # ------------------------------------------------------------------
     # Endings
     # ------------------------------------------------------------------
 
@@ -659,6 +787,12 @@ class Game:
                 self.adjust_mouse_sens(+5)
             elif key in ("-", "_"):
                 self.adjust_mouse_sens(-5)
+            elif key in ("<", ","):
+                self.cycle_resolution(-1)
+            elif key in (">", "."):
+                self.cycle_resolution(+1)
+            elif key == "b":
+                self.toggle_fullscreen()
             return
         if key == "escape":
             # Close any modal first; else open pause

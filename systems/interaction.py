@@ -204,10 +204,10 @@ class InteractionManager:
         self.examine_root = Entity(parent=camera.ui)
         bg = Entity(parent=self.examine_root, model="quad",
                     color=color.rgba(0, 0, 0, 210),
-                    scale=(1.6, 0.18), position=(0, -0.30, 0.4))
+                    scale=(1.4, 0.20), position=(0, -0.30, 0.4))
         Text(parent=self.examine_root, text=text, position=(0, -0.30),
-             origin=(0, 0), scale=0.95, color=color.rgb(225, 225, 230),
-             font="VeraMono.ttf", wordwrap=70)
+             origin=(0, 0), scale=0.80, color=color.rgb(225, 225, 230),
+             font="VeraMono.ttf", wordwrap=58)
         invoke(self._close_examine, delay=duration)
 
     def _close_examine(self):
@@ -231,16 +231,16 @@ class InteractionManager:
         self.terminal_root = Entity(parent=camera.ui)
         Entity(parent=self.terminal_root, model="quad",
                color=color.rgba(0, 8, 12, 245),
-               scale=(2.2, 1.4), position=(0, 0, 0.5))
+               scale=(1.7, 1.0), position=(0, 0, 0.5))
         Text(parent=self.terminal_root, text=title,
-             position=(-0.55, 0.42), scale=1.3,
+             position=(-0.6, 0.42), scale=1.0,
              color=color.rgb(120, 220, 200), font="VeraMono.ttf")
         Text(parent=self.terminal_root, text=body,
-             position=(-0.55, 0.34), scale=0.85, line_height=1.25,
+             position=(-0.6, 0.36), scale=0.65, line_height=1.05,
              color=color.rgb(130, 230, 200), font="VeraMono.ttf",
-             wordwrap=80)
+             wordwrap=82)
         Text(parent=self.terminal_root, text="Close [E]",
-             position=(0.45, -0.42), scale=0.9,
+             position=(0.50, -0.45), scale=0.85,
              color=color.rgba(120, 220, 200, 220),
              font="VeraMono.ttf")
 

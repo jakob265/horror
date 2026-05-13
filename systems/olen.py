@@ -119,8 +119,8 @@ class _Subtitle:
         self.word_text = Text(
             parent=self.root, text=" ",
             position=(-0.65, -0.42), origin=(-0.5, 0),
-            scale=0.85, color=color.rgb(225, 230, 240),
-            font="VeraMono.ttf", wordwrap=90,
+            scale=0.75, color=color.rgb(225, 230, 240),
+            font="VeraMono.ttf", wordwrap=72,
         )
         self.word_text.text = ""
         self._stream(words, 0, on_done)

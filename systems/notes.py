@@ -304,19 +304,21 @@ class NotesManager:
         # Dim backdrop
         Entity(parent=self._reader_root, model="quad",
                color=color.rgba(0, 0, 0, 235),
-               scale=(2.2, 1.4), position=(0, 0, 0.5))
+               scale=(1.7, 1.0), position=(0, 0, 0.5))
         Text(parent=self._reader_root, text=note["title"],
-             position=(-0.55, 0.38), scale=1.4, color=color.rgb(210, 220, 230),
+             position=(-0.6, 0.42), scale=1.05,
+             color=color.rgb(210, 220, 230),
              font="VeraMono.ttf")
         Text(parent=self._reader_root, text="(" + note["location"] + ")",
-             position=(-0.55, 0.33), scale=0.9,
+             position=(-0.6, 0.38), scale=0.75,
              color=color.rgba(160, 170, 180, 255), font="VeraMono.ttf")
         Text(parent=self._reader_root, text=note["body"],
-             position=(-0.55, 0.27), scale=0.9, line_height=1.2,
-             color=color.rgb(220, 220, 220), font="VeraMono.ttf", wordwrap=72)
+             position=(-0.6, 0.32), scale=0.65, line_height=1.05,
+             color=color.rgb(220, 220, 220), font="VeraMono.ttf",
+             wordwrap=80)
         Text(parent=self._reader_root,
              text="Close [E]",
-             position=(0.45, -0.42), scale=0.9,
+             position=(0.50, -0.45), scale=0.85,
              color=color.rgba(180, 200, 220, 220), font="VeraMono.ttf")
 
     # --------------------------------------------------------------------
@@ -383,12 +385,12 @@ class NotesManager:
         nid = self.collected_ids[self._journal_selected_idx]
         note = NOTES_BY_ID[nid]
         t1 = Text(parent=self._journal_root, text=note["title"],
-                  position=(0.02, 0.32), scale=1.0,
+                  position=(0.02, 0.36), scale=0.9,
                   color=color.rgb(210, 220, 230), font="VeraMono.ttf")
         t1._journal_body_tag = True
         t2 = Text(parent=self._journal_root,
-                  text=note["body"], position=(0.02, 0.26),
-                  scale=0.78, line_height=1.2, wordwrap=46,
+                  text=note["body"], position=(0.02, 0.31),
+                  scale=0.6, line_height=1.05, wordwrap=58,
                   color=color.rgb(225, 225, 225), font="VeraMono.ttf")
         t2._journal_body_tag = True
 
