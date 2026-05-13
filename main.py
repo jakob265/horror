@@ -1,0 +1,698 @@
+"""
+main.py
+-------
+VOID FREQUENCY - entry point.
+
+Boots Ursina, creates the global Game wrapper, shows the main menu, drives
+the four-act flow + pause menu + endings, and routes player input each frame.
+
+Run from source:    python main.py
+Build to .exe:      build.bat   (Windows, produces dist/VoidFrequency.exe)
+"""
+
+import math
+import random
+import sys
+
+from ursina import (
+    Button, Entity, Text, Ursina, Vec2, Vec3, application, camera, color,
+    destroy, held_keys, invoke, mouse, time, window,
+)
+
+from systems.audio import AudioManager
+from systems.endings import EndingPlayer
+from systems.entity import ShapeTracker, reset_global_state as reset_shape_state
+from systems.interaction import InteractionManager
+from systems.notes import NotesManager
+from systems.olen import OlenManager
+from systems.player import Player
+
+import scenes.act1_cryo as scene_act1
+import scenes.act2_corridor as scene_act2
+import scenes.act3_lab as scene_act3
+import scenes.act4_array as scene_act4
+
+
+# ----------------------------------------------------------------------------
+# State container
+# ----------------------------------------------------------------------------
+
+class GameState:
+    """Plain bag for cross-scene flags."""
+
+    def __init__(self):
+        """Reset per New Game."""
+        self.cryo_keycard = False
+        self.cryo_door_open = False
+        self.hatch_open = False
+        self.array_keycard = False
+        self.array_door_open = False
+        self.hargrove_shape = None
+        self.terminal_ui = None
+
+
+# ----------------------------------------------------------------------------
+# Post-processing overlay (vignette + scanlines + global tint)
+# ----------------------------------------------------------------------------
+
+class _PostFX:
+    """Lightweight always-on overlay: dark corners + faint scanlines."""
+
+    def __init__(self):
+        """Build vignette + scanline entities parented to camera.ui."""
+        # Vignette - a black-edged frame consisting of four gradient panels
+        # Ursina's quad doesn't support gradients out of the box; we approximate
+        # with four large semi-transparent black rectangles tucked into the
+        # corners + a thin frame on each edge.
+        self.root = Entity(parent=camera.ui)
+        # Edge frames (thin) - opacity stacked toward edges
+        for i in range(6):
+            a = int(20 + i * 15)
+            s = 1.7 + i * 0.06
+            # Top
+            Entity(parent=self.root, model="quad",
+                   color=color.rgba(0, 0, 0, a),
+                   scale=(s, 0.04), position=(0, 0.46 + i * 0.005, 0.3))
+            # Bottom
+            Entity(parent=self.root, model="quad",
+                   color=color.rgba(0, 0, 0, a),
+                   scale=(s, 0.04), position=(0, -0.46 - i * 0.005, 0.3))
+            # Left
+            Entity(parent=self.root, model="quad",
+                   color=color.rgba(0, 0, 0, a),
+                   scale=(0.04, 1.1), position=(-0.78 - i * 0.005, 0, 0.3))
+            # Right
+            Entity(parent=self.root, model="quad",
+                   color=color.rgba(0, 0, 0, a),
+                   scale=(0.04, 1.1), position=(0.78 + i * 0.005, 0, 0.3))
+        # Scanline overlay - many thin dark lines
+        for i in range(80):
+            y = -0.5 + i / 80.0
+            Entity(parent=self.root, model="quad",
+                   color=color.rgba(0, 0, 0, 10),
+                   scale=(2.0, 0.005),
+                   position=(0, y, 0.31))
+        # Global desat / tint
+        self.tint = Entity(parent=self.root, model="quad",
+                           color=color.rgba(80, 80, 100, 28),
+                           scale=(2.5, 1.5),
+                           position=(0, 0, 0.32))
+
+    def set_act(self, act):
+        """Increase desaturation in acts 3-4 to suggest 'viewed through something old'."""
+        if act in ("act3", "act4"):
+            self.tint.color = color.rgba(70, 80, 100, 45)
+        else:
+            self.tint.color = color.rgba(80, 80, 100, 28)
+
+
+# ----------------------------------------------------------------------------
+# Main menu
+# ----------------------------------------------------------------------------
+
+class MainMenu:
+    """Full-black main menu with a glitchy VOID FREQUENCY title."""
+
+    def __init__(self, on_new_game, on_quit):
+        """Build the menu root + title + buttons."""
+        self.on_new_game = on_new_game
+        self.on_quit = on_quit
+        self.root = Entity(parent=camera.ui)
+        Entity(parent=self.root, model="quad",
+               color=color.rgba(0, 0, 0, 255),
+               scale=(2.5, 1.5), position=(0, 0, 0.5))
+        # Title (we keep each character as its own Text for glitching)
+        self.title_text = "VOID FREQUENCY"
+        self.char_entities = []
+        spacing = 0.058
+        total_w = spacing * (len(self.title_text) - 1)
+        for i, ch in enumerate(self.title_text):
+            t = Text(parent=self.root, text=ch,
+                     position=(-total_w / 2 + i * spacing, 0.20),
+                     origin=(0, 0), scale=3.0,
+                     color=color.rgb(230, 230, 240),
+                     font="VeraMono.ttf")
+            t._base_x = t.x
+            self.char_entities.append(t)
+        # Buttons
+        try:
+            Button(parent=self.root, text="NEW GAME",
+                   position=(0, -0.08), scale=(0.5, 0.08),
+                   color=color.rgba(50, 50, 60, 255),
+                   text_color=color.rgb(230, 240, 250),
+                   on_click=self._click_new)
+            Button(parent=self.root, text="QUIT",
+                   position=(0, -0.20), scale=(0.5, 0.08),
+                   color=color.rgba(50, 50, 60, 255),
+                   text_color=color.rgb(230, 240, 250),
+                   on_click=self._click_quit)
+        except Exception:
+            Text(parent=self.root, text="[N]  NEW GAME      [Q]  QUIT",
+                 position=(0, -0.10), origin=(0, 0), scale=1.2,
+                 color=color.rgb(220, 230, 240), font="VeraMono.ttf")
+        # Bottom line
+        Text(parent=self.root,
+             text="CRESTFALL-9 // SIGNAL LOG ARCHIVE // ALL TRANSMISSIONS STORED",
+             position=(0, -0.45), origin=(0, 0), scale=0.7,
+             color=color.rgba(120, 130, 140, 130),
+             font="VeraMono.ttf")
+        # Glitch timer
+        self._glitch_timer = random.uniform(2.0, 6.0)
+        self._big_shift_timer = random.uniform(12.0, 20.0)
+        mouse.locked = False
+        mouse.visible = True
+
+    def _click_new(self):
+        """NEW GAME pressed."""
+        self.close()
+        self.on_new_game()
+
+    def _click_quit(self):
+        """QUIT pressed."""
+        self.on_quit()
+
+    def update(self):
+        """Drive the title glitching."""
+        if self.root is None:
+            return
+        self._glitch_timer -= time.dt
+        if self._glitch_timer <= 0:
+            self._glitch_timer = random.uniform(2.0, 6.0)
+            n = random.randint(1, 3)
+            indices = random.sample(range(len(self.char_entities)), n)
+            shift_amounts = []
+            for idx in indices:
+                t = self.char_entities[idx]
+                shift_px = random.uniform(0.012, 0.028) * random.choice([-1, 1])
+                t.x = t._base_x + shift_px
+                shift_amounts.append((t, t._base_x))
+            invoke(self._unshift, shift_amounts,
+                   delay=random.uniform(0.05, 0.12))
+        self._big_shift_timer -= time.dt
+        if self._big_shift_timer <= 0:
+            self._big_shift_timer = random.uniform(12.0, 20.0)
+            for t in self.char_entities:
+                t.x = t._base_x + 0.008
+            invoke(self._big_unshift, delay=1.0 / 30.0)
+
+    def _unshift(self, shift_amounts):
+        """Reset characters from a small-scale glitch."""
+        for t, x in shift_amounts:
+            try:
+                t.x = x
+            except Exception:
+                pass
+
+    def _big_unshift(self):
+        """Reset characters from the full-title shift."""
+        for t in self.char_entities:
+            try:
+                t.x = t._base_x
+            except Exception:
+                pass
+
+    def handle_input(self, key):
+        """Keyboard fallback."""
+        if self.root is None:
+            return
+        if key == "n":
+            self._click_new()
+        elif key == "q":
+            self._click_quit()
+
+    def close(self):
+        """Destroy the menu overlay."""
+        if self.root is not None:
+            destroy(self.root)
+            self.root = None
+
+
+# ----------------------------------------------------------------------------
+# Pause menu
+# ----------------------------------------------------------------------------
+
+class PauseMenu:
+    """Resume + Mouse sensitivity slider + Quit to Main Menu."""
+
+    def __init__(self, game):
+        """Build the pause overlay; mark game as modal."""
+        self.game = game
+        self.root = Entity(parent=camera.ui)
+        Entity(parent=self.root, model="quad",
+               color=color.rgba(0, 0, 0, 220),
+               scale=(2.2, 1.4), position=(0, 0, 0.5))
+        Text(parent=self.root, text="-- PAUSED --",
+             position=(0, 0.30), origin=(0, 0), scale=1.6,
+             color=color.rgb(220, 220, 230), font="VeraMono.ttf")
+        try:
+            Button(parent=self.root, text="RESUME",
+                   position=(0, 0.10), scale=(0.45, 0.08),
+                   color=color.rgba(60, 60, 80, 255),
+                   text_color=color.rgb(225, 235, 245),
+                   on_click=game.resume_from_pause)
+            Button(parent=self.root, text="QUIT TO MAIN MENU",
+                   position=(0, -0.22), scale=(0.45, 0.08),
+                   color=color.rgba(60, 50, 60, 255),
+                   text_color=color.rgb(225, 215, 220),
+                   on_click=game.quit_to_menu)
+        except Exception:
+            Text(parent=self.root,
+                 text="[R] Resume     [Q] Quit to menu",
+                 position=(0, 0.10), origin=(0, 0), scale=1.0,
+                 color=color.rgb(220, 230, 245),
+                 font="VeraMono.ttf")
+        # Mouse sensitivity slider (digits 1..9 set sensitivity directly)
+        Text(parent=self.root,
+             text="Mouse sensitivity:",
+             position=(-0.25, -0.05), origin=(-0.5, 0), scale=0.9,
+             color=color.rgb(200, 215, 230), font="VeraMono.ttf")
+        self.sens_label = Text(
+            parent=self.root, text=str(int(game.mouse_sens)),
+            position=(0.18, -0.05), origin=(0, 0), scale=1.0,
+            color=color.rgb(220, 230, 245), font="VeraMono.ttf")
+        Text(parent=self.root,
+             text="[-] decrease    [+ / =] increase",
+             position=(0, -0.12), origin=(0, 0), scale=0.8,
+             color=color.rgba(180, 190, 210, 200),
+             font="VeraMono.ttf")
+        mouse.locked = False
+        mouse.visible = True
+
+    def update_sens(self, new_val):
+        """Reflect new mouse sensitivity in the label and on the controller."""
+        self.sens_label.text = str(int(new_val))
+
+    def close(self):
+        """Destroy the pause overlay."""
+        if self.root is not None:
+            destroy(self.root)
+            self.root = None
+
+
+# ----------------------------------------------------------------------------
+# Scene-transition fade overlay
+# ----------------------------------------------------------------------------
+
+class _Fader:
+    """Full-screen black overlay used for act-to-act fade out / in."""
+
+    def __init__(self):
+        """Build the (initially transparent) fader."""
+        self.quad = Entity(parent=camera.ui, model="quad",
+                           color=color.rgba(0, 0, 0, 0),
+                           scale=(2.5, 1.5), position=(0, 0, 0.4))
+
+    def fade_to_black(self, duration=0.8, on_done=None):
+        """Animate alpha 0 -> 255."""
+        steps = 18
+        for i in range(steps):
+            a = int(255 * (i + 1) / steps)
+
+            def setter(alpha=a):
+                self.quad.color = color.rgba(0, 0, 0, alpha)
+            invoke(setter, delay=duration * (i + 1) / steps)
+        if callable(on_done):
+            invoke(on_done, delay=duration + 0.02)
+
+    def fade_from_black(self, duration=1.2):
+        """Animate alpha 255 -> 0."""
+        steps = 22
+        for i in range(steps):
+            a = int(255 * (1 - (i + 1) / steps))
+
+            def setter(alpha=a):
+                self.quad.color = color.rgba(0, 0, 0, alpha)
+            invoke(setter, delay=duration * (i + 1) / steps)
+
+
+# ----------------------------------------------------------------------------
+# Game wrapper
+# ----------------------------------------------------------------------------
+
+class Game:
+    """Top-level Game object: owns subsystems, drives main loop."""
+
+    def __init__(self):
+        """Wire up subsystems but leave the player + scenes uninstantiated."""
+        self.mouse_sens = 40
+        self.audio = AudioManager()
+        self.notes = NotesManager(
+            on_open=lambda: self._set_player_freeze(True),
+            on_close=lambda: self._set_player_freeze(False))
+        self.olen = OlenManager(self.audio)
+        self.player = None
+        self.interaction = None
+        self.shapes = ShapeTracker(self.audio)
+        self.ending_player = None
+        self.menu = None
+        self.pause_menu = None
+        self.postfx = None
+        self.fader = _Fader()
+        self.state = GameState()
+        self.world_root = Entity()    # parent for scene-only entities (unused but reserved)
+        self.scene_entities = []
+        self.tickers = []             # functions called every frame
+        self.current_act = None
+        self.is_paused = False
+        self.modal_count = 0
+        self.in_ending = False
+        self._has_first_move_been_seen = False
+        # Show main menu
+        self._show_main_menu()
+
+    # ------------------------------------------------------------------
+    # Modal lock helper
+    # ------------------------------------------------------------------
+
+    def _set_player_freeze(self, frozen):
+        """Pause/unfreeze the player. Used by Notes/Interaction/PauseMenu."""
+        if self.player is None:
+            return
+        if frozen:
+            self.modal_count += 1
+            self.player.freeze()
+        else:
+            self.modal_count -= 1
+            if self.modal_count <= 0:
+                self.modal_count = 0
+                self.player.unfreeze()
+                mouse.locked = True
+                mouse.visible = False
+
+    def set_modal(self, on):
+        """Public wrapper used by other systems (Terminal UI)."""
+        self._set_player_freeze(on)
+
+    # ------------------------------------------------------------------
+    # Main menu / start
+    # ------------------------------------------------------------------
+
+    def _show_main_menu(self):
+        """Display the main menu."""
+        if self.postfx is None:
+            self.postfx = _PostFX()
+        self.menu = MainMenu(on_new_game=self._begin_new_game,
+                             on_quit=self._quit_app)
+
+    def _begin_new_game(self):
+        """Start a fresh playthrough at Act 1."""
+        # Reset module-level Shape state
+        reset_shape_state()
+        self.state = GameState()
+        self._has_first_move_been_seen = False
+        # Build player
+        if self.player is None:
+            self.player = Player()
+            self.player.set_mouse_sensitivity(self.mouse_sens)
+            self.interaction = InteractionManager(
+                self.player, self.notes, self.audio,
+                on_modal_open=lambda: self._set_player_freeze(True),
+                on_modal_close=lambda: self._set_player_freeze(False))
+        else:
+            self.player.fpc.enabled = True
+        # Reset olen
+        self.olen.fired.clear()
+        self.olen.reset_scene_triggers()
+        # Start Act 1
+        self.current_act = None
+        self.transition_to("act1", instant_in=True)
+
+    def _quit_app(self):
+        """Hard-exit the app."""
+        application.quit()
+
+    # ------------------------------------------------------------------
+    # Public helpers used by scene modules
+    # ------------------------------------------------------------------
+
+    def register_ticker(self, fn):
+        """Register a per-frame update function (cleared each scene transition)."""
+        self.tickers.append(fn)
+
+    def show_examine(self, text, duration=3.0):
+        """Used by callbacks that aren't tied to an interactable entity."""
+        if self.interaction is not None:
+            self.interaction._examine(text, duration)
+
+    # ------------------------------------------------------------------
+    # Scene transitions
+    # ------------------------------------------------------------------
+
+    def transition_to(self, act, instant_in=False):
+        """Fade out, tear down current scene, build new scene, fade in."""
+        if self.current_act == act:
+            return
+        target = act
+
+        def do_swap():
+            """Inside the fade - rebuild the world."""
+            self._teardown_scene()
+            self._build_scene(target)
+            self.current_act = target
+            if self.postfx is not None:
+                self.postfx.set_act(target)
+            if instant_in:
+                self.fader.quad.color = color.rgba(0, 0, 0, 0)
+            else:
+                self.fader.fade_from_black(duration=1.2)
+            mouse.locked = True
+            mouse.visible = False
+
+        if self.current_act is None and instant_in:
+            do_swap()
+            return
+        self.fader.fade_to_black(duration=0.8, on_done=do_swap)
+
+    def _teardown_scene(self):
+        """Destroy current scene entities + clear per-scene state."""
+        for e in self.scene_entities:
+            try:
+                destroy(e)
+            except Exception:
+                pass
+        self.scene_entities = []
+        self.tickers = []
+        self.olen.reset_scene_triggers()
+        self.shapes.clear()
+
+    def _build_scene(self, act):
+        """Dispatch to the appropriate scene module."""
+        if act == "act1":
+            self.scene_entities = scene_act1.build(self)
+        elif act == "act2":
+            self.scene_entities = scene_act2.build(self)
+        elif act == "act3":
+            self.scene_entities = scene_act3.build(self)
+        elif act == "act4":
+            self.scene_entities = scene_act4.build(self)
+
+    # ------------------------------------------------------------------
+    # Pause
+    # ------------------------------------------------------------------
+
+    def open_pause(self):
+        """Show the pause menu."""
+        if self.is_paused or self.in_ending or self.menu is not None:
+            return
+        self.is_paused = True
+        self._set_player_freeze(True)
+        self.pause_menu = PauseMenu(self)
+
+    def resume_from_pause(self):
+        """Close the pause menu."""
+        if not self.is_paused:
+            return
+        self.is_paused = False
+        if self.pause_menu is not None:
+            self.pause_menu.close()
+            self.pause_menu = None
+        self._set_player_freeze(False)
+
+    def quit_to_menu(self):
+        """End the current run, return to the main menu."""
+        if self.pause_menu is not None:
+            self.pause_menu.close()
+            self.pause_menu = None
+        self.is_paused = False
+        self._teardown_scene()
+        if self.player is not None:
+            try:
+                destroy(self.player.fpc)
+            except Exception:
+                pass
+            self.player = None
+            self.interaction = None
+        # reset hum
+        self.audio.station_hum.volume = 0.12
+        self.audio.signal_tone.volume = 0.0
+        self.audio.signal_tone_harm.volume = 0.0
+        self._show_main_menu()
+
+    def adjust_mouse_sens(self, delta):
+        """Bump mouse sensitivity by delta (clamped 5..120)."""
+        self.mouse_sens = max(5, min(120, self.mouse_sens + delta))
+        if self.player is not None:
+            self.player.set_mouse_sensitivity(self.mouse_sens)
+        if self.pause_menu is not None:
+            self.pause_menu.update_sens(self.mouse_sens)
+
+    # ------------------------------------------------------------------
+    # Endings
+    # ------------------------------------------------------------------
+
+    def start_ending(self, which):
+        """Trigger Ending A (DESTROY) or Ending B (LISTEN)."""
+        if self.in_ending:
+            return
+        self.in_ending = True
+        # Lock player, hide HUD-ish elements
+        self._set_player_freeze(True)
+        if self.player is not None:
+            try:
+                self.player.flashlight.enabled = False
+            except Exception:
+                pass
+            self.player._battery_bar.enabled = False
+            self.player._battery_bg.enabled = False
+            self.player._battery_label.enabled = False
+            self.player._crosshair.enabled = False
+        if self.interaction is not None:
+            self.interaction.prompt.enabled = False
+        if self.ending_player is None:
+            self.ending_player = EndingPlayer(self.audio,
+                                              on_return_to_menu=self._end_to_menu)
+        else:
+            # Force fresh state per playthrough
+            self.ending_player.audio = self.audio
+            self.ending_player.on_return = self._end_to_menu
+        if which == "A":
+            self.ending_player.play_ending_a()
+        else:
+            self.ending_player.play_ending_b()
+
+    def _end_to_menu(self):
+        """Called when the player clicks Return to Main Menu after an ending."""
+        self.in_ending = False
+        if self.player is not None:
+            self.player._battery_bar.enabled = True
+            self.player._battery_bg.enabled = True
+            self.player._battery_label.enabled = True
+            self.player._crosshair.enabled = True
+        if self.interaction is not None:
+            self.interaction.prompt.enabled = True
+        self.quit_to_menu()
+
+    # ------------------------------------------------------------------
+    # Frame update
+    # ------------------------------------------------------------------
+
+    def update(self):
+        """Per-frame tick - drives subsystems, scene tickers, and OLEN."""
+        if self.menu is not None:
+            self.menu.update()
+            return
+        # First-move gate for Intercom 1
+        if (self.player is not None and not self.is_paused
+                and not self._has_first_move_been_seen):
+            if held_keys["w"] or held_keys["a"] or held_keys["s"] or \
+                    held_keys["d"]:
+                self._has_first_move_been_seen = True
+                self.olen.mark_first_move()
+        if self.player is not None and not self.is_paused:
+            self.player.update()
+        if self.interaction is not None and not self.is_paused:
+            self.interaction.update()
+        if not self.is_paused:
+            for fn in list(self.tickers):
+                try:
+                    fn()
+                except Exception:
+                    pass
+            if self.player is not None:
+                self.olen.update(self.player.position)
+                self.shapes.update(self.player)
+
+    # ------------------------------------------------------------------
+    # Input
+    # ------------------------------------------------------------------
+
+    def input(self, key):
+        """Dispatch raw input to the right subsystem."""
+        if self.menu is not None:
+            self.menu.handle_input(key)
+            return
+        if self.in_ending and self.ending_player is not None:
+            self.ending_player.handle_input(key)
+            return
+        if self.is_paused:
+            if key == "r":
+                self.resume_from_pause()
+            elif key == "q":
+                self.quit_to_menu()
+            elif key in ("+", "="):
+                self.adjust_mouse_sens(+5)
+            elif key in ("-", "_"):
+                self.adjust_mouse_sens(-5)
+            return
+        if key == "escape":
+            # Close any modal first; else open pause
+            if self.notes.is_open:
+                self.notes.close()
+                return
+            if (self.interaction is not None and
+                    (self.interaction.examine_root is not None or
+                     self.interaction.terminal_root is not None or
+                     self.interaction.keypad_root is not None)):
+                self.interaction.handle_input("escape")
+                return
+            self.open_pause()
+            return
+        # Notes journal handling first (Tab + 1..7 + E to close reader)
+        self.notes.handle_input(key)
+        # Terminal UI (Act 4)
+        if (self.state is not None and self.state.terminal_ui is not None
+                and self.state.terminal_ui.is_open):
+            self.state.terminal_ui.handle_input(key)
+        # Interaction system
+        if self.interaction is not None:
+            self.interaction.handle_input(key)
+        # Player input (flashlight)
+        if self.player is not None:
+            self.player.handle_input(key)
+
+
+# ----------------------------------------------------------------------------
+# Bootstrap
+# ----------------------------------------------------------------------------
+
+def main():
+    """App entry point."""
+    app = Ursina(title="Void Frequency", borderless=False, fullscreen=False,
+                 vsync=True)
+    window.color = color.rgb(8, 8, 12)
+    window.exit_button.enabled = False
+    window.fps_counter.enabled = False
+    window.title = "VOID FREQUENCY"
+
+    game = Game()
+
+    def _on_update():
+        """Global per-frame hook."""
+        game.update()
+
+    def _on_input(key):
+        """Global input hook."""
+        game.input(key)
+
+    # Ursina expects free-floating update() / input(key) functions in __main__
+    # Attach them to the running module
+    import builtins
+    builtins.update = _on_update      # not strictly needed
+    sys.modules["__main__"].update = _on_update
+    sys.modules["__main__"].input = _on_input
+
+    app.run()
+
+
+if __name__ == "__main__":
+    main()
