@@ -32,6 +32,7 @@ from ursina import (
 
 from systems.entity import FelixShape
 from systems.interaction import make_interactable
+from systems import visuals
 
 
 # ----------------------------------------------------------------------------
@@ -115,10 +116,15 @@ def build(game):
     lab_w, lab_d = 16, 12
     created.append(Entity(model="plane", scale=(lab_w, 1, lab_d),
                           position=(lab_center[0], 0, lab_center[2]),
-                          color=color.rgb(55, 60, 70), collider="box"))
+                          color=color.rgb(130, 140, 150),
+                          texture=visuals.make_concrete(),
+                          texture_scale=(8, 6),
+                          collider="box"))
     created.append(Entity(model="cube", scale=(lab_w, 0.2, lab_d),
                           position=(lab_center[0], 3.5, lab_center[2]),
-                          color=color.rgb(35, 40, 50)))
+                          color=color.rgb(80, 90, 105),
+                          texture=visuals.make_metal_panel(),
+                          texture_scale=(4, 3)))
     # Walls
     # north
     created.append(Entity(model="cube", scale=(lab_w, 3.5, 0.2),

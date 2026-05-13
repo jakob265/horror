@@ -35,6 +35,7 @@ from ursina.models.procedural.cylinder import Cylinder
 
 from systems.entity import HargroveShape
 from systems.interaction import make_interactable
+from systems import visuals
 
 
 # ----------------------------------------------------------------------------
@@ -273,19 +274,26 @@ def build(game):
     rw, rd, rh = 30, 30, 18
     floor = Entity(model="plane", scale=(rw, 1, rd),
                    position=(0, 0, 0),
-                   color=color.rgb(20, 22, 28), collider="box")
+                   color=color.rgb(70, 72, 82),
+                   texture=visuals.make_concrete(),
+                   texture_scale=(10, 10),
+                   collider="box")
     created.append(floor)
-    # No ceiling light - just a high cube to seal it
     ceil = Entity(model="cube", scale=(rw, 0.2, rd),
                   position=(0, rh, 0),
-                  color=color.rgb(8, 8, 12))
+                  color=color.rgb(20, 20, 24),
+                  texture=visuals.make_metal_panel(),
+                  texture_scale=(6, 6))
     created.append(ceil)
     # Walls
     for x, z, sx, sz in [(-rw / 2, 0, 0.2, rd), (rw / 2, 0, 0.2, rd),
                          (0, -rd / 2, rw, 0.2), (0, rd / 2, rw, 0.2)]:
         created.append(Entity(model="cube", scale=(sx, rh, sz),
                               position=(x, rh / 2, z),
-                              color=color.rgb(20, 22, 28), collider="box"))
+                              color=color.rgb(55, 60, 70),
+                              texture=visuals.make_metal_panel(),
+                              texture_scale=(max(sx, sz) / 3, rh / 3),
+                              collider="box"))
 
     # Central tower
     tower_pos = (0, 9, 4)

@@ -22,6 +22,7 @@ from ursina import Entity, Text, Vec3, color, destroy, time
 
 from systems.interaction import make_interactable
 from systems.olen import IntercomPanel
+from systems import visuals
 
 
 # ----------------------------------------------------------------------------
@@ -175,18 +176,24 @@ def build(game):
     # Floor / ceiling / walls
     floor = Entity(model="plane", scale=(12, 1, 16),
                    position=(0, 0, 0),
-                   color=color.rgb(35, 35, 40),
+                   color=color.rgb(85, 80, 80),
+                   texture=visuals.make_grating(),
+                   texture_scale=(6, 8),
                    collider="box")
     created.append(floor)
     ceil = Entity(model="cube", scale=(12, 0.2, 16),
                   position=(0, 4, 0),
-                  color=color.rgb(25, 25, 30))
+                  color=color.rgb(50, 45, 50),
+                  texture=visuals.make_metal_panel(),
+                  texture_scale=(3, 4))
     created.append(ceil)
     for x, z, sx, sz in [(-6, 0, 0.2, 16), (6, 0, 0.2, 16),
                          (0, -8, 12, 0.2), (0, 8, 12, 0.2)]:
         w = Entity(model="cube", scale=(sx, 4, sz),
                    position=(x, 2, z),
-                   color=color.rgb(40, 30, 30),
+                   color=color.rgb(110, 90, 90),
+                   texture=visuals.make_metal_panel(),
+                   texture_scale=(max(sx, sz) / 2, 2),
                    collider="box")
         created.append(w)
 

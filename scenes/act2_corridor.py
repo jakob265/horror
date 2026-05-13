@@ -24,6 +24,7 @@ from ursina import (
 from systems.entity import FelixShape, YunaShape
 from systems.interaction import make_interactable
 from systems.olen import IntercomPanel
+from systems import visuals
 
 
 # ----------------------------------------------------------------------------
@@ -140,19 +141,27 @@ def build(game):
     # Floor (corridor + cabin alcoves)
     floor = Entity(model="plane", scale=(6, 1, 24),
                    position=(0, 0, 6),
-                   color=color.rgb(50, 55, 60), collider="box")
+                   color=color.rgb(110, 115, 125),
+                   texture=visuals.make_grating(),
+                   texture_scale=(3, 12),
+                   collider="box")
     created.append(floor)
     ceil = Entity(model="cube", scale=(6, 0.2, 24),
                   position=(0, 3, 6),
-                  color=color.rgb(30, 35, 40))
+                  color=color.rgb(70, 75, 85),
+                  texture=visuals.make_metal_panel(),
+                  texture_scale=(3, 12))
     created.append(ceil)
     # Long side walls of the corridor with alcoves
     for side, sign in [("east", 1), ("west", -1)]:
-        wall_color = color.rgb(45, 50, 58)
+        wall_color = color.rgb(120, 130, 145)
         created.append(Entity(model="cube",
                               scale=(0.2, 3, 24),
                               position=(3 * sign, 1.5, 6),
-                              color=wall_color, collider="box"))
+                              color=wall_color,
+                              texture=visuals.make_metal_panel(),
+                              texture_scale=(12, 1.5),
+                              collider="box"))
     # South cap (entry from Act 1, behind player) and north cap (hatch)
     south_cap = Entity(model="cube", scale=(6, 3, 0.2),
                        position=(0, 1.5, -6.1),

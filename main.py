@@ -26,6 +26,7 @@ from systems.interaction import InteractionManager
 from systems.notes import NotesManager
 from systems.olen import OlenManager
 from systems.player import Player
+from systems import visuals
 
 import scenes.act1_cryo as scene_act1
 import scenes.act2_corridor as scene_act2
@@ -52,58 +53,47 @@ class GameState:
 
 
 # ----------------------------------------------------------------------------
-# Post-processing overlay (vignette + scanlines + global tint)
+# Post-processing - GLSL screenspace shader applied to the main camera
 # ----------------------------------------------------------------------------
 
 class _PostFX:
-    """Lightweight always-on overlay: dark corners + faint scanlines."""
+    """Camera-level vignette / scanlines / chromatic aberration / grain."""
 
     def __init__(self):
-        """Build vignette + scanline entities parented to camera.ui."""
-        # Vignette - a black-edged frame consisting of four gradient panels
-        # Ursina's quad doesn't support gradients out of the box; we approximate
-        # with four large semi-transparent black rectangles tucked into the
-        # corners + a thin frame on each edge.
-        self.root = Entity(parent=camera.ui)
-        # Edge frames (thin) - opacity stacked toward edges
-        for i in range(6):
-            a = int(20 + i * 15)
-            s = 1.7 + i * 0.06
-            # Top
-            Entity(parent=self.root, model="quad",
-                   color=color.rgba(0, 0, 0, a),
-                   scale=(s, 0.04), position=(0, 0.46 + i * 0.005, 0.3))
-            # Bottom
-            Entity(parent=self.root, model="quad",
-                   color=color.rgba(0, 0, 0, a),
-                   scale=(s, 0.04), position=(0, -0.46 - i * 0.005, 0.3))
-            # Left
-            Entity(parent=self.root, model="quad",
-                   color=color.rgba(0, 0, 0, a),
-                   scale=(0.04, 1.1), position=(-0.78 - i * 0.005, 0, 0.3))
-            # Right
-            Entity(parent=self.root, model="quad",
-                   color=color.rgba(0, 0, 0, a),
-                   scale=(0.04, 1.1), position=(0.78 + i * 0.005, 0, 0.3))
-        # Scanline overlay - many thin dark lines
-        for i in range(80):
-            y = -0.5 + i / 80.0
-            Entity(parent=self.root, model="quad",
-                   color=color.rgba(0, 0, 0, 10),
-                   scale=(2.0, 0.005),
-                   position=(0, y, 0.31))
-        # Global desat / tint
-        self.tint = Entity(parent=self.root, model="quad",
-                           color=color.rgba(80, 80, 100, 28),
-                           scale=(2.5, 1.5),
-                           position=(0, 0, 0.32))
+        """Apply the post-fx shader to the active camera."""
+        try:
+            camera.shader = visuals.POSTFX_SHADER
+            camera.set_shader_input("u_time", 0.0)
+            camera.set_shader_input("u_vignette", 0.30)
+            camera.set_shader_input("u_desat", 0.08)
+            camera.set_shader_input("u_scanline", 0.05)
+            camera.set_shader_input("u_grain", 0.03)
+            camera.set_shader_input("u_ca", 0.0018)
+            self.enabled = True
+        except Exception:
+            self.enabled = False
 
     def set_act(self, act):
-        """Increase desaturation in acts 3-4 to suggest 'viewed through something old'."""
+        """Tune per-act intensity. Acts 3+4 push desat + scanline."""
+        if not self.enabled:
+            return
         if act in ("act3", "act4"):
-            self.tint.color = color.rgba(70, 80, 100, 45)
+            camera.set_shader_input("u_desat", 0.18)
+            camera.set_shader_input("u_scanline", 0.08)
+            camera.set_shader_input("u_vignette", 0.38)
+        elif act == "act1":
+            camera.set_shader_input("u_desat", 0.05)
+            camera.set_shader_input("u_scanline", 0.05)
+            camera.set_shader_input("u_vignette", 0.32)
         else:
-            self.tint.color = color.rgba(80, 80, 100, 28)
+            camera.set_shader_input("u_desat", 0.10)
+            camera.set_shader_input("u_scanline", 0.05)
+            camera.set_shader_input("u_vignette", 0.30)
+
+    def update(self):
+        """Per-frame: advance the grain seed."""
+        if self.enabled:
+            camera.set_shader_input("u_time", time.time())
 
 
 # ----------------------------------------------------------------------------
@@ -357,6 +347,10 @@ class Game:
         self.modal_count = 0
         self.in_ending = False
         self._has_first_move_been_seen = False
+        self.light_rig = None         # per-scene LightRig
+        self.sky = None               # starfield sphere
+        # Generate procedural textures now that asset_folder is wired up
+        visuals.bake_all_textures()
         # Show main menu
         self._show_main_menu()
 
@@ -396,6 +390,13 @@ class Game:
 
     def _begin_new_game(self):
         """Start a fresh playthrough at Act 1."""
+        # Tear down the main menu if still showing
+        if self.menu is not None:
+            try:
+                self.menu.close()
+            except Exception:
+                pass
+            self.menu = None
         # Reset module-level Shape state
         reset_shape_state()
         self.state = GameState()
@@ -474,17 +475,40 @@ class Game:
         self.tickers = []
         self.olen.reset_scene_triggers()
         self.shapes.clear()
+        if self.light_rig is not None:
+            self.light_rig.destroy()
+            self.light_rig = None
+        if self.sky is not None:
+            try:
+                destroy(self.sky)
+            except Exception:
+                pass
+            self.sky = None
 
     def _build_scene(self, act):
-        """Dispatch to the appropriate scene module."""
+        """Dispatch to the appropriate scene module + set up lights, sky, fog."""
+        # Build the starfield sky for every scene (visible through windows)
+        try:
+            self.sky = visuals.make_sky()
+        except Exception:
+            self.sky = None
+        # Light rig
         if act == "act1":
+            self.light_rig = visuals.make_act1_lights()
             self.scene_entities = scene_act1.build(self)
         elif act == "act2":
+            self.light_rig = visuals.make_act2_lights()
             self.scene_entities = scene_act2.build(self)
         elif act == "act3":
+            self.light_rig = visuals.make_act3_lights()
             self.scene_entities = scene_act3.build(self)
         elif act == "act4":
+            self.light_rig = visuals.make_act4_lights()
             self.scene_entities = scene_act4.build(self)
+        # Unlit rendering: keep Ursina's default shader so Entity colors and
+        # textures render predictably across all hardware. Lights stay as
+        # mood/atmosphere via emissive fixtures and fog.
+        pass
 
     # ------------------------------------------------------------------
     # Pause
@@ -588,6 +612,8 @@ class Game:
 
     def update(self):
         """Per-frame tick - drives subsystems, scene tickers, and OLEN."""
+        if self.postfx is not None:
+            self.postfx.update()
         if self.menu is not None:
             self.menu.update()
             return
