@@ -527,9 +527,18 @@ class Game:
     # ------------------------------------------------------------------
 
     def transition_to(self, act, instant_in=False):
-        """Fade out, tear down current scene, build new scene, fade in."""
+        """Fade out, tear down current scene, build new scene, fade in.
+
+        Guards against re-entry: each scene's check_transition ticker fires
+        every frame, so without this guard 60+ do_swap callbacks pile up
+        during the 0.8s fade and the build runs that many times, exploding
+        the entity count and crashing the game.
+        """
         if self.current_act == act:
             return
+        if getattr(self, "_transitioning", False):
+            return
+        self._transitioning = True
         target = act
 
         def do_swap():
@@ -537,6 +546,7 @@ class Game:
             self._teardown_scene()
             self._build_scene(target)
             self.current_act = target
+            self._transitioning = False
             if self.postfx is not None:
                 self.postfx.set_act(target)
             if instant_in:

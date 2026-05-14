@@ -288,12 +288,15 @@ def build(game):
         game.state.cryo_door_open = True
 
     def collect_keycard():
-        """Mark the cryo keycard collected and unlock the exit door."""
+        """Mark the cryo keycard collected.
+
+        The door stays closed until the player walks up to it and presses
+        E ('Try door').  That trigger then slides the door open.
+        """
         game.state.cryo_keycard = True
         destroy(keycard_root)
-        unlock_exit_door()
         game.show_examine(
-            "Keycard registered. The exit door slides open.")
+            "Keycard registered.  Try the door.")
     # The keycard is interactable but hidden + non-colliding until the
     # crate is moved, so the raycast won't pick it up early.
     make_interactable(keycard_root, "Take keycard", "trigger_event",
