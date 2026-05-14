@@ -272,8 +272,8 @@ def build(game):
 
     # Vast room - 30 x 30, ceiling at y=18 (barely visible)
     rw, rd, rh = 30, 30, 18
-    floor = Entity(model="plane", scale=(rw, 1, rd),
-                   position=(0, 0, 0),
+    floor = Entity(model="cube", scale=(rw, 0.2, rd),
+                   position=(0, -0.1, 0),
                    color=color.rgb(70, 72, 82),
                    texture=visuals.make_concrete(),
                    texture_scale=(10, 10),
@@ -285,15 +285,33 @@ def build(game):
                   texture=visuals.make_metal_panel(),
                   texture_scale=(6, 6))
     created.append(ceil)
-    # Walls
+    # East / west / north walls solid
     for x, z, sx, sz in [(-rw / 2, 0, 0.2, rd), (rw / 2, 0, 0.2, rd),
-                         (0, -rd / 2, rw, 0.2), (0, rd / 2, rw, 0.2)]:
+                         (0, rd / 2, rw, 0.2)]:
         created.append(Entity(model="cube", scale=(sx, rh, sz),
                               position=(x, rh / 2, z),
                               color=color.rgb(55, 60, 70),
                               texture=visuals.make_metal_panel(),
                               texture_scale=(max(sx, sz) / 3, rh / 3),
                               collider="box"))
+    # South wall - leave a 1.4-wide opening centered at x=0 for entry
+    ENTRY_W = 1.4
+    south_seg_w = (rw - ENTRY_W) / 2
+    for sx in (-(ENTRY_W / 2 + south_seg_w / 2),
+                (ENTRY_W / 2 + south_seg_w / 2)):
+        created.append(Entity(model="cube",
+                              scale=(south_seg_w, rh, 0.2),
+                              position=(sx, rh / 2, -rd / 2),
+                              color=color.rgb(55, 60, 70),
+                              texture=visuals.make_metal_panel(),
+                              texture_scale=(south_seg_w / 3, rh / 3),
+                              collider="box"))
+    # Header above entry opening
+    created.append(Entity(model="cube",
+                          scale=(ENTRY_W + 0.2, rh - 2.4, 0.2),
+                          position=(0, 2.4 + (rh - 2.4) / 2, -rd / 2),
+                          color=color.rgb(55, 60, 70),
+                          collider="box"))
 
     # Central tower
     tower_pos = (0, 9, 4)

@@ -96,8 +96,8 @@ def build(game):
 
     # ----- Access corridor (from Act 2 hatch) -----
     # Floor
-    created.append(Entity(model="plane", scale=(3, 1, 8),
-                          position=(0, 0, -10),
+    created.append(Entity(model="cube", scale=(3, 0.2, 8),
+                          position=(0, -0.1, -10),
                           color=color.rgb(55, 60, 70), collider="box"))
     created.append(Entity(model="cube", scale=(3, 0.2, 8),
                           position=(0, 3, -10),
@@ -114,8 +114,8 @@ def build(game):
     # ----- Signal Lab (16 x 12 room) -----
     lab_center = (0, 0, 0)
     lab_w, lab_d = 16, 12
-    created.append(Entity(model="plane", scale=(lab_w, 1, lab_d),
-                          position=(lab_center[0], 0, lab_center[2]),
+    created.append(Entity(model="cube", scale=(lab_w, 0.2, lab_d),
+                          position=(lab_center[0], -0.1, lab_center[2]),
                           color=color.rgb(130, 140, 150),
                           texture=visuals.make_concrete(),
                           texture_scale=(8, 6),
@@ -126,10 +126,37 @@ def build(game):
                           texture=visuals.make_metal_panel(),
                           texture_scale=(4, 3)))
     # Walls
-    # north
-    created.append(Entity(model="cube", scale=(lab_w, 3.5, 0.2),
-                          position=(0, 1.75, lab_d / 2),
-                          color=color.rgb(50, 55, 65), collider="box"))
+    # north - with 1.4-wide opening centered at x=-6 for the array door
+    array_door_x = -6
+    DOOR_W = 1.4
+    # Left segment of north wall: from x=-lab_w/2 to array_door_x - DOOR_W/2
+    left_w = (array_door_x - DOOR_W / 2) - (-lab_w / 2)
+    if left_w > 0:
+        created.append(Entity(model="cube", scale=(left_w, 3.5, 0.2),
+                              position=(-lab_w / 2 + left_w / 2, 1.75,
+                                        lab_d / 2),
+                              color=color.rgb(50, 55, 65),
+                              texture=visuals.make_metal_panel(),
+                              texture_scale=(left_w / 2, 1.75),
+                              collider="box"))
+    # Right segment: from array_door_x + DOOR_W/2 to lab_w/2
+    right_w = lab_w / 2 - (array_door_x + DOOR_W / 2)
+    if right_w > 0:
+        created.append(Entity(model="cube", scale=(right_w, 3.5, 0.2),
+                              position=(array_door_x + DOOR_W / 2
+                                        + right_w / 2, 1.75, lab_d / 2),
+                              color=color.rgb(50, 55, 65),
+                              texture=visuals.make_metal_panel(),
+                              texture_scale=(right_w / 2, 1.75),
+                              collider="box"))
+    # Header above the array door opening
+    created.append(Entity(model="cube",
+                          scale=(DOOR_W + 0.2, 3.5 - 2.4, 0.2),
+                          position=(array_door_x,
+                                    2.4 + (3.5 - 2.4) / 2,
+                                    lab_d / 2),
+                          color=color.rgb(50, 55, 65),
+                          collider="box"))
     # south wall with corridor opening (gap centered)
     seg_w = (lab_w - 3) / 2
     for sx in (-(1.5 + seg_w / 2), (1.5 + seg_w / 2)):
@@ -257,8 +284,8 @@ def build(game):
     office_center = (lab_w / 2 + 4, 0, 4)
     ox, _, oz = office_center
     o_w, o_d = 6, 4
-    created.append(Entity(model="plane", scale=(o_w, 1, o_d),
-                          position=(ox, 0, oz),
+    created.append(Entity(model="cube", scale=(o_w, 0.2, o_d),
+                          position=(ox, -0.1, oz),
                           color=color.rgb(45, 45, 55), collider="box"))
     created.append(Entity(model="cube", scale=(o_w, 0.2, o_d),
                           position=(ox, 3.0, oz),
@@ -345,40 +372,46 @@ def build(game):
     game.player.position = Vec3(0, 1.6, -13.5)
     game.player.fpc.rotation_y = 0
 
-    # Transition - cross the array door (we put a door on the lab's east-side?
-    # No - the spec says the array keycard opens a heavy door at the END of the
-    # research deck.  We place the door on the north wall of the lab.
-    # (The opening already exists on the east side leading to Hargrove's office.)
-    # Place a locked door on the north wall at x=-7
-    door_pivot = Entity(position=(-6, 0, lab_d / 2 - 0.1))
-    door = Entity(parent=door_pivot, model="cube",
-                  scale=(1.4, 3.0, 0.18),
-                  position=(0.7, 1.5, 0),
-                  color=color.rgb(90, 70, 60), collider="box")
-    created.append(door_pivot)
-    # Add a faint label "ARRAY"
-    label_plate = Entity(parent=door_pivot, model="quad",
-                         scale=(0.5, 0.12),
-                         position=(0.7, 2.4, -0.08),
-                         color=color.rgba(220, 200, 160, 255))
+    # Heavy array door - sits in the north-wall opening at x=-6.  When
+    # unlocked it slides up into the header.
+    array_door = Entity(model="cube",
+                        scale=(DOOR_W, 2.4, 0.10),
+                        position=(array_door_x, 1.2, lab_d / 2),
+                        color=color.rgb(110, 80, 60),
+                        texture=visuals.make_metal_panel(),
+                        texture_scale=(DOOR_W / 2, 1.2),
+                        collider="box")
+    created.append(array_door)
+    # Label "ARRAY" on a small plate above
+    label_plate = Entity(model="cube",
+                         scale=(0.6, 0.16, 0.04),
+                         position=(array_door_x, 2.5, lab_d / 2 - 0.13),
+                         color=color.rgb(220, 200, 160))
+    created.append(label_plate)
     Text(parent=label_plate, text="ARRAY",
-         position=(0, 0, -0.01), origin=(0, 0), scale=3.5,
+         position=(0, 0, -0.55), origin=(0, 0), scale=3.5,
          color=color.rgb(30, 30, 35), font="VeraMono.ttf")
 
     def try_open_array_door():
-        """Open the array room door if the keycard has been collected."""
+        """Slide the array door open if the keycard has been collected."""
         if not game.state.array_keycard:
             game.show_examine(
                 "Door locked.  ARRAY ACCESS keycard required.")
             return
-        door_pivot.animate("rotation_y", 90, duration=0.5)
+        if game.state.array_door_open:
+            return
+        array_door.animate("y", 2.4 + 1.2, duration=0.6)
+        # Drop collision and hide once it's clear
+        from ursina import invoke as _invoke
+        _invoke(setattr, array_door, "collider", None, delay=0.55)
+        _invoke(setattr, array_door, "visible", False, delay=0.60)
         game.audio.door()
         game.state.array_door_open = True
-    make_interactable(door, "Try array door", "trigger_event",
+    make_interactable(array_door, "Try array door", "trigger_event",
                       callback=try_open_array_door)
     game.state.array_door_open = False
 
-    # Intercom 5 - just outside / inside the array door (proximity)
+    # Intercom 5 - just outside the array door (proximity)
     intercom5 = IntercomPanel(position=(-4.6, 1.7, lab_d / 2 - 0.15),
                               rotation=(0, 180, 0))
     created.append(intercom5)
@@ -387,12 +420,12 @@ def build(game):
         intercom_id=5, position=(-6, 1.6, lab_d / 2 - 1.2), panel=intercom5,
         radius=3.5)
 
-    # Transition - cross the array door threshold (z > 6.2 around x=-6)
+    # Transition - cross the array door threshold
     def check_transition():
         """Trigger Act 4 transition when player crosses the array door."""
         if game.state.array_door_open:
             pp = game.player.position
-            if pp.z > 6.2 and abs(pp.x + 6) < 1.5:
+            if pp.z > lab_d / 2 + 0.2 and abs(pp.x - array_door_x) < 1.0:
                 game.transition_to("act4")
     game.register_ticker(check_transition)
 

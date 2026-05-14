@@ -174,8 +174,8 @@ def build(game):
     created = []
 
     # Floor / ceiling / walls
-    floor = Entity(model="plane", scale=(12, 1, 16),
-                   position=(0, 0, 0),
+    floor = Entity(model="cube", scale=(12, 0.2, 16),
+                   position=(0, -0.1, 0),
                    color=color.rgb(85, 80, 80),
                    texture=visuals.make_grating(),
                    texture_scale=(6, 8),
@@ -187,8 +187,10 @@ def build(game):
                   texture=visuals.make_metal_panel(),
                   texture_scale=(3, 4))
     created.append(ceil)
+    # East / west / south walls are solid; the north wall has a
+    # 1.4-wide opening for the exit door at x in [-0.7, 0.7].
     for x, z, sx, sz in [(-6, 0, 0.2, 16), (6, 0, 0.2, 16),
-                         (0, -8, 12, 0.2), (0, 8, 12, 0.2)]:
+                         (0, -8, 12, 0.2)]:
         w = Entity(model="cube", scale=(sx, 4, sz),
                    position=(x, 2, z),
                    color=color.rgb(110, 90, 90),
@@ -196,6 +198,24 @@ def build(game):
                    texture_scale=(max(sx, sz) / 2, 2),
                    collider="box")
         created.append(w)
+    # North wall - two segments leaving an exit-door gap at x in [-0.7, 0.7]
+    north_gap = 1.4
+    north_seg_w = (12 - north_gap) / 2
+    for sx in (-(north_gap / 2 + north_seg_w / 2),
+                (north_gap / 2 + north_seg_w / 2)):
+        created.append(Entity(model="cube",
+                              scale=(north_seg_w, 4, 0.2),
+                              position=(sx, 2, 8),
+                              color=color.rgb(110, 90, 90),
+                              texture=visuals.make_metal_panel(),
+                              texture_scale=(north_seg_w / 2, 2),
+                              collider="box"))
+    # Door frame caps above the opening
+    created.append(Entity(model="cube",
+                          scale=(north_gap + 0.2, 0.6, 0.2),
+                          position=(0, 3.7, 8),
+                          color=color.rgb(110, 90, 90),
+                          collider="box"))
 
     # Five cryo pods along the back wall (z = -5)
     pod_z = -5.0
@@ -248,17 +268,22 @@ def build(game):
                       offset=Vec3(0.9, 0, 0.5), after=reveal_keycard)
     created.append(crate)
 
-    # Exit door (north wall, +z)
-    door_pivot = Entity(position=(0.6, 0, 7.4))
-    door = Entity(parent=door_pivot, model="cube",
-                  scale=(1.2, 3.0, 0.18),
-                  position=(-0.6, 1.5, 0),
-                  color=color.rgb(60, 60, 75), collider="box")
-    created.append(door_pivot)
+    # Exit door (north wall, +z).  Slides up when unlocked.
+    door = Entity(model="cube",
+                  scale=(1.4, 2.4, 0.10),
+                  position=(0, 1.2, 8),
+                  color=color.rgb(70, 70, 85),
+                  texture=visuals.make_metal_panel(),
+                  texture_scale=(1, 2),
+                  collider="box")
+    created.append(door)
 
     def unlock_exit_door():
-        """Rotate the door open."""
-        door_pivot.animate("rotation_y", 90, duration=0.5)
+        """Slide the door up out of the way."""
+        from ursina import invoke as _invoke
+        door.animate("y", 2.4 + 1.2, duration=0.5)
+        _invoke(setattr, door, "collider", None, delay=0.45)
+        _invoke(setattr, door, "visible", False, delay=0.50)
         game.audio.door()
         game.state.cryo_door_open = True
 
@@ -319,10 +344,10 @@ def build(game):
     # SOUND: Slow breathing - very quiet, positional, from welded pod in Act 1.
     # SOUND: Distant metallic groan - positional, every 45-90 seconds.
 
-    # Transition trigger - cross the door threshold (z > 7.6)
+    # Transition trigger - cross the door threshold (z > 8.0)
     def check_transition():
         """Trigger act transition when the player crosses the door threshold."""
-        if game.state.cryo_door_open and game.player.position.z > 7.6:
+        if game.state.cryo_door_open and game.player.position.z > 8.0:
             game.transition_to("act2")
     game.register_ticker(check_transition)
 

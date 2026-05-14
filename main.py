@@ -592,6 +592,16 @@ class Game:
         elif act == "act4":
             self.light_rig = visuals.make_act4_lights()
             self.scene_entities = scene_act4.build(self)
+        # Reset the FPC's accumulated air_time so gravity doesn't carry a
+        # massive downward velocity through the transition (this would
+        # otherwise drop the player far below the new floor before the
+        # collider catches them).
+        if self.player is not None:
+            try:
+                self.player.fpc.air_time = 0
+                self.player.fpc.jumping = False
+            except Exception:
+                pass
         # Unlit rendering: keep Ursina's default shader so Entity colors and
         # textures render predictably across all hardware. Lights stay as
         # mood/atmosphere via emissive fixtures and fog.

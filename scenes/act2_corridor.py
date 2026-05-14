@@ -18,7 +18,7 @@ Intercom 2 fires on proximity outside Felix's cabin.
 import random
 
 from ursina import (
-    Entity, Text, Vec3, color, destroy, time,
+    Entity, Text, Vec3, color, destroy, invoke, time,
 )
 
 from systems.entity import FelixShape, YunaShape
@@ -78,44 +78,73 @@ def _world_text(s, position, rotation, scale, col, created, parent=None):
     return t
 
 
-def _make_door(label, position, rotation_y, color_door, created,
-               locked=False, code=None, on_unlock=None):
-    """Build a cabin door + label + (optional) keypad. Returns the pivot."""
-    pivot = Entity(position=position, rotation=(0, rotation_y, 0))
-    door = Entity(parent=pivot, model="cube",
-                  scale=(1.0, 2.4, 0.12),
-                  position=(-0.5, 1.20, 0),
-                  color=color_door, collider="box")
-    created.append(pivot)
-    # Door label plate
-    plate = Entity(parent=pivot, model="cube",
+def _make_door(label, gap_x, gap_z, side, color_door, created,
+               locked=False, code=None, on_unlock=None,
+               opens_inward=True):
+    """Build a sliding cabin door that fills a wall opening.
+
+    The door is a thin vertical panel sitting in the corridor-wall opening
+    at (gap_x, gap_z) of width 1.4.  When opened it slides up into the
+    header (animated Y offset) - cleaner and bug-free compared to swing
+    rotation through walls.
+
+    side: 'west' = door is in the west corridor wall (cabin on -x side).
+          'east' = door is in the east corridor wall (cabin on +x side).
+    """
+    DOOR_W = 1.4
+    DOOR_H = 2.4
+    # Door panel oriented with width along Z (since the opening is along Z)
+    door = Entity(
+        model="cube",
+        scale=(0.10, DOOR_H, DOOR_W),
+        position=(gap_x, DOOR_H / 2, gap_z),
+        color=color_door,
+        texture=visuals.make_metal_panel(),
+        texture_scale=(DOOR_W / 2, DOOR_H / 2),
+        collider="box",
+    )
+    door._door_opened = False
+    door._door_locked = locked
+    door._door_base_y = DOOR_H / 2
+    created.append(door)
+
+    # Door label plate slightly off the wall, on the corridor side
+    label_x_off = 0.12 if side == "west" else -0.12
+    plate = Entity(model="cube",
                    scale=(0.4, 0.12, 0.02),
-                   position=(-0.5, 2.20, -0.07),
+                   position=(gap_x + label_x_off, DOOR_H + 0.15, gap_z),
+                   rotation=(0, 90 if side == "west" else -90, 0),
                    color=color.rgb(180, 200, 220))
     created.append(plate)
-    Text(parent=plate, text=label, position=(0, 0, -0.05),
+    Text(parent=plate, text=label, position=(0, 0, -0.02),
          origin=(0, 0), scale=4, color=color.rgb(20, 30, 40),
          font="VeraMono.ttf")
-    pivot._door_pivot = True
-    pivot._door_locked = locked
 
     def open_door():
-        """Animate door rotation."""
-        pivot.animate("rotation_y", rotation_y + 90, duration=0.4)
-        pivot._door_opened = True
+        """Slide the door up into the header opening."""
+        if door._door_opened:
+            return
+        door.animate("y", DOOR_H + DOOR_H / 2, duration=0.45)
+        # Disable collision and hide the panel once open
+        invoke(_clear_collision, door, delay=0.40)
+        invoke(setattr, door, "visible", False, delay=0.45)
+        door._door_opened = True
 
     if locked:
-        # Wall-mounted keypad next to the door
+        # Wall-mounted keypad slightly offset from the opening
+        keypad_z = gap_z + (DOOR_W / 2 + 0.30)
         keypad = Entity(model="cube",
                         scale=(0.20, 0.30, 0.06),
-                        position=(position[0] + 0.6, 1.4, position[2]),
+                        position=(gap_x + (0.15 if side == "west" else -0.15),
+                                  1.4, keypad_z),
+                        rotation=(0, 90 if side == "west" else -90, 0),
                         color=color.rgb(60, 70, 80), collider="box")
 
         def unlock_cb():
             """Run the optional unlock hook then open the door."""
             if callable(on_unlock):
                 on_unlock()
-            pivot._door_locked = False
+            door._door_locked = False
             open_door()
         make_interactable(keypad, "Enter code", "keypad",
                           code=code, on_unlock=unlock_cb)
@@ -125,7 +154,15 @@ def _make_door(label, position, rotation_y, color_door, created,
     else:
         make_interactable(door, "Open " + label, "trigger_event",
                           callback=open_door)
-    return pivot
+    return door
+
+
+def _clear_collision(entity):
+    """Disable an entity's collider (used after a door has slid open)."""
+    try:
+        entity.collider = None
+    except Exception:
+        pass
 
 
 # ----------------------------------------------------------------------------
@@ -139,8 +176,8 @@ def build(game):
 
     # ----- Corridor: 22 units long -----
     # Floor (corridor + cabin alcoves)
-    floor = Entity(model="plane", scale=(6, 1, 24),
-                   position=(0, 0, 6),
+    floor = Entity(model="cube", scale=(6, 0.2, 24),
+                   position=(0, -0.1, 6),
                    color=color.rgb(110, 115, 125),
                    texture=visuals.make_grating(),
                    texture_scale=(3, 12),
@@ -152,60 +189,158 @@ def build(game):
                   texture=visuals.make_metal_panel(),
                   texture_scale=(3, 12))
     created.append(ceil)
-    # Long side walls of the corridor with alcoves
-    for side, sign in [("east", 1), ("west", -1)]:
-        wall_color = color.rgb(120, 130, 145)
+    # Corridor side walls.  Each wall has cut-outs for cabin doors:
+    #   west (x=-3): Felix at z=0, Hargrove at z=9
+    #   east (x=+3): Yuna at z=4.5, Mara at z=13.5
+    # Each opening is 1.4 wide (cabin door is 1.4).  We build the wall as
+    # a sequence of segments between the gaps + a header above each opening.
+    DOOR_W = 1.4
+    DOOR_H = 2.4
+    CORRIDOR_TOP = 3.0
+    wall_color = color.rgb(120, 130, 145)
+    wall_z_min, wall_z_max = -6, 18
+
+    def build_wall_with_gaps(x_pos, gap_z_centers):
+        """Build a 0.2-thick wall along z with gaps cut for doors.
+
+        Each gap leaves a (DOOR_W) wide opening centered at z=gz.  A header
+        cube fills the space above the opening up to the ceiling.
+        """
+        # Sort gap centers and produce segment ranges
+        gz_sorted = sorted(gap_z_centers)
+        cursor = wall_z_min
+        for gz in gz_sorted:
+            seg_start = cursor
+            seg_end = gz - DOOR_W / 2
+            if seg_end > seg_start:
+                w = seg_end - seg_start
+                created.append(Entity(model="cube",
+                                      scale=(0.2, CORRIDOR_TOP, w),
+                                      position=(x_pos,
+                                                CORRIDOR_TOP / 2,
+                                                seg_start + w / 2),
+                                      color=wall_color,
+                                      texture=visuals.make_metal_panel(),
+                                      texture_scale=(w / 2, 1.5),
+                                      collider="box"))
+            # Header above the opening
+            header_h = CORRIDOR_TOP - DOOR_H
+            created.append(Entity(model="cube",
+                                  scale=(0.2, header_h, DOOR_W),
+                                  position=(x_pos,
+                                            DOOR_H + header_h / 2,
+                                            gz),
+                                  color=wall_color,
+                                  texture=visuals.make_metal_panel(),
+                                  texture_scale=(DOOR_W / 2, header_h / 2),
+                                  collider="box"))
+            cursor = gz + DOOR_W / 2
+        # Final segment to wall_z_max
+        if wall_z_max > cursor:
+            w = wall_z_max - cursor
+            created.append(Entity(model="cube",
+                                  scale=(0.2, CORRIDOR_TOP, w),
+                                  position=(x_pos,
+                                            CORRIDOR_TOP / 2,
+                                            cursor + w / 2),
+                                  color=wall_color,
+                                  texture=visuals.make_metal_panel(),
+                                  texture_scale=(w / 2, 1.5),
+                                  collider="box"))
+
+    build_wall_with_gaps(-3, [0, 9])       # west: Felix, Hargrove
+    build_wall_with_gaps(+3, [4.5, 13.5])  # east: Yuna, Mara
+    # South cap (entry from Act 1, behind player) and north cap (hatch).
+    # The south cap has a 1.4-wide opening at x in [-0.7, 0.7] so the
+    # player can walk in from Act 1.  The north cap has a 1.4-wide
+    # opening for the maintenance hatch leading to Act 3.
+    south_seg_w = (6 - 1.4) / 2
+    for sx in (-(0.7 + south_seg_w / 2), (0.7 + south_seg_w / 2)):
         created.append(Entity(model="cube",
-                              scale=(0.2, 3, 24),
-                              position=(3 * sign, 1.5, 6),
+                              scale=(south_seg_w, 3, 0.2),
+                              position=(sx, 1.5, -6.1),
+                              color=color.rgb(60, 65, 75),
+                              texture=visuals.make_metal_panel(),
+                              texture_scale=(south_seg_w / 2, 1.5),
+                              collider="box"))
+    # South header above the opening
+    created.append(Entity(model="cube",
+                          scale=(1.4 + 0.2, 0.6, 0.2),
+                          position=(0, 2.7, -6.1),
+                          color=color.rgb(60, 65, 75),
+                          collider="box"))
+    north_seg_w = (6 - 1.4) / 2
+    for sx in (-(0.7 + north_seg_w / 2), (0.7 + north_seg_w / 2)):
+        created.append(Entity(model="cube",
+                              scale=(north_seg_w, 3, 0.2),
+                              position=(sx, 1.5, 18.1),
+                              color=color.rgb(60, 65, 75),
+                              texture=visuals.make_metal_panel(),
+                              texture_scale=(north_seg_w / 2, 1.5),
+                              collider="box"))
+    # North header
+    created.append(Entity(model="cube",
+                          scale=(1.4 + 0.2, 0.6, 0.2),
+                          position=(0, 2.7, 18.1),
+                          color=color.rgb(60, 65, 75),
+                          collider="box"))
+
+    # ----- Helper: build a cabin alcove attached to one side of the corridor -----
+    # The cabin "connects" to the corridor through the matching opening
+    # already cut in the corridor wall (build_wall_with_gaps above).
+    # We do NOT build a wall on the corridor-facing side.
+    def make_cabin_room(center, half_size=(2.5, 1.5, 2.5),
+                        wall_color=color.rgb(55, 60, 70),
+                        corridor_side="west"):
+        """Build floor/ceiling/walls for a single cabin alcove.
+
+        corridor_side: which face of the cabin is open to the corridor.
+            'west' = cabin sits west of corridor (x < -3), its east face is open.
+            'east' = cabin sits east of corridor (x > +3), its west face is open.
+        """
+        sx, sy, sz = half_size
+        cx, _, cz = center
+        # Floor
+        created.append(Entity(model="cube", scale=(sx * 2, 0.2, sz * 2),
+                              position=(cx, -0.1, cz),
+                              color=color.rgb(60, 60, 65),
+                              texture=visuals.make_concrete(),
+                              texture_scale=(sx, sz),
+                              collider="box"))
+        # Ceiling
+        created.append(Entity(model="cube", scale=(sx * 2, 0.2, sz * 2),
+                              position=(cx, sy * 2, cz),
+                              color=color.rgb(50, 55, 65),
+                              texture=visuals.make_metal_panel(),
+                              texture_scale=(sx, sz)))
+        # Back wall (always - opposite corridor side)
+        # North wall (cz + sz) and south wall (cz - sz) are always solid
+        created.append(Entity(model="cube", scale=(sx * 2, sy * 2, 0.2),
+                              position=(cx, sy, cz - sz),
                               color=wall_color,
                               texture=visuals.make_metal_panel(),
-                              texture_scale=(12, 1.5),
+                              texture_scale=(sx, sy),
                               collider="box"))
-    # South cap (entry from Act 1, behind player) and north cap (hatch)
-    south_cap = Entity(model="cube", scale=(6, 3, 0.2),
-                       position=(0, 1.5, -6.1),
-                       color=color.rgb(40, 50, 60), collider="box")
-    created.append(south_cap)
-    north_cap = Entity(model="cube", scale=(6, 3, 0.2),
-                       position=(0, 1.5, 18.1),
-                       color=color.rgb(40, 50, 60), collider="box")
-    created.append(north_cap)
-
-    # ----- Helper: build a cabin alcove (room) attached to one side -----
-    def make_cabin_room(center, half_size=(2.5, 1.5, 2.5),
-                        wall_color=color.rgb(55, 60, 70)):
-        """Build floor/ceiling/walls for a single cabin alcove."""
-        sx, sy, sz = half_size
-        created.append(Entity(model="plane", scale=(sx * 2, 1, sz * 2),
-                              position=(center[0], 0, center[2]),
-                              color=color.rgb(60, 60, 65), collider="box"))
-        created.append(Entity(model="cube", scale=(sx * 2, 0.2, sz * 2),
-                              position=(center[0], sy * 2, center[2]),
-                              color=color.rgb(30, 35, 40)))
-        # Back wall
         created.append(Entity(model="cube", scale=(sx * 2, sy * 2, 0.2),
-                              position=(center[0], sy, center[2] - sz),
-                              color=wall_color, collider="box"))
-        # Side walls
-        for x in (-sx, sx):
-            created.append(Entity(model="cube",
-                                  scale=(0.2, sy * 2, sz * 2),
-                                  position=(center[0] + x, sy, center[2]),
-                                  color=wall_color, collider="box"))
-        # Front wall with door opening: two segments leaving gap centered
-        gap = 1.2
-        seg_w = (sx * 2 - gap) / 2
+                              position=(cx, sy, cz + sz),
+                              color=wall_color,
+                              texture=visuals.make_metal_panel(),
+                              texture_scale=(sx, sy),
+                              collider="box"))
+        # Outer side wall - the cabin face away from the corridor.
+        # corridor_side=='west' means cabin sits west of corridor, so its
+        # OPEN face is east (+sx) and its solid outer face is west (-sx).
+        outer_x = cx + (-sx if corridor_side == "west" else sx)
         created.append(Entity(model="cube",
-                              scale=(seg_w, sy * 2, 0.2),
-                              position=(center[0] - (gap / 2 + seg_w / 2), sy,
-                                        center[2] + sz),
-                              color=wall_color, collider="box"))
-        created.append(Entity(model="cube",
-                              scale=(seg_w, sy * 2, 0.2),
-                              position=(center[0] + (gap / 2 + seg_w / 2), sy,
-                                        center[2] + sz),
-                              color=wall_color, collider="box"))
+                              scale=(0.2, sy * 2, sz * 2),
+                              position=(outer_x, sy, cz),
+                              color=wall_color,
+                              texture=visuals.make_metal_panel(),
+                              texture_scale=(sz, sy),
+                              collider="box"))
+        # NOTE: the corridor-facing side intentionally has no wall here -
+        # the corridor's wall (with its 1.4-wide door opening) is the
+        # shared boundary.
 
     # ----- Layout - four cabins, alternating sides along z -----
     # Z positions for the cabin doors (along the corridor)
@@ -217,14 +352,17 @@ def build(game):
     # FELIX cabin alcove (west side, x < 0)
     felix_center = (-5.5, 0, felix_z)
     make_cabin_room(felix_center, half_size=(2.5, 1.5, 2.5),
-                    wall_color=color.rgb(55, 55, 65))
-    # Door
-    felix_door = _make_door("OKAFOR", position=(-3.0, 0, felix_z),
-                            rotation_y=90, color_door=color.rgb(70, 80, 95),
+                    wall_color=color.rgb(55, 55, 65),
+                    corridor_side="west")
+    # Door sits in the corridor's west wall opening (x=-3, z=felix_z)
+    felix_door = _make_door("OKAFOR", gap_x=-3, gap_z=felix_z,
+                            side="west",
+                            color_door=color.rgb(70, 80, 95),
                             created=created)
-    # Felix's cabin is "open" so we pre-open the door
-    felix_door.animate("rotation_y", 90 + 90, duration=0.01)
+    # Felix's cabin door is already open (per spec) - hide entirely
+    felix_door.visible = False
     felix_door._door_opened = True
+    felix_door.collider = None
     cabins.append(("felix", felix_center, felix_door))
 
     # FELIX's monitor + Amara drawing + Note 2
@@ -302,9 +440,11 @@ def build(game):
     # ---- YUNA cabin alcove (east side) ----
     yuna_center = (5.5, 0, yuna_z)
     make_cabin_room(yuna_center, half_size=(2.5, 1.5, 2.5),
-                    wall_color=color.rgb(60, 60, 60))
-    yuna_door = _make_door("PARK", position=(3.0, 0, yuna_z),
-                           rotation_y=-90, color_door=color.rgb(70, 80, 90),
+                    wall_color=color.rgb(60, 60, 60),
+                    corridor_side="east")
+    yuna_door = _make_door("PARK", gap_x=3, gap_z=yuna_z,
+                           side="east",
+                           color_door=color.rgb(70, 80, 90),
                            created=created)
     cabins.append(("yuna", yuna_center, yuna_door))
 
@@ -410,11 +550,12 @@ def build(game):
     # ---- HARGROVE cabin (west side) ----
     hargrove_center = (-5.5, 0, hargrove_z)
     make_cabin_room(hargrove_center, half_size=(2.5, 1.5, 2.5),
-                    wall_color=color.rgb(60, 58, 55))
-    # Locked - code 4301
+                    wall_color=color.rgb(60, 58, 55),
+                    corridor_side="west")
     hargrove_door = _make_door(
-        "HARGROVE", position=(-3.0, 0, hargrove_z),
-        rotation_y=90, color_door=color.rgb(80, 70, 70),
+        "HARGROVE", gap_x=-3, gap_z=hargrove_z,
+        side="west",
+        color_door=color.rgb(80, 70, 70),
         created=created, locked=True, code="4301")
     cabins.append(("hargrove", hargrove_center, hargrove_door))
 
@@ -454,13 +595,16 @@ def build(game):
     # ---- MARA cabin (east side, open) ----
     mara_center = (5.5, 0, mara_z)
     make_cabin_room(mara_center, half_size=(2.5, 1.5, 2.5),
-                    wall_color=color.rgb(55, 55, 65))
-    mara_door = _make_door("VOSS", position=(3.0, 0, mara_z),
-                           rotation_y=-90, color_door=color.rgb(70, 75, 90),
+                    wall_color=color.rgb(55, 55, 65),
+                    corridor_side="east")
+    mara_door = _make_door("VOSS", gap_x=3, gap_z=mara_z,
+                           side="east",
+                           color_door=color.rgb(70, 75, 90),
                            created=created)
-    # Pre-open
-    mara_door.animate("rotation_y", -90 - 90, duration=0.01)
+    # Mara's door is pre-opened
+    mara_door.visible = False
     mara_door._door_opened = True
+    mara_door.collider = None
     cabins.append(("mara", mara_center, mara_door))
 
     # Inside - mug + Eli photo + mirror + Intercom 3 wall panel
@@ -509,29 +653,33 @@ def build(game):
     make_interactable(intercom3, "Press intercom", "trigger_event",
                       callback=lambda: game.olen.trigger_manual(3, intercom3))
 
-    # ---- North end: Felix-Shape + maintenance hatch with keypad code 7741 ----
-    # Keypad on wall beside hatch
-    hatch_pivot = Entity(position=(0.5, 0, 17.9))
-    hatch_door = Entity(parent=hatch_pivot, model="cube",
-                        scale=(1.2, 2.4, 0.18),
-                        position=(-0.6, 1.2, 0),
-                        color=color.rgb(80, 70, 60), collider="box")
-    created.append(hatch_pivot)
+    # ---- North end: Felix-Shape + maintenance hatch (slides up when unlocked) ----
+    hatch_door = Entity(model="cube",
+                        scale=(1.4, 2.4, 0.10),
+                        position=(0, 1.2, 18.1),
+                        color=color.rgb(80, 70, 60),
+                        texture=visuals.make_metal_panel(),
+                        texture_scale=(0.7, 1.2),
+                        collider="box")
+    created.append(hatch_door)
 
+    # Wall-mounted keypad to the east of the hatch
     hatch_keypad = Entity(model="cube", scale=(0.22, 0.30, 0.06),
-                          position=(1.5, 1.4, 17.7),
+                          position=(1.2, 1.4, 18.05),
                           color=color.rgb(70, 70, 80), collider="box")
     created.append(hatch_keypad)
 
     def open_hatch():
-        """Open the hatch door + Felix-Shape steps aside."""
-        hatch_pivot.animate("rotation_y", 90, duration=0.5)
+        """Open the hatch by sliding it up + Felix-Shape steps aside."""
+        hatch_door.animate("y", 2.4 + 1.2, duration=0.5)
+        invoke(_clear_collision, hatch_door, delay=0.45)
+        invoke(setattr, hatch_door, "visible", False, delay=0.50)
         game.audio.door()
         game.state.hatch_open = True
-        # Felix-Shape steps quietly aside (move left along x)
+        # Felix-Shape steps quietly aside
         hatch_felix.animate("position",
-                hatch_felix.position + Vec3(-1.6, 0, 0),
-                duration=1.4)
+                            hatch_felix.position + Vec3(-1.6, 0, 0),
+                            duration=1.4)
     make_interactable(hatch_keypad, "Enter code", "keypad",
                       code="7741", on_unlock=open_hatch)
     game.state.hatch_open = False
