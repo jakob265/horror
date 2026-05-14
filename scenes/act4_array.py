@@ -312,6 +312,44 @@ def build(game):
                           position=(0, 2.4 + (rh - 2.4) / 2, -rd / 2),
                           color=color.rgb(55, 60, 70),
                           collider="box"))
+    # Sealed entry door at the south opening - the door the player walked
+    # through from Act 3.  Visible-only, non-interactive.
+    entry_door4 = Entity(model="cube",
+                         scale=(ENTRY_W, 2.4, 0.10),
+                         position=(0, 1.2, -rd / 2 + 0.05),
+                         color=color.rgb(110, 80, 60),
+                         texture=visuals.make_metal_panel(),
+                         texture_scale=(0.7, 1.2))
+    created.append(entry_door4)
+    Entity(parent=entry_door4, model="cube",
+           scale=(0.50, 0.55, 0.20),
+           position=(0, 0, 0.06),
+           color=color.rgb(30, 25, 20))
+    Entity(parent=entry_door4, model="cube",
+           scale=(0.90, 0.08, 0.20),
+           position=(0, 0.40, 0.06),
+           color=color.rgb(220, 180, 30))
+    Entity(parent=entry_door4, model="cube",
+           scale=(0.90, 0.08, 0.20),
+           position=(0, -0.50, 0.06),
+           color=color.rgb(220, 180, 30))
+    # Entry door jambs
+    for dx in (-ENTRY_W / 2, ENTRY_W / 2):
+        created.append(Entity(model="cube",
+                              scale=(0.10, 2.45, 0.18),
+                              position=(dx, 1.225, -rd / 2 + 0.05),
+                              color=color.rgb(80, 75, 70),
+                              texture=visuals.make_metal_panel(),
+                              texture_scale=(0.4, 1.2)))
+    # ARRAY label above entry door
+    entry_plate4 = Entity(model="cube",
+                          scale=(0.7, 0.18, 0.04),
+                          position=(0, 2.55, -rd / 2 + 0.07),
+                          color=color.rgb(220, 200, 160))
+    created.append(entry_plate4)
+    Text(parent=entry_plate4, text="ARRAY",
+         position=(0, 0, 0.55), origin=(0, 0), scale=6,
+         color=color.rgb(30, 30, 35), font="VeraMono.ttf")
 
     # Central tower
     tower_pos = (0, 9, 4)

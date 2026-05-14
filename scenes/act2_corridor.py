@@ -81,19 +81,41 @@ def _world_text(s, position, rotation, scale, col, created, parent=None):
 def _make_door(label, gap_x, gap_z, side, color_door, created,
                locked=False, code=None, on_unlock=None,
                opens_inward=True):
-    """Build a sliding cabin door that fills a wall opening.
+    """Build a sliding cabin door + visible doorframe in a wall opening.
 
     The door is a thin vertical panel sitting in the corridor-wall opening
-    at (gap_x, gap_z) of width 1.4.  When opened it slides up into the
-    header (animated Y offset) - cleaner and bug-free compared to swing
-    rotation through walls.
+    at (gap_x, gap_z) of width 1.4.  Two vertical jambs flank the opening
+    and a labeled plate sits above the door on the corridor-facing side.
+    When unlocked the door slides up into the header and despawns.
 
     side: 'west' = door is in the west corridor wall (cabin on -x side).
           'east' = door is in the east corridor wall (cabin on +x side).
     """
     DOOR_W = 1.4
     DOOR_H = 2.4
-    # Door panel oriented with width along Z (since the opening is along Z)
+    JAMB_T = 0.08          # jamb thickness in z
+    JAMB_DEPTH = 0.12      # jamb extends into the corridor a bit
+    # Corridor side multiplier: +1 if cabin is east of corridor, -1 if west
+    corridor_dir = +1 if side == "west" else -1
+
+    # --- Doorframe jambs (vertical side frames) -----------------------------
+    for dz in (-DOOR_W / 2, DOOR_W / 2):
+        created.append(Entity(model="cube",
+                              scale=(JAMB_DEPTH, DOOR_H + 0.05, JAMB_T),
+                              position=(gap_x + corridor_dir * JAMB_DEPTH / 2,
+                                        (DOOR_H + 0.05) / 2,
+                                        gap_z + dz),
+                              color=color.rgb(70, 75, 85),
+                              texture=visuals.make_metal_panel(),
+                              texture_scale=(0.4, DOOR_H / 2)))
+    # Threshold strip on the floor of the opening
+    created.append(Entity(model="cube",
+                          scale=(JAMB_DEPTH * 1.5, 0.04, DOOR_W),
+                          position=(gap_x + corridor_dir * 0.02,
+                                    0.02, gap_z),
+                          color=color.rgb(90, 95, 105)))
+
+    # --- Door panel ---------------------------------------------------------
     door = Entity(
         model="cube",
         scale=(0.10, DOOR_H, DOOR_W),
@@ -108,37 +130,66 @@ def _make_door(label, gap_x, gap_z, side, color_door, created,
     door._door_base_y = DOOR_H / 2
     created.append(door)
 
-    # Door label plate slightly off the wall, on the corridor side
-    label_x_off = 0.12 if side == "west" else -0.12
+    # Inset panel detail on the corridor-facing side (just a thin offset slab)
+    detail = Entity(parent=door, model="cube",
+                    scale=(0.18, 0.55, 0.50),
+                    position=(corridor_dir * 0.06, 0, 0),
+                    color=color.rgb(40, 45, 55))
+    # door handle plate
+    handle = Entity(parent=door, model="cube",
+                    scale=(0.16, 0.10, 0.08),
+                    position=(corridor_dir * 0.06, -0.10,
+                              DOOR_W / 2 - 0.20),
+                    color=color.rgb(180, 180, 190))
+
+    # --- Door label plate ---------------------------------------------------
+    # Plate sits above the door, on the corridor-facing side.  We parent the
+    # label Text to a small entity rotated to face the corridor.
+    plate_x = gap_x + corridor_dir * (JAMB_DEPTH + 0.04)
     plate = Entity(model="cube",
-                   scale=(0.4, 0.12, 0.02),
-                   position=(gap_x + label_x_off, DOOR_H + 0.15, gap_z),
-                   rotation=(0, 90 if side == "west" else -90, 0),
+                   scale=(0.04, 0.18, 0.48),
+                   position=(plate_x, DOOR_H + 0.20, gap_z),
                    color=color.rgb(180, 200, 220))
     created.append(plate)
-    Text(parent=plate, text=label, position=(0, 0, -0.02),
-         origin=(0, 0), scale=4, color=color.rgb(20, 30, 40),
-         font="VeraMono.ttf")
+    # Text floats on the corridor-facing face of the plate
+    label_text = Text(
+        parent=plate,
+        text=label,
+        # Local +x or -x is the corridor side (depends on which wall)
+        position=(corridor_dir * 0.55, 0, 0),
+        rotation=(0, 90 * corridor_dir, 0),
+        origin=(0, 0),
+        scale=6,
+        color=color.rgb(20, 30, 40),
+        font="VeraMono.ttf",
+    )
 
     def open_door():
         """Slide the door up into the header opening."""
         if door._door_opened:
             return
         door.animate("y", DOOR_H + DOOR_H / 2, duration=0.45)
-        # Disable collision and hide the panel once open
         invoke(_clear_collision, door, delay=0.40)
         invoke(setattr, door, "visible", False, delay=0.45)
         door._door_opened = True
 
     if locked:
-        # Wall-mounted keypad slightly offset from the opening
-        keypad_z = gap_z + (DOOR_W / 2 + 0.30)
+        # Wall-mounted keypad to the side of the door on the corridor face
+        keypad_z = gap_z + (DOOR_W / 2 + 0.35)
         keypad = Entity(model="cube",
-                        scale=(0.20, 0.30, 0.06),
-                        position=(gap_x + (0.15 if side == "west" else -0.15),
-                                  1.4, keypad_z),
-                        rotation=(0, 90 if side == "west" else -90, 0),
+                        scale=(0.08, 0.30, 0.18),
+                        position=(gap_x + corridor_dir * 0.10, 1.4, keypad_z),
                         color=color.rgb(60, 70, 80), collider="box")
+        # Lit pad squares
+        for ki in range(9):
+            kr, kc = ki // 3, ki % 3
+            Entity(parent=keypad, model="cube",
+                   scale=(1.4, 0.18, 0.18),
+                   position=(corridor_dir * 0.6,
+                             0.08 - kr * 0.07,
+                             -0.05 + kc * 0.05),
+                   color=color.rgba(180, 220, 200, 230))
+        created.append(keypad)
 
         def unlock_cb():
             """Run the optional unlock hook then open the door."""
@@ -148,7 +199,6 @@ def _make_door(label, gap_x, gap_z, side, color_door, created,
             open_door()
         make_interactable(keypad, "Enter code", "keypad",
                           code=code, on_unlock=unlock_cb)
-        created.append(keypad)
         make_interactable(door, "Door " + label, "trigger_event",
                           callback=lambda: None)
     else:
@@ -250,10 +300,9 @@ def build(game):
 
     build_wall_with_gaps(-3, [0, 9])       # west: Felix, Hargrove
     build_wall_with_gaps(+3, [4.5, 13.5])  # east: Yuna, Mara
-    # South cap (entry from Act 1, behind player) and north cap (hatch).
-    # The south cap has a 1.4-wide opening at x in [-0.7, 0.7] so the
-    # player can walk in from Act 1.  The north cap has a 1.4-wide
-    # opening for the maintenance hatch leading to Act 3.
+    # South cap (entry from Act 1) and north cap (hatch leading to Act 3).
+    # Both caps have a 1.4-wide opening with a sealed door panel that shows
+    # the player where they came from / are going to.
     south_seg_w = (6 - 1.4) / 2
     for sx in (-(0.7 + south_seg_w / 2), (0.7 + south_seg_w / 2)):
         created.append(Entity(model="cube",
@@ -269,6 +318,40 @@ def build(game):
                           position=(0, 2.7, -6.1),
                           color=color.rgb(60, 65, 75),
                           collider="box"))
+    # Sealed door panel where the player entered from Act 1 (north-facing).
+    # Just a visual, non-interactive, so it looks like a real doorway rather
+    # than a gaping hole in the wall.
+    entry_door = Entity(model="cube",
+                        scale=(1.4, 2.4, 0.10),
+                        position=(0, 1.2, -6.05),
+                        color=color.rgb(70, 70, 85),
+                        texture=visuals.make_metal_panel(),
+                        texture_scale=(0.7, 1.2))
+    created.append(entry_door)
+    # Inset detail on the player-facing side (+z)
+    created.append(Entity(parent=entry_door, model="cube",
+                          scale=(0.50, 0.55, 0.18),
+                          position=(0, 0, -0.06),
+                          color=color.rgb(40, 45, 55)))
+    # Label plate above entry door
+    entry_plate = Entity(model="cube",
+                         scale=(0.48, 0.18, 0.04),
+                         position=(0, 2.55, -6.0),
+                         color=color.rgb(180, 200, 220))
+    created.append(entry_plate)
+    Text(parent=entry_plate, text="CRYO BAY",
+         position=(0, 0, -0.55), rotation=(0, 0, 0),
+         origin=(0, 0), scale=6,
+         color=color.rgb(20, 30, 40), font="VeraMono.ttf")
+    # Jambs flanking the entry opening
+    for dx in (-0.7, 0.7):
+        created.append(Entity(model="cube",
+                              scale=(0.08, 2.45, 0.12),
+                              position=(dx, 1.225, -6.05),
+                              color=color.rgb(70, 75, 85),
+                              texture=visuals.make_metal_panel(),
+                              texture_scale=(0.4, 1.2)))
+
     north_seg_w = (6 - 1.4) / 2
     for sx in (-(0.7 + north_seg_w / 2), (0.7 + north_seg_w / 2)):
         created.append(Entity(model="cube",
@@ -656,24 +739,69 @@ def build(game):
     # ---- North end: Felix-Shape + maintenance hatch (slides up when unlocked) ----
     hatch_door = Entity(model="cube",
                         scale=(1.4, 2.4, 0.10),
-                        position=(0, 1.2, 18.1),
-                        color=color.rgb(80, 70, 60),
+                        position=(0, 1.2, 18.05),
+                        color=color.rgb(110, 90, 70),
                         texture=visuals.make_metal_panel(),
                         texture_scale=(0.7, 1.2),
                         collider="box")
     created.append(hatch_door)
+    # Hatch panel detail + hazard stripes
+    Entity(parent=hatch_door, model="cube",
+           scale=(0.50, 0.55, 0.20),
+           position=(0, 0, -0.06),
+           color=color.rgb(40, 35, 25))
+    Entity(parent=hatch_door, model="cube",
+           scale=(0.90, 0.08, 0.20),
+           position=(0, 0.40, -0.06),
+           color=color.rgb(220, 180, 30))
+    Entity(parent=hatch_door, model="cube",
+           scale=(0.90, 0.08, 0.20),
+           position=(0, -0.50, -0.06),
+           color=color.rgb(220, 180, 30))
+    hatch_door._slot = Entity(parent=hatch_door, model="cube",
+                              scale=(0.20, 0.08, 0.20),
+                              position=(0.40, -0.10, -0.06),
+                              color=color.rgba(220, 60, 60, 255))
+    # Jambs on the corridor side of the hatch
+    for dx in (-0.75, 0.75):
+        created.append(Entity(model="cube",
+                              scale=(0.10, 2.45, 0.18),
+                              position=(dx, 1.225, 17.97),
+                              color=color.rgb(140, 110, 80),
+                              texture=visuals.make_metal_panel(),
+                              texture_scale=(0.4, 1.2)))
+    # MAINTENANCE label above the hatch
+    hatch_plate = Entity(model="cube",
+                         scale=(0.75, 0.18, 0.04),
+                         position=(0, 2.55, 17.96),
+                         color=color.rgb(220, 200, 160))
+    created.append(hatch_plate)
+    Text(parent=hatch_plate, text="MAINT.",
+         position=(0, 0, -0.55), origin=(0, 0), scale=6,
+         color=color.rgb(30, 30, 35), font="VeraMono.ttf")
 
     # Wall-mounted keypad to the east of the hatch
-    hatch_keypad = Entity(model="cube", scale=(0.22, 0.30, 0.06),
-                          position=(1.2, 1.4, 18.05),
-                          color=color.rgb(70, 70, 80), collider="box")
+    hatch_keypad = Entity(model="cube", scale=(0.08, 0.30, 0.18),
+                          position=(1.0, 1.4, 18.0),
+                          color=color.rgb(60, 70, 80), collider="box")
     created.append(hatch_keypad)
+    # Lit pad squares on the corridor-facing face
+    for ki in range(9):
+        kr, kc = ki // 3, ki % 3
+        Entity(parent=hatch_keypad, model="cube",
+               scale=(1.4, 0.18, 0.18),
+               position=(-0.6, 0.08 - kr * 0.07, -0.05 + kc * 0.05),
+               color=color.rgba(180, 220, 200, 230))
 
     def open_hatch():
         """Open the hatch by sliding it up + Felix-Shape steps aside."""
         hatch_door.animate("y", 2.4 + 1.2, duration=0.5)
         invoke(_clear_collision, hatch_door, delay=0.45)
         invoke(setattr, hatch_door, "visible", False, delay=0.50)
+        try:
+            hatch_door._slot.color = color.rgba(80, 220, 90, 255)
+        except Exception:
+            pass
         game.audio.door()
         game.state.hatch_open = True
         # Felix-Shape steps quietly aside
@@ -684,12 +812,10 @@ def build(game):
                       code="7741", on_unlock=open_hatch)
     game.state.hatch_open = False
 
-    # Code 7741 scratched on wall beside the keypad - only readable with flashlight
-    # We represent this by very low-contrast text that is visible regardless
-    # (Ursina has no per-pixel light gating without shaders; we lean on color)
-    _world_text("7741", position=(2.2, 1.7, 17.9),
-                rotation=(0, 180, 0), scale=1.0,
-                col=color.rgba(180, 170, 160, 90), created=created)
+    # Code 7741 scratched on wall beside the keypad - readable as faint text
+    _world_text("7741", position=(2.1, 1.7, 17.9),
+                rotation=(0, 180, 0), scale=1.4,
+                col=color.rgba(200, 190, 180, 130), created=created)
 
     # Felix-Shape next to keypad facing wall
     hatch_felix = FelixShape(position=(1.6, 0, 17.5),

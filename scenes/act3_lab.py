@@ -95,21 +95,63 @@ def build(game):
     created = []
 
     # ----- Access corridor (from Act 2 hatch) -----
-    # Floor
+    # Floor + ceiling
     created.append(Entity(model="cube", scale=(3, 0.2, 8),
                           position=(0, -0.1, -10),
-                          color=color.rgb(55, 60, 70), collider="box"))
+                          color=color.rgb(55, 60, 70),
+                          texture=visuals.make_grating(),
+                          texture_scale=(1.5, 4),
+                          collider="box"))
     created.append(Entity(model="cube", scale=(3, 0.2, 8),
                           position=(0, 3, -10),
-                          color=color.rgb(30, 35, 45)))
+                          color=color.rgb(30, 35, 45),
+                          texture=visuals.make_metal_panel(),
+                          texture_scale=(1.5, 4)))
+    # Side walls
     for x in (-1.5, 1.5):
         created.append(Entity(model="cube", scale=(0.2, 3, 8),
                               position=(x, 1.5, -10),
-                              color=color.rgb(45, 50, 60), collider="box"))
-    # Back cap
+                              color=color.rgb(70, 75, 90),
+                              texture=visuals.make_metal_panel(),
+                              texture_scale=(4, 1.5),
+                              collider="box"))
+    # Back cap (where the player entered from Act 2) - solid wall with a
+    # sealed door panel for visual context.
     created.append(Entity(model="cube", scale=(3, 3, 0.2),
                           position=(0, 1.5, -14.1),
-                          color=color.rgb(40, 50, 60), collider="box"))
+                          color=color.rgb(60, 65, 80),
+                          texture=visuals.make_metal_panel(),
+                          texture_scale=(1.5, 1.5),
+                          collider="box"))
+    # Sealed entry door panel
+    entry_door3 = Entity(model="cube",
+                         scale=(1.4, 2.4, 0.10),
+                         position=(0, 1.2, -14.0),
+                         color=color.rgb(70, 70, 85),
+                         texture=visuals.make_metal_panel(),
+                         texture_scale=(0.7, 1.2))
+    created.append(entry_door3)
+    Entity(parent=entry_door3, model="cube",
+           scale=(0.50, 0.55, 0.20),
+           position=(0, 0, 0.06),
+           color=color.rgb(40, 45, 55))
+    # Entry door jambs
+    for dx in (-0.75, 0.75):
+        created.append(Entity(model="cube",
+                              scale=(0.10, 2.45, 0.18),
+                              position=(dx, 1.225, -14.05),
+                              color=color.rgb(80, 85, 100),
+                              texture=visuals.make_metal_panel(),
+                              texture_scale=(0.4, 1.2)))
+    # Label
+    entry_plate3 = Entity(model="cube",
+                          scale=(0.60, 0.18, 0.04),
+                          position=(0, 2.55, -14.0),
+                          color=color.rgb(180, 200, 220))
+    created.append(entry_plate3)
+    Text(parent=entry_plate3, text="CORRIDOR",
+         position=(0, 0, -0.55), origin=(0, 0), scale=5,
+         color=color.rgb(20, 30, 40), font="VeraMono.ttf")
 
     # ----- Signal Lab (16 x 12 room) -----
     lab_center = (0, 0, 0)
@@ -231,6 +273,11 @@ def build(game):
         game.state.array_keycard = True
         from ursina import destroy as _d
         _d(array_keycard)
+        # Flip the array door indicator from red to green
+        try:
+            array_door._slot.color = color.rgba(80, 220, 90, 255)
+        except Exception:
+            pass
         game.show_examine(
             "ARRAY ACCESS KEYCARD secured.  The way to the array room is open.")
     make_interactable(array_keycard, "Take array keycard", "trigger_event",
@@ -382,14 +429,42 @@ def build(game):
                         texture_scale=(DOOR_W / 2, 1.2),
                         collider="box")
     created.append(array_door)
-    # Label "ARRAY" on a small plate above
+    # Inset detail on the lab-facing (-z) side
+    Entity(parent=array_door, model="cube",
+           scale=(0.50, 0.55, 0.20),
+           position=(0, 0, -0.06),
+           color=color.rgb(30, 25, 20))
+    # Yellow hazard stripes
+    Entity(parent=array_door, model="cube",
+           scale=(0.90, 0.08, 0.20),
+           position=(0, 0.40, -0.06),
+           color=color.rgb(220, 180, 30))
+    Entity(parent=array_door, model="cube",
+           scale=(0.90, 0.08, 0.20),
+           position=(0, -0.50, -0.06),
+           color=color.rgb(220, 180, 30))
+    # Keycard slot
+    array_door._slot = Entity(parent=array_door, model="cube",
+                              scale=(0.20, 0.08, 0.20),
+                              position=(0.40, -0.10, -0.06),
+                              color=color.rgba(220, 60, 60, 255))
+    # Jambs flanking the opening on the lab side
+    for dz_offset, dx_offset in [(0, -DOOR_W / 2), (0, DOOR_W / 2)]:
+        created.append(Entity(model="cube",
+                              scale=(0.10, 2.45, 0.18),
+                              position=(array_door_x + dx_offset,
+                                        1.225, lab_d / 2 - 0.06),
+                              color=color.rgb(80, 75, 70),
+                              texture=visuals.make_metal_panel(),
+                              texture_scale=(0.4, 1.2)))
+    # "ARRAY" label plate on the lab-side face of the wall above the door
     label_plate = Entity(model="cube",
-                         scale=(0.6, 0.16, 0.04),
-                         position=(array_door_x, 2.5, lab_d / 2 - 0.13),
+                         scale=(0.7, 0.18, 0.04),
+                         position=(array_door_x, 2.65, lab_d / 2 - 0.13),
                          color=color.rgb(220, 200, 160))
     created.append(label_plate)
     Text(parent=label_plate, text="ARRAY",
-         position=(0, 0, -0.55), origin=(0, 0), scale=3.5,
+         position=(0, 0, -0.55), origin=(0, 0), scale=6,
          color=color.rgb(30, 30, 35), font="VeraMono.ttf")
 
     def try_open_array_door():

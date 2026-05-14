@@ -216,6 +216,28 @@ def build(game):
                           position=(0, 3.7, 8),
                           color=color.rgb(110, 90, 90),
                           collider="box"))
+    # Visible jambs (side frames) on the room-side of the doorway
+    for dx in (-0.75, 0.75):
+        created.append(Entity(model="cube",
+                              scale=(0.10, 2.45, 0.18),
+                              position=(dx, 1.225, 7.92),
+                              color=color.rgb(140, 110, 100),
+                              texture=visuals.make_metal_panel(),
+                              texture_scale=(0.4, 1.2)))
+    # EXIT label above the door
+    exit_plate = Entity(model="cube",
+                        scale=(0.55, 0.18, 0.04),
+                        position=(0, 2.55, 7.92),
+                        color=color.rgb(220, 50, 50))
+    created.append(exit_plate)
+    Text(parent=exit_plate, text="EXIT",
+         position=(0, 0, -0.55), origin=(0, 0), scale=6,
+         color=color.rgb(255, 240, 240), font="VeraMono.ttf")
+    # Threshold strip
+    created.append(Entity(model="cube",
+                          scale=(north_gap, 0.04, 0.20),
+                          position=(0, 0.02, 8),
+                          color=color.rgb(120, 90, 90)))
 
     # Five cryo pods along the back wall (z = -5)
     pod_z = -5.0
@@ -277,6 +299,22 @@ def build(game):
                   texture_scale=(1, 2),
                   collider="box")
     created.append(door)
+    # Inset panel detail on the player-facing side
+    Entity(parent=door, model="cube",
+           scale=(0.50, 0.55, 0.20),
+           position=(0, 0, -0.06),
+           color=color.rgb(40, 45, 55))
+    # Keycard slot indicator (red until unlocked)
+    door_slot = Entity(parent=door, model="cube",
+                       scale=(0.18, 0.06, 0.12),
+                       position=(0.28, -0.20, -0.06),
+                       color=color.rgba(220, 60, 60, 255))
+    door._slot = door_slot
+    # Handle
+    Entity(parent=door, model="cube",
+           scale=(0.12, 0.10, 0.16),
+           position=(-0.40, -0.10, -0.06),
+           color=color.rgb(180, 180, 190))
 
     def unlock_exit_door():
         """Slide the door up out of the way."""
@@ -295,6 +333,11 @@ def build(game):
         """
         game.state.cryo_keycard = True
         destroy(keycard_root)
+        # Flip the door slot indicator from red to green
+        try:
+            door._slot.color = color.rgba(80, 220, 90, 255)
+        except Exception:
+            pass
         game.show_examine(
             "Keycard registered.  Try the door.")
     # The keycard is interactable but hidden + non-colliding until the

@@ -95,44 +95,72 @@ OLEN_HARMONIC_VOLUMES = {1: 0.0, 2: 0.0, 3: 0.02, 4: 0.05, 5: 0.10, 6: 0.18}
 class _Subtitle:
     """Bottom-of-screen dialogue strip used for every OLEN line."""
 
+    # Max characters that fit on the visible subtitle bar before paging.
+    PAGE_WIDTH = 70
+    WORDWRAP = 64
+
     def __init__(self):
         """Create the (initially invisible) subtitle root."""
         self.root = None
         self.word_text = None
         self.is_active = False
+        self._current_page_chars = 0
 
     def show(self, words, on_done):
-        """Reveal the subtitle bar and stream the word list at ~3 wps."""
+        """Reveal the subtitle bar and stream the word list at ~3 wps.
+
+        Pages: if appending the next word would exceed PAGE_WIDTH chars,
+        the bar clears and starts a fresh page after a short pause so the
+        text never overflows the bottom subtitle strip.
+        """
         self.hide()
         self.is_active = True
         self.root = Entity(parent=camera.ui)
+        # Taller bar to allow word-wrapping to 2 lines if needed
         Entity(parent=self.root, model="quad",
-               color=color.rgba(0, 0, 0, 200),
-               scale=(2.2, 0.18), position=(0, -0.42, 0.4))
+               color=color.rgba(0, 0, 0, 215),
+               scale=(2.0, 0.20), position=(0, -0.40, 0.4))
         Text(parent=self.root, text="OLEN",
-             position=(-0.85, -0.42), origin=(0, 0),
-             scale=1.1, color=color.rgb(150, 200, 240),
+             position=(-0.85, -0.40), origin=(0, 0),
+             scale=1.0, color=color.rgb(150, 200, 240),
              font="VeraMono.ttf")
-        # Ursina's Text skips initial text assignment when text == '', leaving
-        # raw_text unset; if we then try to set wordwrap it crashes. Seed with
-        # a space and clear it after construction.
+        # Seed with a space so raw_text exists, then clear.
         self.word_text = Text(
             parent=self.root, text=" ",
-            position=(-0.65, -0.42), origin=(-0.5, 0),
-            scale=0.75, color=color.rgb(225, 230, 240),
-            font="VeraMono.ttf", wordwrap=72,
+            position=(-0.68, -0.36), origin=(-0.5, 0.5),
+            scale=0.70, color=color.rgb(225, 230, 240),
+            font="VeraMono.ttf", wordwrap=self.WORDWRAP,
+            line_height=1.05,
         )
         self.word_text.text = ""
+        self._current_page_chars = 0
         self._stream(words, 0, on_done)
 
     def _stream(self, words, idx, on_done):
-        """Recursive scheduler: append one word every ~0.33 s."""
+        """Recursive scheduler: append one word every ~0.33 s.
+
+        Pages if adding the next word would put the current line over
+        PAGE_WIDTH characters - clears the bar and continues with the
+        new word at the start of a fresh page.
+        """
         if idx >= len(words) or self.root is None:
             invoke(self._fade_out_and_done, on_done, delay=1.4)
             return
-        prefix = " ".join(words[: idx + 1])
+        next_word = words[idx]
+        prospective = self._current_page_chars + len(next_word) + 1
+        if prospective > self.PAGE_WIDTH and self._current_page_chars > 0:
+            # Page break - clear the bar, brief pause, then continue
+            if self.word_text is not None:
+                self.word_text.text = ""
+            self._current_page_chars = 0
+            invoke(self._stream, words, idx, on_done, delay=0.55)
+            return
+        # Append this word
         if self.word_text is not None:
-            self.word_text.text = prefix
+            current = self.word_text.text
+            new = (current + (" " if current else "") + next_word)
+            self.word_text.text = new
+            self._current_page_chars = len(new)
         invoke(self._stream, words, idx + 1, on_done, delay=1.0 / 3.0)
 
     def _fade_out_and_done(self, on_done):
