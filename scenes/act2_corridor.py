@@ -328,32 +328,25 @@ def build(game):
                           color=color.rgb(60, 65, 75),
                           collider="box"))
     # Sealed door panel where the player entered from Act 1 (north-facing).
-    # Visible AND collidable so the player can't backtrack into the void.
-    # Bright enough to read clearly as a closed door, not an open passage.
+    # Single bright solid slab with NO texture so it reads unambiguously
+    # as a closed door against the dark corridor walls.
     entry_door = Entity(model="cube",
                         scale=(1.4, 2.4, 0.10),
                         position=(0, 1.2, -6.05),
-                        color=color.rgb(170, 175, 195),
-                        texture=visuals.make_metal_panel(),
-                        texture_scale=(0.7, 1.2),
+                        color=color.rgb(200, 205, 215),
                         collider="box")
     created.append(entry_door)
-    # Two vertical inset panels on the player-facing (+z) side
-    for dx in (-0.35, 0.35):
+    # Three thin horizontal grooves to look like door panel seams
+    for dy in (0.6, 0.0, -0.6):
         Entity(parent=entry_door, model="cube",
-               scale=(0.42, 0.75, 0.30),
-               position=(dx, 0, 0.06),
-               color=color.rgb(95, 100, 120))
-    # Sealed indicator (a steady red dot - this side is locked from us)
+               scale=(0.92, 0.03, 0.30),
+               position=(0, dy, 0.51),
+               color=color.rgb(60, 65, 75))
+    # Small red status light (locked from this side)
     Entity(parent=entry_door, model="cube",
-           scale=(0.18, 0.06, 0.12),
-           position=(0.0, -0.45, 0.06),
+           scale=(0.10, 0.10, 0.20),
+           position=(0.55, 0.95, 0.51),
            color=color.rgba(220, 60, 60, 255))
-    # Handle bar across the middle
-    Entity(parent=entry_door, model="cube",
-           scale=(0.65, 0.06, 0.16),
-           position=(0, -0.05, 0.06),
-           color=color.rgb(220, 220, 230))
     # Label plate above entry door
     entry_plate = Entity(model="cube",
                          scale=(0.48, 0.18, 0.04),
