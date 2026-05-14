@@ -294,30 +294,33 @@ def build(game):
     created.append(crate)
 
     # Exit door (north wall, +z).  Slides up when unlocked.
+    # Brighter than the wall so it reads clearly as a closed door rather
+    # than an open passage.
     door = Entity(model="cube",
                   scale=(1.4, 2.4, 0.10),
                   position=(0, 1.2, 8),
-                  color=color.rgb(70, 70, 85),
+                  color=color.rgb(170, 175, 195),
                   texture=visuals.make_metal_panel(),
-                  texture_scale=(1, 2),
+                  texture_scale=(0.7, 1.2),
                   collider="box")
     created.append(door)
-    # Inset panel detail on the player-facing side
-    Entity(parent=door, model="cube",
-           scale=(0.50, 0.55, 0.20),
-           position=(0, 0, -0.06),
-           color=color.rgb(40, 45, 55))
-    # Keycard slot indicator (red until unlocked)
+    # Two vertical inset panels on the player-facing side
+    for dx in (-0.35, 0.35):
+        Entity(parent=door, model="cube",
+               scale=(0.42, 0.75, 0.30),
+               position=(dx, 0, -0.06),
+               color=color.rgb(95, 100, 120))
+    # Keycard slot indicator (red until unlocked, green after)
     door_slot = Entity(parent=door, model="cube",
                        scale=(0.18, 0.06, 0.12),
-                       position=(0.28, -0.20, -0.06),
+                       position=(0.0, -0.45, -0.06),
                        color=color.rgba(220, 60, 60, 255))
     door._slot = door_slot
-    # Handle
+    # Handle bar across the middle
     Entity(parent=door, model="cube",
-           scale=(0.12, 0.10, 0.16),
-           position=(-0.40, -0.10, -0.06),
-           color=color.rgb(180, 180, 190))
+           scale=(0.65, 0.06, 0.16),
+           position=(0, -0.05, -0.06),
+           color=color.rgb(220, 220, 230))
 
     def unlock_exit_door():
         """Slide the door up out of the way."""

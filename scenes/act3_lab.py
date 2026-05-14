@@ -123,19 +123,30 @@ def build(game):
                           texture=visuals.make_metal_panel(),
                           texture_scale=(1.5, 1.5),
                           collider="box"))
-    # Sealed entry door panel - collidable so the player can't back into nothing
+    # Sealed entry door panel - collidable so the player can't back into nothing.
+    # Bright enough to read as a closed door rather than an open passage.
     entry_door3 = Entity(model="cube",
                          scale=(1.4, 2.4, 0.10),
                          position=(0, 1.2, -14.0),
-                         color=color.rgb(70, 70, 85),
+                         color=color.rgb(170, 175, 195),
                          texture=visuals.make_metal_panel(),
                          texture_scale=(0.7, 1.2),
                          collider="box")
     created.append(entry_door3)
+    # Inset panels on the player-facing (+z) side
+    for dx in (-0.35, 0.35):
+        Entity(parent=entry_door3, model="cube",
+               scale=(0.42, 0.75, 0.30),
+               position=(dx, 0, 0.06),
+               color=color.rgb(95, 100, 120))
     Entity(parent=entry_door3, model="cube",
-           scale=(0.50, 0.55, 0.20),
-           position=(0, 0, 0.06),
-           color=color.rgb(40, 45, 55))
+           scale=(0.18, 0.06, 0.12),
+           position=(0.0, -0.45, 0.06),
+           color=color.rgba(220, 60, 60, 255))
+    Entity(parent=entry_door3, model="cube",
+           scale=(0.65, 0.06, 0.16),
+           position=(0, -0.05, 0.06),
+           color=color.rgb(220, 220, 230))
     # Entry door jambs
     for dx in (-0.75, 0.75):
         created.append(Entity(model="cube",
@@ -206,14 +217,41 @@ def build(game):
         created.append(Entity(model="cube", scale=(seg_w, 3.5, 0.2),
                               position=(sx, 1.75, -lab_d / 2),
                               color=color.rgb(50, 55, 65), collider="box"))
-    # east + west - east wall has an opening leading to Hargrove's office (z=2..5)
-    # east solid lower portion z=-6..1 and z=5..6
-    created.append(Entity(model="cube", scale=(0.2, 3.5, 7),
-                          position=(lab_w / 2, 1.75, -2.5),
-                          color=color.rgb(50, 55, 65), collider="box"))
-    created.append(Entity(model="cube", scale=(0.2, 3.5, 1),
-                          position=(lab_w / 2, 1.75, 5.5),
-                          color=color.rgb(50, 55, 65), collider="box"))
+    # East wall - has a 1.4-wide DOOR opening leading to Hargrove's office,
+    # centered at z=4.  Solid segments on either side plus a header above.
+    office_door_z = 4.0
+    office_door_w = 1.4
+    # Solid south segment: z=[-6, office_door_z - 0.7]
+    east_seg1_w = (office_door_z - office_door_w / 2) - (-lab_d / 2)
+    created.append(Entity(model="cube",
+                          scale=(0.2, 3.5, east_seg1_w),
+                          position=(lab_w / 2, 1.75,
+                                    -lab_d / 2 + east_seg1_w / 2),
+                          color=color.rgb(50, 55, 65),
+                          texture=visuals.make_metal_panel(),
+                          texture_scale=(east_seg1_w / 2, 1.75),
+                          collider="box"))
+    # Solid north segment: z=[office_door_z + 0.7, 6]
+    east_seg2_w = lab_d / 2 - (office_door_z + office_door_w / 2)
+    if east_seg2_w > 0:
+        created.append(Entity(model="cube",
+                              scale=(0.2, 3.5, east_seg2_w),
+                              position=(lab_w / 2, 1.75,
+                                        office_door_z + office_door_w / 2
+                                        + east_seg2_w / 2),
+                              color=color.rgb(50, 55, 65),
+                              texture=visuals.make_metal_panel(),
+                              texture_scale=(east_seg2_w / 2, 1.75),
+                              collider="box"))
+    # Header above the office doorway (y=2.4..3.5)
+    east_header_h = 3.5 - 2.4
+    created.append(Entity(model="cube",
+                          scale=(0.2, east_header_h, office_door_w + 0.2),
+                          position=(lab_w / 2,
+                                    2.4 + east_header_h / 2,
+                                    office_door_z),
+                          color=color.rgb(50, 55, 65),
+                          collider="box"))
     # west wall solid
     created.append(Entity(model="cube", scale=(0.2, 3.5, lab_d),
                           position=(-lab_w / 2, 1.75, 0),
@@ -328,28 +366,98 @@ def build(game):
             lab_state["eeg_done"] = True
     game.register_ticker(maybe_eeg_shift)
 
-    # ----- Hargrove's Office (off the east side, z = 2..6) -----
-    office_center = (lab_w / 2 + 4, 0, 4)
+    # ----- Hargrove's Office (off the east side) -----
+    # Office now extends west to share the x=8 boundary with the lab so the
+    # 1.4-wide doorway connects directly (no unfloored gap).
+    office_center = (11.5, 0, 4)
     ox, _, oz = office_center
-    o_w, o_d = 6, 4
+    o_w, o_d = 7, 4  # spans x=[8, 15], z=[2, 6]
     created.append(Entity(model="cube", scale=(o_w, 0.2, o_d),
                           position=(ox, -0.1, oz),
-                          color=color.rgb(45, 45, 55), collider="box"))
+                          color=color.rgb(45, 45, 55),
+                          texture=visuals.make_concrete(),
+                          texture_scale=(o_w / 2, o_d / 2),
+                          collider="box"))
     created.append(Entity(model="cube", scale=(o_w, 0.2, o_d),
                           position=(ox, 3.0, oz),
-                          color=color.rgb(25, 30, 40)))
-    # Walls
-    # north / south
+                          color=color.rgb(25, 30, 40),
+                          texture=visuals.make_metal_panel(),
+                          texture_scale=(o_w / 2, o_d / 2)))
+    # Walls - north (z=6), south (z=2)
     for zz in (oz - o_d / 2, oz + o_d / 2):
         created.append(Entity(model="cube", scale=(o_w, 3.0, 0.2),
                               position=(ox, 1.5, zz),
-                              color=color.rgb(45, 50, 55), collider="box"))
-    # east solid
+                              color=color.rgb(45, 50, 55),
+                              texture=visuals.make_metal_panel(),
+                              texture_scale=(o_w / 2, 1.5),
+                              collider="box"))
+    # East wall (x=15)
     created.append(Entity(model="cube", scale=(0.2, 3.0, o_d),
                           position=(ox + o_w / 2, 1.5, oz),
-                          color=color.rgb(45, 50, 55), collider="box"))
-    # west wall = lab's east wall opening; only build a corner segment at top
-    # (the opening through which the player walks; already handled in lab wall)
+                          color=color.rgb(45, 50, 55),
+                          texture=visuals.make_metal_panel(),
+                          texture_scale=(o_d / 2, 1.5),
+                          collider="box"))
+    # West side has no wall - it's the shared boundary with the lab's
+    # east wall opening (where the office doorway sits).
+
+    # --- Hargrove's office door (in the lab east wall opening) ---
+    office_door = Entity(model="cube",
+                         scale=(0.10, 2.4, office_door_w),
+                         position=(lab_w / 2, 1.2, office_door_z),
+                         color=color.rgb(140, 130, 120),
+                         texture=visuals.make_metal_panel(),
+                         texture_scale=(office_door_w / 2, 1.2),
+                         collider="box")
+    created.append(office_door)
+    # Inset detail on the lab-facing side
+    Entity(parent=office_door, model="cube",
+           scale=(0.18, 0.55, 0.50),
+           position=(-0.06, 0, 0),
+           color=color.rgb(80, 70, 60))
+    # Handle on the lab-facing side
+    Entity(parent=office_door, model="cube",
+           scale=(0.18, 0.10, 0.08),
+           position=(-0.06, -0.10, office_door_w / 2 - 0.20),
+           color=color.rgb(180, 180, 190))
+    # Jambs flanking the office doorway on the lab side
+    for dz in (-office_door_w / 2 - 0.04, office_door_w / 2 + 0.04):
+        created.append(Entity(model="cube",
+                              scale=(0.10, 2.45, 0.10),
+                              position=(lab_w / 2 - 0.06, 1.225,
+                                        office_door_z + dz),
+                              color=color.rgb(90, 85, 75),
+                              texture=visuals.make_metal_panel(),
+                              texture_scale=(0.3, 1.2)))
+    # Threshold strip on the doorway floor
+    created.append(Entity(model="cube",
+                          scale=(0.20, 0.04, office_door_w),
+                          position=(lab_w / 2, 0.02, office_door_z),
+                          color=color.rgb(120, 100, 80)))
+    # OFFICE label plate above the door on the lab side
+    office_plate = Entity(model="cube",
+                          scale=(0.04, 0.20, 0.60),
+                          position=(lab_w / 2 - 0.10, 2.7, office_door_z),
+                          color=color.rgb(220, 200, 160))
+    created.append(office_plate)
+    Text(parent=office_plate, text="OFFICE",
+         position=(-0.55, 0, 0), rotation=(0, -90, 0),
+         origin=(0, 0), scale=5,
+         color=color.rgb(20, 30, 40), font="VeraMono.ttf")
+
+    office_door._opened = False
+
+    def open_office_door():
+        """Slide the office door up out of the opening."""
+        if office_door._opened:
+            return
+        from ursina import invoke as _invoke
+        office_door.animate("y", 2.4 + 1.2, duration=0.45)
+        _invoke(setattr, office_door, "collider", None, delay=0.40)
+        _invoke(setattr, office_door, "visible", False, delay=0.45)
+        office_door._opened = True
+    make_interactable(office_door, "Open OFFICE", "trigger_event",
+                      callback=open_office_door)
 
     # Desk + papers + readable terminal
     h_desk = Entity(model="cube", scale=(1.8, 0.85, 0.9),

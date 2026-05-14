@@ -211,30 +211,40 @@ class TerminalUI:
         if self.confirming_destroy:
             return
         self.confirming_destroy = True
-        # Build confirm overlay
-        self.confirm_root = Entity(parent=self.root)
+        # Hide the original buttons so they don't bleed through the overlay
+        try:
+            if self.destroy_btn is not None:
+                self.destroy_btn.enabled = False
+            if self.listen_btn is not None:
+                self.listen_btn.enabled = False
+        except Exception:
+            pass
+        # Build the confirm overlay IN FRONT of the existing UI (z < 0).
+        # Ursina UI uses lower z = closer to camera, so z=-0.1 sits above
+        # the z=0 buttons that we couldn't hide.
+        self.confirm_root = Entity(parent=self.root, z=-0.1)
         Entity(parent=self.confirm_root, model="quad",
-               color=color.rgba(0, 0, 0, 235),
-               scale=(2.2, 1.4), position=(0, 0, 0.55))
+               color=color.rgba(0, 0, 0, 252),
+               scale=(2.2, 1.4), position=(0, 0, 0.01))
         Text(parent=self.confirm_root,
              text="This action is irreversible.\nConfirm?",
-             position=(0, 0.15), origin=(0, 0), scale=1.2,
+             position=(0, 0.18, -0.02), origin=(0, 0), scale=1.2,
              color=color.rgb(240, 200, 200), font="VeraMono.ttf")
         try:
             Button(parent=self.confirm_root, text="[ CONFIRM DESTROY ]",
-                   position=(0, -0.05), scale=(1.0, 0.10),
+                   position=(0, -0.05, -0.02), scale=(1.0, 0.10),
                    color=color.rgba(120, 20, 20, 255),
                    text_color=color.rgb(245, 215, 215),
                    on_click=self.do_destroy)
             Button(parent=self.confirm_root, text="[ Cancel ]",
-                   position=(0, -0.20), scale=(1.0, 0.10),
+                   position=(0, -0.20, -0.02), scale=(1.0, 0.10),
                    color=color.rgba(40, 50, 60, 255),
                    text_color=color.rgb(220, 230, 235),
                    on_click=self.cancel_destroy)
         except Exception:
             Text(parent=self.confirm_root,
                  text="[Y]  CONFIRM     [N]  Cancel",
-                 position=(0, -0.05), origin=(0, 0), scale=1.0,
+                 position=(0, -0.05, -0.02), origin=(0, 0), scale=1.0,
                  color=color.rgb(220, 230, 235), font="VeraMono.ttf")
 
     def cancel_destroy(self):
@@ -243,6 +253,14 @@ class TerminalUI:
             destroy(self.confirm_root)
             self.confirm_root = None
         self.confirming_destroy = False
+        # Re-show the original buttons
+        try:
+            if self.destroy_btn is not None:
+                self.destroy_btn.enabled = True
+            if self.listen_btn is not None:
+                self.listen_btn.enabled = True
+        except Exception:
+            pass
 
     def do_destroy(self):
         """Commit: tear down the terminal UI and start Ending A."""
@@ -314,19 +332,21 @@ def build(game):
                           collider="box"))
     # Sealed entry door at the south opening - the door the player walked
     # through from Act 3.  Collidable so the player can't backtrack out of
-    # the array room into nothing.
+    # the array room into nothing.  Bright enough to read as a closed door.
     entry_door4 = Entity(model="cube",
                          scale=(ENTRY_W, 2.4, 0.10),
                          position=(0, 1.2, -rd / 2 + 0.05),
-                         color=color.rgb(110, 80, 60),
+                         color=color.rgb(180, 150, 130),
                          texture=visuals.make_metal_panel(),
                          texture_scale=(0.7, 1.2),
                          collider="box")
     created.append(entry_door4)
-    Entity(parent=entry_door4, model="cube",
-           scale=(0.50, 0.55, 0.20),
-           position=(0, 0, 0.06),
-           color=color.rgb(30, 25, 20))
+    # Inset detail
+    for dx in (-0.35, 0.35):
+        Entity(parent=entry_door4, model="cube",
+               scale=(0.42, 0.75, 0.30),
+               position=(dx, 0, 0.06),
+               color=color.rgb(110, 80, 70))
     Entity(parent=entry_door4, model="cube",
            scale=(0.90, 0.08, 0.20),
            position=(0, 0.40, 0.06),
