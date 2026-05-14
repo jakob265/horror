@@ -123,13 +123,14 @@ def build(game):
                           texture=visuals.make_metal_panel(),
                           texture_scale=(1.5, 1.5),
                           collider="box"))
-    # Sealed entry door panel
+    # Sealed entry door panel - collidable so the player can't back into nothing
     entry_door3 = Entity(model="cube",
                          scale=(1.4, 2.4, 0.10),
                          position=(0, 1.2, -14.0),
                          color=color.rgb(70, 70, 85),
                          texture=visuals.make_metal_panel(),
-                         texture_scale=(0.7, 1.2))
+                         texture_scale=(0.7, 1.2),
+                         collider="box")
     created.append(entry_door3)
     Entity(parent=entry_door3, model="cube",
            scale=(0.50, 0.55, 0.20),

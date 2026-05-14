@@ -210,11 +210,14 @@ def build(game):
                               texture=visuals.make_metal_panel(),
                               texture_scale=(north_seg_w / 2, 2),
                               collider="box"))
-    # Door frame caps above the opening
+    # Door header - fills the entire space from door top (y=2.4) up to the
+    # wall top (y=4.0) so there's no gap above the door.
     created.append(Entity(model="cube",
-                          scale=(north_gap + 0.2, 0.6, 0.2),
-                          position=(0, 3.7, 8),
+                          scale=(north_gap + 0.2, 1.6, 0.2),
+                          position=(0, 3.2, 8),
                           color=color.rgb(110, 90, 90),
+                          texture=visuals.make_metal_panel(),
+                          texture_scale=((north_gap + 0.2) / 2, 0.8),
                           collider="box"))
     # Visible jambs (side frames) on the room-side of the doorway
     for dx in (-0.75, 0.75):
@@ -224,10 +227,10 @@ def build(game):
                               color=color.rgb(140, 110, 100),
                               texture=visuals.make_metal_panel(),
                               texture_scale=(0.4, 1.2)))
-    # EXIT label above the door
+    # EXIT label - hangs on the room-facing face of the header
     exit_plate = Entity(model="cube",
-                        scale=(0.55, 0.18, 0.04),
-                        position=(0, 2.55, 7.92),
+                        scale=(0.55, 0.22, 0.04),
+                        position=(0, 3.0, 7.85),
                         color=color.rgb(220, 50, 50))
     created.append(exit_plate)
     Text(parent=exit_plate, text="EXIT",

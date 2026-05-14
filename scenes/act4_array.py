@@ -313,13 +313,15 @@ def build(game):
                           color=color.rgb(55, 60, 70),
                           collider="box"))
     # Sealed entry door at the south opening - the door the player walked
-    # through from Act 3.  Visible-only, non-interactive.
+    # through from Act 3.  Collidable so the player can't backtrack out of
+    # the array room into nothing.
     entry_door4 = Entity(model="cube",
                          scale=(ENTRY_W, 2.4, 0.10),
                          position=(0, 1.2, -rd / 2 + 0.05),
                          color=color.rgb(110, 80, 60),
                          texture=visuals.make_metal_panel(),
-                         texture_scale=(0.7, 1.2))
+                         texture_scale=(0.7, 1.2),
+                         collider="box")
     created.append(entry_door4)
     Entity(parent=entry_door4, model="cube",
            scale=(0.50, 0.55, 0.20),

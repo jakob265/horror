@@ -199,8 +199,17 @@ def _make_door(label, gap_x, gap_z, side, color_door, created,
             open_door()
         make_interactable(keypad, "Enter code", "keypad",
                           code=code, on_unlock=unlock_cb)
+
+        def hint_use_keypad():
+            """Tell the player to use the wall keypad."""
+            from systems.interaction import get_manager as _im
+            mgr = _im()
+            if mgr is not None:
+                mgr._examine(
+                    f"{label} cabin door locked.  Use the wall keypad.",
+                    3.0)
         make_interactable(door, "Door " + label, "trigger_event",
-                          callback=lambda: None)
+                          callback=hint_use_keypad)
     else:
         make_interactable(door, "Open " + label, "trigger_event",
                           callback=open_door)
@@ -319,14 +328,14 @@ def build(game):
                           color=color.rgb(60, 65, 75),
                           collider="box"))
     # Sealed door panel where the player entered from Act 1 (north-facing).
-    # Just a visual, non-interactive, so it looks like a real doorway rather
-    # than a gaping hole in the wall.
+    # Visible AND collidable so the player can't backtrack into the void.
     entry_door = Entity(model="cube",
                         scale=(1.4, 2.4, 0.10),
                         position=(0, 1.2, -6.05),
                         color=color.rgb(70, 70, 85),
                         texture=visuals.make_metal_panel(),
-                        texture_scale=(0.7, 1.2))
+                        texture_scale=(0.7, 1.2),
+                        collider="box")
     created.append(entry_door)
     # Inset detail on the player-facing side (+z)
     created.append(Entity(parent=entry_door, model="cube",
