@@ -231,9 +231,19 @@ def build(game):
     created.append(keycard_root)
 
     def reveal_keycard():
-        """Reveal the keycard after the crate has been moved."""
-        keycard_root.visible = True
-        keycard_root.collision = True
+        """Reveal the keycard after the crate has been moved.
+
+        Guarded against the (rare) case where the keycard is no longer
+        in the scene (e.g. the player somehow picked it up before this
+        deferred callback ran).
+        """
+        try:
+            if not keycard_root.enabled:
+                return
+            keycard_root.visible = True
+            keycard_root.collision = True
+        except Exception:
+            pass
     make_interactable(crate, "Move crate", "move_object",
                       offset=Vec3(0.9, 0, 0.5), after=reveal_keycard)
     created.append(crate)

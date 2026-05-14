@@ -309,6 +309,7 @@ def build(game):
     term_screen = Entity(model="quad", scale=(0.76, 0.48),
                          position=(ox - 0.8, 1.10, oz - 0.825),
                          color=color.rgba(20, 40, 30, 255), collider="box")
+    created.append(term_screen)
     Text(parent=term_screen,
          text="[ ARRAY MAINTENANCE LOG ]\n\nREAD",
          position=(0, 0, -0.01), origin=(0, 0), scale=2.4,
