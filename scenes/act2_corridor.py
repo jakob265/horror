@@ -328,20 +328,23 @@ def build(game):
                           color=color.rgb(60, 65, 75),
                           collider="box"))
     # Sealed door panel where the player entered from Act 1 (north-facing).
-    # Single bright solid slab with NO texture so it reads unambiguously
-    # as a closed door against the dark corridor walls.
+    # Industrial olive-grey - reads as a real metal door under Act 2's cool
+    # ambient (the corridor walls render pale violet under that light, so
+    # we offset the door warm to make it visibly distinct).
     entry_door = Entity(model="cube",
                         scale=(1.4, 2.4, 0.10),
                         position=(0, 1.2, -6.05),
-                        color=color.rgb(200, 205, 215),
+                        color=color.rgb(72, 70, 60),
+                        texture=visuals.make_metal_panel(),
+                        texture_scale=(0.5, 0.9),
                         collider="box")
     created.append(entry_door)
-    # Three thin horizontal grooves to look like door panel seams
+    # Three thin horizontal grooves to look like door panel seams.
     for dy in (0.6, 0.0, -0.6):
         Entity(parent=entry_door, model="cube",
                scale=(0.92, 0.03, 0.30),
                position=(0, dy, 0.51),
-               color=color.rgb(60, 65, 75))
+               color=color.rgb(35, 38, 38))
     # Small red status light (locked from this side)
     Entity(parent=entry_door, model="cube",
            scale=(0.10, 0.10, 0.20),
