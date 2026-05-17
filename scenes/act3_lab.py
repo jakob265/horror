@@ -604,13 +604,14 @@ def build(game):
         intercom_id=5, position=(-6, 1.6, lab_d / 2 - 1.2), panel=intercom5,
         radius=3.5)
 
-    # Transition - cross the array door threshold
+    # Transition - cross the array door threshold.
+    # In the extended-arc the lab leads to HYDROPONICS (act6).
     def check_transition():
-        """Trigger Act 4 transition when player crosses the array door."""
+        """Trigger transition when player crosses the array door."""
         if game.state.array_door_open:
             pp = game.player.position
             if pp.z > lab_d / 2 + 0.2 and abs(pp.x - array_door_x) < 1.0:
-                game.transition_to("act4")
+                game.transition_to("act6")
     game.register_ticker(check_transition)
 
     return created

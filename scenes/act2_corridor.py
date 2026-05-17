@@ -852,11 +852,13 @@ def build(game):
     game.player.position = Vec3(0, 1.6, -5.5)
     game.player.fpc.rotation_y = 0
 
-    # Transition trigger - past the hatch (z > 18.0)
+    # Transition trigger - past the hatch (z > 18.0).
+    # In the extended-arc the corridor leads into the OBSERVATION LOUNGE
+    # (act4) before continuing to the lab (act5).
     def check_transition():
         """Trigger act transition when player crosses the hatch."""
         if game.state.hatch_open and game.player.position.z > 18.2:
-            game.transition_to("act3")
+            game.transition_to("act4")
     game.register_ticker(check_transition)
 
     return created

@@ -213,7 +213,159 @@ NOTE_7 = dict(
     ),
 )
 
-ALL_NOTES = [NOTE_1, NOTE_2, NOTE_3, NOTE_4, NOTE_5, NOTE_6, NOTE_7]
+# ----------------------------------------------------------------------------
+# Extended-arc notes (Acts 2, 4, 6, 7, 8, 9 - the six new acts)
+# ----------------------------------------------------------------------------
+
+NOTE_8 = dict(
+    id="note_8",
+    title="Decon Log - Cryo Antechamber",
+    location="Decon antechamber scanner",
+    body=(
+        "STATION CRESTFALL-9 / CRYO DECONTAMINATION LOG\n"
+        "----------------------------------------------\n"
+        "Subject: VOSS, M.\n"
+        "Cycle: standard re-entry from cryo.\n\n"
+        "Neural coherence baseline:  WITHIN TOLERANCE\n"
+        "Hormone profile:            ELEVATED (cortisol +38%)\n"
+        "Subharmonic resonance:      *** ANOMALY ***\n"
+        "                            0.7 Planck units detected\n"
+        "                            in midbrain.  Source:\n"
+        "                            UNKNOWN (matches array\n"
+        "                            calibration error 442-K).\n\n"
+        "RECOMMENDATION:  consult Dr. Hargrove on duty.\n"
+        "(Dr. Hargrove on duty:  no response.)\n\n"
+        "Log auto-closed."
+    ),
+)
+
+NOTE_9 = dict(
+    id="note_9",
+    title="Folded paper - Felix's handwriting",
+    location="Observation lounge bench",
+    body=(
+        "I was going to give you this in month four and then I didn't.\n"
+        "I am going to give it to you now because the longer I sit on\n"
+        "it the worse the not-giving-it gets.\n\n"
+        "On month three you didn't say no.  You leaned in first.  I\n"
+        "have been turning that over for eight weeks like a coin I\n"
+        "can't decide whether to spend.\n\n"
+        "Amara made a drawing of three people last Sunday and labeled\n"
+        "the third one A FRIEND OF DADS.  She doesn't know about you.\n"
+        "But she keeps making space for someone in the picture and I\n"
+        "don't think it's an accident.\n\n"
+        "When we get back I would like to take you to the place I keep\n"
+        "talking about, the lake with the dock that's missing a board.\n"
+        "I would like Amara to meet you.  I am not asking now.  I am\n"
+        "telling you the shape of the thing I am hoping for.\n\n"
+        "Don't answer.  Just take this.\n"
+        "- F.\n\n"
+        "(The note is dated day 47.  Felix never gave it to you.)"
+    ),
+)
+
+NOTE_10 = dict(
+    id="note_10",
+    title="Hydroponics Journal - Dr. Yuna Park",
+    location="Hydroponics bay, on the tomato trough",
+    body=(
+        "Plants are dying faster than the schedule predicts.  I've\n"
+        "been logging the rate.  It tracks with my own sleep loss.\n\n"
+        "I think the signal is in the water table.  Or in me.  I'm\n"
+        "no longer confident there's a meaningful difference between\n"
+        "those two statements.\n\n"
+        "I took a cutting from the lemon tree this morning, because I\n"
+        "wanted to bring something home that was mine.  I labeled the\n"
+        "pot with a little drawing of a sun with a face on it.  My\n"
+        "mother used to draw the same sun on my school lunches.\n\n"
+        "I don't know why I'm telling you this.  Maybe in case someone\n"
+        "finds these notes after.  Maybe so that something I made\n"
+        "stays.\n\n"
+        "The plants are not the message.  The plants are just the\n"
+        "thing that hears the message first."
+    ),
+)
+
+NOTE_11 = dict(
+    id="note_11",
+    title="Engineering Tape Transcript",
+    location="Reactor maintenance panel",
+    body=(
+        "AUDIO TRANSCRIPT (recovered from maintenance recorder)\n"
+        "-----------------------------------------------------\n"
+        "Speaker: HARGROVE, R.    Date: day 38\n\n"
+        "[breathing]\n\n"
+        "I am here in engineering because I cannot bear to be\n"
+        "around the others tonight.  The plant in the corner has\n"
+        "all its leaves turned one direction, like it heard\n"
+        "something call it.  I have been staring at the leaves\n"
+        "for an hour.\n\n"
+        "The calibration error in array 442-K is the source.  I\n"
+        "have known this for nine days.  I have not told them.  I\n"
+        "told myself I was waiting for more data and that was a\n"
+        "convenient lie that I dressed in the language of due\n"
+        "diligence.\n\n"
+        "If I'm being honest, which I'm trying to be for the\n"
+        "record, I am sixty-two years old and this was supposed\n"
+        "to be the thing.  The discovery.  And I'm watching it\n"
+        "swallow the people I work with and I have not yet been\n"
+        "brave enough to say:  I did this.\n\n"
+        "I am going to say it now.  I did this.\n\n"
+        "End log."
+    ),
+)
+
+NOTE_12 = dict(
+    id="note_12",
+    title="Personal Recorder - second entry",
+    location="Bridge / Communications, beside the failed uplink",
+    body=(
+        "Personal log.  Second entry since waking.\n\n"
+        "OLEN says it's been forty-three hours since I came out of\n"
+        "cryo.  It feels like forty-three years.  I keep finding\n"
+        "things they left behind and the things keep being smaller\n"
+        "and more specific - a cutting of a lemon plant, a folded\n"
+        "letter, a tape that's just Hargrove breathing - and the\n"
+        "smaller they get the harder they are to carry.\n\n"
+        "I have been thinking about Eli.  I haven't stopped thinking\n"
+        "about Eli, not really, but the volume has changed.  When\n"
+        "I think about him here it doesn't feel like grief, it feels\n"
+        "like a frequency.  Like he's a station I keep getting in my\n"
+        "ear when I stop talking.\n\n"
+        "I am supposed to send a status update from this terminal.\n"
+        "I have tried four times.  The transmitter has been pointed\n"
+        "inward since before any of us got here.  Whatever I send is\n"
+        "just feeding the thing that is feeding on us.\n\n"
+        "I keep trying anyway, because it's the routine, and the\n"
+        "routine is the only part of me I still trust.\n\n"
+        "I miss them.  I haven't said that out loud yet.\n"
+        "I miss them.  I am saying it now.\n"
+        "- m"
+    ),
+)
+
+NOTE_13 = dict(
+    id="note_13",
+    title="Note scratched into a corridor panel",
+    location="Approach corridor wall, near the array door",
+    body=(
+        "if you are reading this you are almost there\n"
+        "i am writing it now in case i am no longer me\n"
+        "when i arrive\n\n"
+        "the thing the signal offers is the feeling of\n"
+        "everyone you have ever loved being in the room\n"
+        "with you at once\n\n"
+        "it feels like home\n"
+        "it isn't home\n"
+        "home is the work of staying separate enough\n"
+        "to reach across\n\n"
+        "do the thing\n"
+        "- m"
+    ),
+)
+
+ALL_NOTES = [NOTE_1, NOTE_2, NOTE_3, NOTE_4, NOTE_5, NOTE_6, NOTE_7,
+             NOTE_8, NOTE_9, NOTE_10, NOTE_11, NOTE_12, NOTE_13]
 NOTES_BY_ID = {n["id"]: n for n in ALL_NOTES}
 
 
@@ -341,7 +493,7 @@ class NotesManager:
                scale=(2.2, 1.4), position=(0, 0, 0.5))
         n = len(self.collected_ids)
         Text(parent=self._journal_root,
-             text=f"RECOVERED:  {n} / 7",
+             text=f"RECOVERED:  {n} / {len(ALL_NOTES)}",
              position=(-0.55, 0.42), scale=1.2,
              color=color.rgb(200, 215, 235), font="VeraMono.ttf")
         Text(parent=self._journal_root,

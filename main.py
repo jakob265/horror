@@ -28,10 +28,19 @@ from systems.olen import OlenManager
 from systems.player import Player
 from systems import visuals
 
-import scenes.act1_cryo as scene_act1
-import scenes.act2_corridor as scene_act2
-import scenes.act3_lab as scene_act3
-import scenes.act4_array as scene_act4
+# NOTE: scene module names follow the ORIGINAL four-act design.  The
+# extended 10-act playthrough remaps which scene plays at which "act"
+# slot (see _build_scene below).
+import scenes.act1_cryo as scene_act1_cryo
+import scenes.act2_corridor as scene_corridor
+import scenes.act3_lab as scene_lab
+import scenes.act4_array as scene_array
+import scenes.act2_decon as scene_decon
+import scenes.act4_lounge as scene_lounge
+import scenes.act6_hydro as scene_hydro
+import scenes.act7_engineering as scene_engineering
+import scenes.act8_bridge as scene_bridge
+import scenes.act9_approach as scene_approach
 
 
 # ----------------------------------------------------------------------------
@@ -589,19 +598,42 @@ class Game:
             self.sky = visuals.make_sky()
         except Exception:
             self.sky = None
-        # Light rig
+        # 10-act playthrough order:
+        #  act1  cryo bay         act6  hydroponics
+        #  act2  decon antecham   act7  engineering
+        #  act3  residential cor  act8  bridge / comms
+        #  act4  observation lng  act9  approach corridor
+        #  act5  signal lab       act10 array room
         if act == "act1":
             self.light_rig = visuals.make_act1_lights()
-            self.scene_entities = scene_act1.build(self)
+            self.scene_entities = scene_act1_cryo.build(self)
         elif act == "act2":
             self.light_rig = visuals.make_act2_lights()
-            self.scene_entities = scene_act2.build(self)
+            self.scene_entities = scene_decon.build(self)
         elif act == "act3":
-            self.light_rig = visuals.make_act3_lights()
-            self.scene_entities = scene_act3.build(self)
+            self.light_rig = visuals.make_act2_lights()
+            self.scene_entities = scene_corridor.build(self)
         elif act == "act4":
+            self.light_rig = visuals.make_act2_lights()
+            self.scene_entities = scene_lounge.build(self)
+        elif act == "act5":
+            self.light_rig = visuals.make_act3_lights()
+            self.scene_entities = scene_lab.build(self)
+        elif act == "act6":
+            self.light_rig = visuals.make_act3_lights()
+            self.scene_entities = scene_hydro.build(self)
+        elif act == "act7":
+            self.light_rig = visuals.make_act3_lights()
+            self.scene_entities = scene_engineering.build(self)
+        elif act == "act8":
+            self.light_rig = visuals.make_act3_lights()
+            self.scene_entities = scene_bridge.build(self)
+        elif act == "act9":
             self.light_rig = visuals.make_act4_lights()
-            self.scene_entities = scene_act4.build(self)
+            self.scene_entities = scene_approach.build(self)
+        elif act == "act10":
+            self.light_rig = visuals.make_act4_lights()
+            self.scene_entities = scene_array.build(self)
         # Reset the FPC's accumulated air_time so gravity doesn't carry a
         # massive downward velocity through the transition (this would
         # otherwise drop the player far below the new floor before the
