@@ -130,10 +130,10 @@ def build(game):
     game.player.position = Vec3(0, 1.6, -d/2 + 0.8)
     game.player.fpc.rotation_y = 0
 
-    # Transition - cross the north door threshold
+    # Transition - cross the north door threshold (decon -> med bay)
     def check_transition():
         if game.state.decon_door_open and game.player.position.z > d/2 + 0.1:
-            game.transition_to("act3")  # corridor
+            game.transition_to("act_med")
     game.register_ticker(check_transition)
 
     return created

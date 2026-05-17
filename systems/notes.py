@@ -364,8 +364,155 @@ NOTE_13 = dict(
     ),
 )
 
+NOTE_14 = dict(
+    id="note_14",
+    title="Autodoc Transcript - VOSS, M.",
+    location="Medical bay, examination table",
+    body=(
+        "AUTODOC NEURAL SCAN - extended report\n"
+        "Subject:  VOSS, M.\n"
+        "Run:      cycle 0080, hour 14:22 station-time\n"
+        "----------------------------------------------\n\n"
+        "Subharmonic resonance:   0.7 Planck units\n"
+        "                         (matches array 442-K)\n"
+        "Site of resonance:       brainstem,\n"
+        "                         dorsal raphe nucleus.\n"
+        "                         (a region linked to\n"
+        "                         long-loop memory and\n"
+        "                         the affective weight of\n"
+        "                         loss.)\n\n"
+        "Anomaly:                 the resonance is not\n"
+        "                         received.  It is\n"
+        "                         GENERATED.  Subject is\n"
+        "                         not a receiver.\n"
+        "                         Subject is a tuning\n"
+        "                         fork.\n\n"
+        "Notation appended in patient's own handwriting:\n"
+        "  it has always been me.  the signal didn't\n"
+        "  find us, it found me, and it spread from\n"
+        "  there.  i think i have known this for a\n"
+        "  long time and unknown it again every time\n"
+        "  i woke up.\n\n"
+        "  i am going to take the sedative now and\n"
+        "  go and finish it.  if i forget when i\n"
+        "  wake up, please future-me, read this and\n"
+        "  remember.\n"
+        "  - m."
+    ),
+)
+
+NOTE_15 = dict(
+    id="note_15",
+    title="Grocery list pinned to the mess cork-board",
+    location="Crew mess hall, beside the coffee pot",
+    body=(
+        "(in Hargrove's tidy block-letter handwriting)\n\n"
+        "  re-stock from next supply drop:\n"
+        "    - black tea (Yuna - keep hiding behind\n"
+        "      the protein.  she finds it anyway.)\n"
+        "    - chili flakes (Felix is out and is being\n"
+        "      a child about it)\n"
+        "    - the good powdered milk\n"
+        "    - more crayons (for Felix to send home)\n"
+        "    - cinnamon (Mara, on Sundays)\n"
+        "    - dog treats - WALTER WALTER WALTER\n\n"
+        "(at the bottom, in different handwriting -\n"
+        " Sato's, you think:)\n"
+        "  - one (1) better signal please.  technician\n"
+        "    cannot recommend the current one."
+    ),
+)
+
+NOTE_16 = dict(
+    id="note_16",
+    title="Folded note under Mara's plate - Yuna",
+    location="Crew mess hall, the communal table",
+    body=(
+        "Mara -\n\n"
+        "You missed Friday again.  I covered for you.\n"
+        "I am not writing this to make you feel guilty.\n"
+        "I am writing this because I noticed and I want\n"
+        "you to know that you were noticed.\n\n"
+        "The thing I keep trying to tell you, that you\n"
+        "keep walking out of the room before I finish,\n"
+        "is this:  it is fine to be a person who has\n"
+        "lost something.  You don't have to keep\n"
+        "earning the right to sit with us.\n\n"
+        "Sit with us.\n\n"
+        "If you find this and I am not in the next\n"
+        "room when you do, please assume I went to\n"
+        "the lab to argue with Felix about something\n"
+        "stupid.  Please come find me.  I will be\n"
+        "wrong about the stupid thing and I will need\n"
+        "you to tell me.\n"
+        "- Y"
+    ),
+)
+
+NOTE_17 = dict(
+    id="note_17",
+    title="Cryo-Tech Audio Log - K. SATO",
+    location="Cryo storage console",
+    body=(
+        "AUDIO LOG  -  K. SATO  (station technician)\n"
+        "-------------------------------------------\n"
+        "Day 71.  Cycle 0079.\n\n"
+        "Hargrove asked me to prep V-01 through V-05\n"
+        "today and would not tell me why.  Pod\n"
+        "calibration parameters match the array.  These\n"
+        "aren't storage pods.  Not the way they're\n"
+        "configured.  They're receivers.\n\n"
+        "I should report this up.  There is no up.\n"
+        "We are eight light-months from anyone who\n"
+        "could do anything about it.\n\n"
+        "Day 72.\n\n"
+        "I told Voss what I found.  She listened the\n"
+        "way she listens, which is - she heard it,\n"
+        "she went somewhere else with it, she came\n"
+        "back wearing the answer like she'd had it the\n"
+        "whole time.\n\n"
+        "She thanked me.  She asked if I'd had dinner.\n"
+        "I had not.  She made me eat.\n\n"
+        "Day 73.\n\n"
+        "If you are listening to this, my name was\n"
+        "Kenji Sato.  I was the station technician.\n"
+        "I had a fiancee named Lin and a dog I missed\n"
+        "more than I want to admit.  His name is Hutch.\n"
+        "He has one folded ear.\n\n"
+        "I do not think anyone has thought about me\n"
+        "since the array took me.  That is okay.  I\n"
+        "thought about all of you.\n\n"
+        "Voss.  If it ends up being you who finds\n"
+        "this:  do the thing.  You already know what\n"
+        "the thing is.  I'm sorry I'm not there to\n"
+        "tell you to your face.\n\n"
+        "End log."
+    ),
+)
+
+NOTE_18 = dict(
+    id="note_18",
+    title="Warning scratched into a service panel",
+    location="Maintenance crawl, halfway between bridge and approach",
+    body=(
+        "(scratched into the panel with what looks like\n"
+        " a flathead screwdriver:)\n\n"
+        "       DO NOT TUNE 442-K\n"
+        "       DO NOT TUNE 442-K\n"
+        "       DO NOT TUNE 442-K\n\n"
+        "(and below, in a calmer hand, almost in pencil:)\n\n"
+        "  if you are reading this and the array is\n"
+        "  still humming, you are not too late.\n"
+        "  one of us is always not too late.\n"
+        "  that is the only good news i have to\n"
+        "  scratch into a wall.\n\n"
+        "  - K. S."
+    ),
+)
+
 ALL_NOTES = [NOTE_1, NOTE_2, NOTE_3, NOTE_4, NOTE_5, NOTE_6, NOTE_7,
-             NOTE_8, NOTE_9, NOTE_10, NOTE_11, NOTE_12, NOTE_13]
+             NOTE_8, NOTE_9, NOTE_10, NOTE_11, NOTE_12, NOTE_13,
+             NOTE_14, NOTE_15, NOTE_16, NOTE_17, NOTE_18]
 NOTES_BY_ID = {n["id"]: n for n in ALL_NOTES}
 
 

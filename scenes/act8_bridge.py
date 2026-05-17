@@ -139,7 +139,7 @@ def build(game):
     def check_transition():
         if game.state.bridge_door_open and \
                 game.player.position.z > d/2 + 0.1:
-            game.transition_to("act9")
+            game.transition_to("act_maint")
     game.register_ticker(check_transition)
 
     return created

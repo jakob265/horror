@@ -199,7 +199,7 @@ def build(game):
                 game.state, "_lounge_transition_fired", False):
             game.state._lounge_transition_fired = True
             from ursina import invoke as _invoke
-            _invoke(game.transition_to, "act5", delay=2.0)
+            _invoke(game.transition_to, "act_mess", delay=2.0)
     game.register_ticker(check_transition)
 
     return created
