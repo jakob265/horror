@@ -1,0 +1,18 @@
+[gd_resource type="Environment" load_steps=2 format=3 uid="uid://b1defaultenv"]
+
+[sub_resource type="Sky" id="Sky_1"]
+
+[resource]
+background_mode = 1
+background_color = Color(0.012, 0.012, 0.024, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.55, 0.62, 0.71, 1)
+ambient_light_energy = 0.6
+fog_enabled = true
+fog_light_color = Color(0.045, 0.055, 0.08, 1)
+fog_density = 0.018
+tonemap_mode = 2
+glow_enabled = true
+glow_intensity = 0.6
+adjustment_enabled = true
+adjustment_saturation = 0.85

@@ -1,0 +1,23 @@
+[gd_scene load_steps=3 format=3 uid="uid://b1mainvoidfreq"]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1"]
+[ext_resource type="Environment" path="res://default_env.tres" id="2"]
+
+[node name="Main" type="Node"]
+script = ExtResource("1")
+
+[node name="WorldRoot" type="Node3D" parent="."]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="WorldRoot"]
+environment = ExtResource("2")
+
+[node name="PlayerHolder" type="Node3D" parent="WorldRoot"]
+
+[node name="UILayer" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="Fader" type="ColorRect" parent="UILayer"]
+color = Color(0, 0, 0, 0)
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
