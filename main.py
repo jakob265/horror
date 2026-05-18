@@ -41,6 +41,10 @@ import scenes.act6_hydro as scene_hydro
 import scenes.act7_engineering as scene_engineering
 import scenes.act8_bridge as scene_bridge
 import scenes.act9_approach as scene_approach
+import scenes.act_med as scene_med
+import scenes.act_mess as scene_mess
+import scenes.act_storage as scene_storage
+import scenes.act_maint as scene_maint
 
 
 # ----------------------------------------------------------------------------
@@ -598,12 +602,14 @@ class Game:
             self.sky = visuals.make_sky()
         except Exception:
             self.sky = None
-        # 10-act playthrough order:
-        #  act1  cryo bay         act6  hydroponics
-        #  act2  decon antecham   act7  engineering
-        #  act3  residential cor  act8  bridge / comms
-        #  act4  observation lng  act9  approach corridor
-        #  act5  signal lab       act10 array room
+        # 14-act playthrough order:
+        #  act1     cryo bay              act6     hydroponics
+        #  act2     decon antechamber     act7     engineering
+        #  act_med  medical bay           act_st.  cryo storage
+        #  act3     residential corridor  act8     bridge / comms
+        #  act4     observation lounge    act_mn.  maintenance crawl
+        #  act_mss  crew mess hall        act9     approach corridor
+        #  act5     signal lab            act10    array room
         if act == "act1":
             self.light_rig = visuals.make_act1_lights()
             self.scene_entities = scene_act1_cryo.build(self)
@@ -634,6 +640,18 @@ class Game:
         elif act == "act10":
             self.light_rig = visuals.make_act4_lights()
             self.scene_entities = scene_array.build(self)
+        elif act == "act_med":
+            self.light_rig = visuals.make_act2_lights()
+            self.scene_entities = scene_med.build(self)
+        elif act == "act_mess":
+            self.light_rig = visuals.make_act2_lights()
+            self.scene_entities = scene_mess.build(self)
+        elif act == "act_storage":
+            self.light_rig = visuals.make_act3_lights()
+            self.scene_entities = scene_storage.build(self)
+        elif act == "act_maint":
+            self.light_rig = visuals.make_act3_lights()
+            self.scene_entities = scene_maint.build(self)
         # Reset the FPC's accumulated air_time so gravity doesn't carry a
         # massive downward velocity through the transition (this would
         # otherwise drop the player far below the new floor before the

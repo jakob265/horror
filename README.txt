@@ -69,11 +69,22 @@ and runs by double-click.
   COMPLETING THE GAME
 ----------------------------------------------------------------
 
-    Act 1  - Cryo Bay              wake up, find the keycard
-    Act 2  - Residential Corridor  visit the cabins, reach the hatch
-    Act 3  - Research Deck         find the array keycard
-    Act 4  - Array Room            choose: DESTROY or LISTEN
+    Act  1  - Cryo Bay              wake up, find the keycard
+    Act  2  - Decon Antechamber     get scanned, pass through
+    Act  3  - Medical Bay           read the autodoc transcript
+    Act  4  - Residential Corridor  visit the cabins, reach the hatch
+    Act  5  - Observation Lounge    Felix-Shape at the viewport
+    Act  6  - Crew Mess Hall        the last meal, the empty chair
+    Act  7  - Research Deck         find the array keycard
+    Act  8  - Hydroponics Bay       Yuna's logbook
+    Act  9  - Engineering           Hargrove's tape confession
+    Act 10  - Cryo Storage          the awful thing
+    Act 11  - Bridge / Comms        the broadcast points inward
+    Act 12  - Maintenance Crawl     scratched warning panel
+    Act 13  - Approach Corridor     dread tunnel
+    Act 14  - Array Room            choose: DESTROY or LISTEN
 
+There are 18 recoverable notes scattered through the station.
 Every code, keycard, and door is solvable with information found
 in the world.  Listen to OLEN.  Read every note.
 
