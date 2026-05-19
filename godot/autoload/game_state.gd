@@ -12,6 +12,12 @@ var array_keycard := false
 var array_door_open := false
 var decon_door_open := false
 var med_door_open := false
+var mess_door_open := false
+var hydro_door_open := false
+var engineering_door_open := false
+var storage_door_open := false
+var bridge_door_open := false
+var maint_door_open := false
 var approach_door_open := false
 
 # Stored references
@@ -39,6 +45,12 @@ func reset_for_new_game() -> void:
 	array_door_open = false
 	decon_door_open = false
 	med_door_open = false
+	mess_door_open = false
+	hydro_door_open = false
+	engineering_door_open = false
+	storage_door_open = false
+	bridge_door_open = false
+	maint_door_open = false
 	approach_door_open = false
 	hargrove_shape = null
 	terminal_ui = null

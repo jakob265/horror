@@ -63,7 +63,7 @@ func _physics_process(_dt: float) -> void:
 			var data: Dictionary = ent.get_meta("interact")
 			var used: bool = ent.has_meta("interact_used") and ent.get_meta("interact_used")
 			var kind: String = data.get("kind", "")
-			if not used or kind in ["read_terminal", "toggle_door", "keypad", "examine_only"]:
+			if not used or kind in ["read_terminal", "toggle_door", "keypad", "examine_only", "trigger_event"]:
 				target = ent
 	_current_target = target
 	if target:
