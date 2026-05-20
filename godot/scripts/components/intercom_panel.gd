@@ -17,10 +17,22 @@ static func create(position: Vector3, rotation_y: float = 0.0) -> IntercomPanel:
 	var box := BoxMesh.new()
 	box.size = Vector3(0.32, 0.22, 0.04)
 	body.mesh = box
-	var body_mat := StandardMaterial3D.new()
-	body_mat.albedo_color = Color(0.20, 0.22, 0.24)
-	body.material_override = body_mat
+	body.material_override = SurfaceFactory.get_material(SurfaceFactory.CAT_WALL_METAL, Color(0.22, 0.24, 0.28))
+	body.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	p.add_child(body)
+	# Grille — emissive backlit strip behind a slatted plate
+	var grille := MeshInstance3D.new()
+	var gbox := BoxMesh.new()
+	gbox.size = Vector3(0.22, 0.06, 0.03)
+	grille.mesh = gbox
+	grille.position = Vector3(0, -0.05, -0.025)
+	var gmat := StandardMaterial3D.new()
+	gmat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	gmat.albedo_color = Color(0.04, 0.04, 0.05)
+	gmat.metallic = 0.1
+	gmat.roughness = 0.7
+	grille.material_override = gmat
+	p.add_child(grille)
 	# LED
 	p.led = MeshInstance3D.new()
 	var lbox := BoxMesh.new()

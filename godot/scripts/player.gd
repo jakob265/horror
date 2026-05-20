@@ -13,6 +13,7 @@ const MOUSE_SENS_DEFAULT := 0.0028
 @onready var head: Node3D = $Head
 @onready var camera: Camera3D = $Head/Camera3D
 @onready var flashlight: SpotLight3D = $Head/Camera3D/Flashlight
+@onready var flashlight_core: SpotLight3D = $Head/Camera3D/FlashlightCore
 @onready var col: CollisionShape3D = $CollisionShape3D
 
 var frozen := false
@@ -28,6 +29,7 @@ var hud: Control = null
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	flashlight.visible = false
+	flashlight_core.visible = false
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -96,8 +98,14 @@ func _update_flashlight(delta: float) -> void:
 		if flashlight_battery <= 0.0:
 			flashlight_on = false
 			flashlight.visible = false
+			flashlight_core.visible = false
 	else:
 		flashlight_battery = min(1.0, flashlight_battery + delta / 45.0)
+	# Brown-out as the battery dies: dim the energy in the last 15%.
+	if flashlight_on:
+		var t: float = clamp(flashlight_battery / 0.15, 0.35, 1.0)
+		flashlight.light_energy = 4.2 * t
+		flashlight_core.light_energy = 2.4 * t
 	if hud and hud.has_method("update_battery"):
 		hud.update_battery(flashlight_battery)
 
@@ -115,6 +123,7 @@ func toggle_flashlight() -> void:
 		return
 	flashlight_on = not flashlight_on
 	flashlight.visible = flashlight_on
+	flashlight_core.visible = flashlight_on
 
 
 func freeze() -> void:

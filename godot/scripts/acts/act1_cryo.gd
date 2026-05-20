@@ -13,7 +13,9 @@ var crate: StaticBody3D = null
 
 func _ready() -> void:
 	# Light rig - red emergency
-	_setup_lighting(Color(0.86, 0.43, 0.43), Color(0.18, 0.05, 0.06), 0.020)
+	ActUtil.light_rig_act1(self)
+	ActUtil.add_dust_motes(self, Vector3(0, 1.6, 0), Vector3(6, 1.8, 8), 90,
+		Color(1.0, 0.62, 0.55, 0.18))
 
 	# Room: 12 x 16 x 4
 	Chamber.add_floor_ceiling(self, 12, 16, 4, Color(0.42, 0.40, 0.40), Color(0.25, 0.22, 0.25))
@@ -150,19 +152,3 @@ func _try_open_exit() -> void:
 
 func _on_exit_opened() -> void:
 	pass
-
-
-func _setup_lighting(ambient: Color, fog_col: Color, fog_density: float) -> void:
-	var env := WorldEnvironment.new()
-	var e := Environment.new()
-	e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	e.ambient_light_color = ambient
-	e.ambient_light_energy = 0.7
-	e.background_mode = Environment.BG_COLOR
-	e.background_color = Color(0.02, 0.02, 0.03)
-	e.fog_enabled = true
-	e.fog_light_color = fog_col
-	e.fog_density = fog_density
-	e.tonemap_mode = Environment.TONE_MAPPER_FILMIC
-	env.environment = e
-	add_child(env)

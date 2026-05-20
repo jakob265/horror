@@ -24,10 +24,8 @@ static func make_note(parent: Node3D, position: Vector3, note_id: String, label:
 	quad.size = Vector2(0.4, 0.5)
 	mesh.mesh = quad
 	mesh.rotation_degrees = Vector3(-90, 0, 0)
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.90, 0.86, 0.78)
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
-	mesh.material_override = mat
+	mesh.material_override = SurfaceFactory.get_material(SurfaceFactory.CAT_PAPER, Color(0.92, 0.88, 0.78))
+	mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	body.add_child(mesh)
 	var shape := CollisionShape3D.new()
 	var box := BoxShape3D.new()
@@ -47,9 +45,8 @@ static func make_examine(parent: Node3D, position: Vector3, size: Vector3, label
 	var box := BoxMesh.new()
 	box.size = size
 	mesh.mesh = box
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = color
-	mesh.material_override = mat
+	mesh.material_override = SurfaceFactory.get_material(SurfaceFactory.CAT_PROP, color)
+	mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	body.add_child(mesh)
 	var shape := CollisionShape3D.new()
 	var col := BoxShape3D.new()

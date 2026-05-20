@@ -25,8 +25,25 @@ fov = 75.0
 
 [node name="Flashlight" type="SpotLight3D" parent="Head/Camera3D"]
 visible = false
-light_color = Color(1, 0.94, 0.86, 1)
-light_energy = 3.0
-spot_range = 18.0
-spot_angle = 32.0
-spot_angle_attenuation = 0.5
+light_color = Color(1, 0.93, 0.82, 1)
+light_energy = 4.2
+light_indirect_energy = 0.4
+light_volumetric_fog_energy = 1.4
+light_specular = 0.6
+spot_range = 22.0
+spot_angle = 36.0
+spot_angle_attenuation = 0.85
+shadow_enabled = true
+shadow_bias = 0.04
+shadow_normal_bias = 1.0
+shadow_blur = 1.2
+
+[node name="FlashlightCore" type="SpotLight3D" parent="Head/Camera3D"]
+visible = false
+light_color = Color(1, 0.97, 0.9, 1)
+light_energy = 2.4
+light_volumetric_fog_energy = 1.8
+spot_range = 28.0
+spot_angle = 14.0
+spot_angle_attenuation = 1.4
+shadow_enabled = false
