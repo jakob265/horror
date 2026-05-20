@@ -113,14 +113,15 @@ func _wall_with_gaps(x: float, gap_zs: Array, wall_color: Color) -> void:
 	var z_max := 18.0
 	gap_zs = gap_zs.duplicate()
 	gap_zs.sort()
-	var cursor := z_min
-	for gz in gap_zs:
-		var seg_start := cursor
-		var seg_end := gz - Chamber.DOOR_W / 2
+	var cursor: float = z_min
+	for gz_raw in gap_zs:
+		var gz: float = float(gz_raw)
+		var seg_start: float = cursor
+		var seg_end: float = gz - Chamber.DOOR_W / 2
 		if seg_end > seg_start:
 			Chamber.add_wall(self, "x", x, seg_start, seg_end, H, wall_color)
 		# Header above gap
-		var header_h := H - Chamber.DOOR_H
+		var header_h: float = H - Chamber.DOOR_H
 		Chamber.make_prop_box(self,
 			Vector3(0.2, header_h, Chamber.DOOR_W),
 			Vector3(x, Chamber.DOOR_H + header_h / 2, gz),

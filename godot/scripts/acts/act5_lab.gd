@@ -15,7 +15,7 @@ const DOOR_W := 1.4
 var array_door: Node3D = null
 var array_keycard_node: StaticBody3D = null
 var array_keycard_slot: MeshInstance3D = null
-var monitors: Array = []
+var monitors: Array[Node3D] = []
 var eeg_done := false
 
 

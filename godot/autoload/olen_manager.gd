@@ -13,7 +13,7 @@ const OLEN_LINES := {
 const HARMONIC_VOLS := {1: 0.0, 2: 0.0, 3: 0.02, 4: 0.05, 5: 0.10, 6: 0.18}
 
 var fired: Array[int] = []
-var proximity_triggers: Array = []     # [{id, position, panel, radius, delay, gated}]
+var proximity_triggers: Array[Dictionary] = []     # [{id, position, panel, radius, delay, gated}]
 var current_panel: Node = null
 
 var _ui_layer: CanvasLayer = null

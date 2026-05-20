@@ -7,7 +7,7 @@ const W := 4.5
 const D := 20.0
 const H := 2.2
 
-var sparkers: Array = []
+var sparkers: Array[Dictionary] = []
 var warn_light: MeshInstance3D = null
 var phase := 0.0
 

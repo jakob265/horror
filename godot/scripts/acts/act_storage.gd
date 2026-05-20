@@ -7,7 +7,7 @@ const W := 14.0
 const D := 22.0
 const H := 3.6
 
-var pod_lights: Array = []
+var pod_lights: Array[Dictionary] = []
 var phase := 0.0
 
 
