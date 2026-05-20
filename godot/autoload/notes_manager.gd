@@ -212,7 +212,7 @@ func handle_input(event: InputEvent) -> void:
 		elif event.keycode == KEY_ESCAPE and is_open:
 			close()
 		elif _journal_root != null and event.keycode >= KEY_1 and event.keycode <= KEY_9:
-			var idx := event.keycode - KEY_1
+			var idx: int = int(event.keycode) - int(KEY_1)
 			if idx < collected_ids.size():
 				_select_journal(idx)
 
