@@ -53,6 +53,7 @@ func _begin_new_game() -> void:
 		player.hud = hud
 	OlenManager.fired.clear()
 	OlenManager.reset_scene_triggers()
+	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	SceneRouter.transition_to("act1", true)
 
 

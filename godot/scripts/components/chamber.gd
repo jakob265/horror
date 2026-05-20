@@ -10,8 +10,8 @@ const DOOR_H := 2.4
 # Set by ActUtil.setup_lighting() so add_floor_ceiling can drop matching
 # ceiling fixtures automatically. Defaults to a cool clinical white.
 static var current_light_color: Color = Color(0.92, 0.95, 1.0)
-static var current_light_energy: float = 2.2
-static var current_light_range: float = 11.0
+static var current_light_energy: float = 4.5
+static var current_light_range: float = 14.0
 
 
 static func _make_box(size: Vector3, position: Vector3, color: Color, name: String = "box", with_collider: bool = true, surface: String = "") -> StaticBody3D:
@@ -88,9 +88,7 @@ static func _make_ceiling_fixture(parent: Node3D, pos: Vector3) -> void:
 	light.light_energy = current_light_energy
 	light.omni_range = current_light_range
 	light.omni_attenuation = 1.4
-	light.shadow_enabled = true
-	light.shadow_bias = 0.05
-	light.shadow_normal_bias = 1.0
+	light.shadow_enabled = false
 	light.position = pos + Vector3(0, -0.25, 0)
 	parent.add_child(light)
 

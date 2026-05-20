@@ -104,8 +104,8 @@ func _update_flashlight(delta: float) -> void:
 	# Brown-out as the battery dies: dim the energy in the last 15%.
 	if flashlight_on:
 		var t: float = clamp(flashlight_battery / 0.15, 0.35, 1.0)
-		flashlight.light_energy = 4.2 * t
-		flashlight_core.light_energy = 2.4 * t
+		flashlight.light_energy = 4.5 * t
+		flashlight_core.light_energy = 2.8 * t
 	if hud and hud.has_method("update_battery"):
 		hud.update_battery(flashlight_battery)
 

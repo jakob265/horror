@@ -2,10 +2,10 @@ class_name ActUtil
 extends RefCounted
 # Common helpers for act scripts.
 
-# Per-act lighting setup. Now also configures Chamber.current_light_* so the
-# room-builder can drop matching ceiling fixtures automatically, and seeds
-# dust motes near the player so air reads as filthy / lived-in.
-static func setup_lighting(parent: Node3D, ambient: Color, fog_col: Color, fog_density: float = 0.018, ambient_energy: float = 0.25, fixture_color: Color = Color(0, 0, 0), fixture_energy: float = -1.0, fixture_range: float = -1.0) -> void:
+# Per-act lighting setup. Configures Chamber.current_light_* so the
+# room-builder can drop matching ceiling fixtures automatically, and configures
+# the per-act Environment with Forward+ features.
+static func setup_lighting(parent: Node3D, ambient: Color, fog_col: Color, fog_density: float = 0.012, ambient_energy: float = 0.7, fixture_color: Color = Color(0, 0, 0), fixture_energy: float = -1.0, fixture_range: float = -1.0) -> void:
 	var env := WorldEnvironment.new()
 	var e := Environment.new()
 	e.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
@@ -18,74 +18,70 @@ static func setup_lighting(parent: Node3D, ambient: Color, fog_col: Color, fog_d
 	e.fog_light_energy = 0.5
 	e.fog_density = fog_density
 	e.fog_height = 6.0
-	e.fog_height_density = 0.22
+	e.fog_height_density = 0.20
 	e.volumetric_fog_enabled = true
-	e.volumetric_fog_density = 0.012 + fog_density * 0.35
+	e.volumetric_fog_density = 0.008 + fog_density * 0.2
 	e.volumetric_fog_albedo = ambient.lerp(Color.WHITE, 0.4)
 	e.volumetric_fog_anisotropy = 0.25
-	e.volumetric_fog_length = 48.0
-	e.volumetric_fog_gi_inject = 0.5
+	e.volumetric_fog_length = 40.0
+	e.volumetric_fog_gi_inject = 0.3
 	e.volumetric_fog_ambient_inject = 0.5
 	e.volumetric_fog_temporal_reprojection_enabled = true
 	e.tonemap_mode = Environment.TONE_MAPPER_ACES
-	e.tonemap_exposure = 1.05
+	e.tonemap_exposure = 1.35
 	e.tonemap_white = 6.0
 	e.ssao_enabled = true
-	e.ssao_radius = 1.6
-	e.ssao_intensity = 2.0
-	e.ssao_power = 1.6
-	e.ssao_light_affect = 0.25
-	e.ssil_enabled = true
-	e.ssil_radius = 4.0
-	e.ssil_intensity = 1.2
+	e.ssao_radius = 1.2
+	e.ssao_intensity = 1.1
+	e.ssao_power = 1.4
+	e.ssao_light_affect = 0.18
+	e.ssil_enabled = false
 	e.ssr_enabled = true
 	e.ssr_max_steps = 48
-	e.sdfgi_enabled = true
-	e.sdfgi_bounce_feedback = 0.6
-	e.sdfgi_min_cell_size = 0.18
-	e.sdfgi_energy = 1.1
+	e.sdfgi_enabled = false
 	e.glow_enabled = true
-	e.glow_intensity = 1.0
-	e.glow_strength = 1.05
-	e.glow_bloom = 0.18
+	e.glow_intensity = 0.9
+	e.glow_strength = 1.0
+	e.glow_bloom = 0.15
 	e.glow_blend_mode = Environment.GLOW_BLEND_MODE_SOFTLIGHT
-	e.glow_hdr_threshold = 0.95
-	e.glow_hdr_scale = 2.2
+	e.glow_hdr_threshold = 1.0
+	e.glow_hdr_scale = 2.0
 	e.adjustment_enabled = true
-	e.adjustment_contrast = 1.12
-	e.adjustment_saturation = 0.78
+	e.adjustment_brightness = 1.05
+	e.adjustment_contrast = 1.04
+	e.adjustment_saturation = 0.88
 	env.environment = e
 	parent.add_child(env)
 
 	# Update Chamber so ceiling fixtures match this act's mood.
 	var fix_col: Color = fixture_color if fixture_color.a > 0.001 else ambient.lerp(Color.WHITE, 0.45)
 	Chamber.current_light_color = fix_col
-	Chamber.current_light_energy = fixture_energy if fixture_energy > 0.0 else 2.2
-	Chamber.current_light_range = fixture_range if fixture_range > 0.0 else 11.0
+	Chamber.current_light_energy = fixture_energy if fixture_energy > 0.0 else 4.5
+	Chamber.current_light_range = fixture_range if fixture_range > 0.0 else 14.0
 
 
 static func light_rig_act1(parent: Node3D) -> void:
-	# Cryo bay — emergency red, almost ritualistic.
-	setup_lighting(parent, Color(0.86, 0.43, 0.43), Color(0.18, 0.05, 0.06), 0.024, 0.20,
-		Color(1.0, 0.32, 0.28), 2.6, 10.5)
+	# Cryo bay — emergency red.
+	setup_lighting(parent, Color(0.86, 0.43, 0.43), Color(0.18, 0.05, 0.06), 0.016, 0.55,
+		Color(1.0, 0.42, 0.34), 4.2, 13.0)
 
 
 static func light_rig_act2(parent: Node3D) -> void:
 	# Corridors / cabins / decon / med — cool clinical blue-white.
-	setup_lighting(parent, Color(0.70, 0.78, 0.86), Color(0.13, 0.16, 0.22), 0.020, 0.22,
-		Color(0.88, 0.95, 1.0), 2.4, 11.0)
+	setup_lighting(parent, Color(0.70, 0.78, 0.86), Color(0.13, 0.16, 0.22), 0.012, 0.7,
+		Color(0.92, 0.97, 1.0), 4.8, 14.0)
 
 
 static func light_rig_act3(parent: Node3D) -> void:
 	# Research deck — cold blue-white, brighter task lighting.
-	setup_lighting(parent, Color(0.72, 0.84, 0.96), Color(0.11, 0.16, 0.24), 0.017, 0.25,
-		Color(0.82, 0.92, 1.0), 2.7, 12.0)
+	setup_lighting(parent, Color(0.72, 0.84, 0.96), Color(0.11, 0.16, 0.24), 0.010, 0.75,
+		Color(0.86, 0.94, 1.0), 5.2, 15.0)
 
 
 static func light_rig_act4(parent: Node3D) -> void:
-	# Array room — dim warm-white, deep dark-blue fog. Mostly black.
-	setup_lighting(parent, Color(0.43, 0.39, 0.43), Color(0.03, 0.04, 0.06), 0.028, 0.18,
-		Color(0.95, 0.78, 0.55), 1.2, 8.0)
+	# Array room — dim warm-white, deep dark-blue fog.
+	setup_lighting(parent, Color(0.43, 0.39, 0.43), Color(0.03, 0.04, 0.06), 0.020, 0.45,
+		Color(0.95, 0.78, 0.55), 2.8, 11.0)
 
 
 # Place a dust-mote particle field above the player path. Cheap atmosphere.

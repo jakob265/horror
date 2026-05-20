@@ -12,10 +12,6 @@ border_width_bottom = 1
 
 [sub_resource type="StyleBoxFlat" id="BatFill"]
 bg_color = Color(0.78, 0.86, 0.96, 1)
-corner_radius_top_left = 0
-corner_radius_top_right = 0
-corner_radius_bottom_right = 0
-corner_radius_bottom_left = 0
 
 [node name="HUD" type="Control"]
 anchor_right = 1.0
@@ -34,6 +30,7 @@ anchor_left = 0.022
 anchor_top = 0.92
 anchor_right = 0.20
 anchor_bottom = 0.965
+mouse_filter = 2
 theme_override_styles/panel = SubResource("BatBG")
 
 [node name="Bar" type="Panel" parent="BatteryFrame"]
@@ -45,12 +42,14 @@ offset_left = 2
 offset_top = 2
 offset_right = -2
 offset_bottom = -2
+mouse_filter = 2
 theme_override_styles/panel = SubResource("BatFill")
 
 [node name="Label" type="Label" parent="."]
 text = "BAT  /  TORCH"
 anchor_left = 0.022
 anchor_top = 0.886
+mouse_filter = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.62, 0.74, 0.88, 0.85)
 
@@ -58,6 +57,7 @@ theme_override_colors/font_color = Color(0.62, 0.74, 0.88, 0.85)
 text = "100%"
 anchor_left = 0.165
 anchor_top = 0.886
+mouse_filter = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.62, 0.74, 0.88, 0.85)
 
@@ -72,6 +72,7 @@ offset_left = -1.5
 offset_top = -1.5
 offset_right = 1.5
 offset_bottom = 1.5
+mouse_filter = 2
 
 [node name="RingL" type="ColorRect" parent="Crosshair"]
 color = Color(0.85, 0.90, 1.0, 0.35)
@@ -79,6 +80,7 @@ offset_left = -10
 offset_top = -0.5
 offset_right = -5
 offset_bottom = 0.5
+mouse_filter = 2
 
 [node name="RingR" type="ColorRect" parent="Crosshair"]
 color = Color(0.85, 0.90, 1.0, 0.35)
@@ -86,6 +88,7 @@ offset_left = 5
 offset_top = -0.5
 offset_right = 10
 offset_bottom = 0.5
+mouse_filter = 2
 
 [node name="RingT" type="ColorRect" parent="Crosshair"]
 color = Color(0.85, 0.90, 1.0, 0.35)
@@ -93,6 +96,7 @@ offset_left = -0.5
 offset_top = -10
 offset_right = 0.5
 offset_bottom = -5
+mouse_filter = 2
 
 [node name="RingB" type="ColorRect" parent="Crosshair"]
 color = Color(0.85, 0.90, 1.0, 0.35)
@@ -100,3 +104,4 @@ offset_left = -0.5
 offset_top = 5
 offset_right = 0.5
 offset_bottom = 10
+mouse_filter = 2
