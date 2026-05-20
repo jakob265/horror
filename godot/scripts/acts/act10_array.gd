@@ -111,10 +111,11 @@ func _ready() -> void:
 
 	# Conduit cubes around the tower
 	for ang in range(0, 360, 30):
-		var rad := 1.85
-		var x := tower_pos.x + cos(deg_to_rad(ang)) * rad
-		var z := tower_pos.z + sin(deg_to_rad(ang)) * rad
-		var h := 4.0 + (ang % 70) / 70.0 * 6.0
+		var ang_i: int = int(ang)
+		var rad: float = 1.85
+		var x: float = tower_pos.x + cos(deg_to_rad(float(ang_i))) * rad
+		var z: float = tower_pos.z + sin(deg_to_rad(float(ang_i))) * rad
+		var h: float = 4.0 + float(ang_i % 70) / 70.0 * 6.0
 		Chamber.make_prop_box(self, Vector3(0.30, h, 0.30), Vector3(x, h / 2, z), Color(0.12, 0.14, 0.18))
 
 	# Note 6 - on the floor near entrance

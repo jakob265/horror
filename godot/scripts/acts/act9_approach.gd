@@ -11,7 +11,7 @@ const H := 3.2
 var hargrove_shape: HorrorShape = null
 var retreating := false
 var retreat_t := 0.0
-var flicker_lights: Array = []
+var flicker_lights: Array[Dictionary] = []
 
 
 func _ready() -> void:

@@ -153,10 +153,10 @@ func _build_planter_row(x: float, length: float, plant_count: int, tag_text: Str
 	# Soil
 	Chamber.make_prop_box(self, Vector3(0.95, 0.10, length - 0.15), Vector3(x, 0.42, 0), Color(0.14, 0.11, 0.09), false)
 	# Plants
-	var half := (length - 1.0) / 2.0
-	var step := (length - 1.0) / max(plant_count - 1, 1)
+	var half: float = (length - 1.0) / 2.0
+	var step: float = (length - 1.0) / float(maxi(plant_count - 1, 1))
 	for i in plant_count:
-		var t := -half + i * step
+		var t: float = -half + i * step
 		var stem := MeshInstance3D.new()
 		var sm := BoxMesh.new()
 		sm.size = Vector3(0.05, 0.70, 0.05)
