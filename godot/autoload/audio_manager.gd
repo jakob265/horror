@@ -184,15 +184,15 @@ func _apply_fade(samples: PackedFloat32Array, fade_in_s: float, fade_out_s: floa
 	var n := samples.size()
 	var fi := int(fade_in_s * SAMPLE_RATE)
 	var fo := int(fade_out_s * SAMPLE_RATE)
-	for i in min(fi, n):
+	for i in mini(fi, n):
 		samples[i] *= float(i) / fi
-	for i in min(fo, n):
+	for i in mini(fo, n):
 		samples[n - 1 - i] *= float(i) / fo
 	return samples
 
 
 func _mix(a: PackedFloat32Array, b: PackedFloat32Array) -> PackedFloat32Array:
-	var n := max(a.size(), b.size())
+	var n: int = maxi(a.size(), b.size())
 	var out := PackedFloat32Array()
 	out.resize(n)
 	for i in n:

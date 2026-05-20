@@ -229,7 +229,7 @@ func _process(dt: float) -> void:
 	for pl in pod_lights:
 		var node = pl["node"]
 		if not is_instance_valid(node): continue
-		var v := 0.4 + 0.6 * (0.5 + 0.5 * sin((phase + pl["phase"]) * (TAU / 4.0)))
+		var v: float = 0.4 + 0.6 * (0.5 + 0.5 * sin((phase + float(pl["phase"])) * (TAU / 4.0)))
 		var base: Color = pl["base"]
 		var mat: StandardMaterial3D = node.material_override
 		mat.emission = Color(base.r * v, base.g * v, base.b * v)
