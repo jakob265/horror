@@ -124,17 +124,18 @@ static func add_wall(parent: Node3D, axis: String, fixed: float, span_min: float
 			pos = Vector3(mid, h / 2, fixed)
 			size = Vector3(length, h, 0.2)
 		parent.add_child(_make_box(size, pos, color, "wall_seg"))
-	# Header above the opening
-	var header_h := h - DOOR_H
-	var hpos: Vector3
-	var hsize: Vector3
-	if axis == "x":
-		hpos = Vector3(fixed, DOOR_H + header_h / 2, gap_center)
-		hsize = Vector3(0.2, header_h, DOOR_W + 0.2)
-	else:
-		hpos = Vector3(gap_center, DOOR_H + header_h / 2, fixed)
-		hsize = Vector3(DOOR_W + 0.2, header_h, 0.2)
-	parent.add_child(_make_box(hsize, hpos, color, "header"))
+	# Header above the opening — skip if the ceiling is below the door height
+	var header_h: float = max(0.0, h - DOOR_H)
+	if header_h > 0.001:
+		var hpos: Vector3
+		var hsize: Vector3
+		if axis == "x":
+			hpos = Vector3(fixed, DOOR_H + header_h / 2, gap_center)
+			hsize = Vector3(0.2, header_h, DOOR_W + 0.2)
+		else:
+			hpos = Vector3(gap_center, DOOR_H + header_h / 2, fixed)
+			hsize = Vector3(DOOR_W + 0.2, header_h, 0.2)
+		parent.add_child(_make_box(hsize, hpos, color, "header"))
 
 
 static func add_door(parent: Node3D, axis: String, fixed: float, gap_center: float, label: String, color: Color, on_open: Callable = Callable(), interact_label: String = "", sealed: bool = false) -> Node3D:

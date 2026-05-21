@@ -189,6 +189,22 @@ static func add_spot(parent: Node3D, pos: Vector3, target_dir: Vector3, color: C
 	return s
 
 
+# A wall-mounted Label3D that always reads correctly regardless of viewer
+# position — billboard around Y keeps the text upright + facing the camera.
+static func wall_label(parent: Node3D, text: String, pos: Vector3, font_size: int = 22, color: Color = Color(0.92, 0.94, 1.0), outline: Color = Color(0, 0, 0, 0.7)) -> Label3D:
+	var lbl := Label3D.new()
+	lbl.text = text
+	lbl.position = pos
+	lbl.font_size = font_size
+	lbl.modulate = color
+	lbl.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
+	lbl.outline_size = 4
+	lbl.outline_modulate = outline
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	parent.add_child(lbl)
+	return lbl
+
+
 static func spawn_player(pos: Vector3, rotation_y: float = 0.0) -> void:
 	if GameState.player:
 		GameState.player.global_position = pos

@@ -91,8 +91,9 @@ func _ready() -> void:
 			glow.material_override = gmat
 			add_child(glow)
 
-	# Bank of waveform monitors along north wall
-	for x in [-5, -3, -1, 1, 3, 5]:
+	# Bank of waveform monitors along north wall — shifted east so the leftmost
+	# monitor clears the array door at x=-6 (door panel spans x=-6.7..-5.3).
+	for x in [-3.0, -1.5, 0.0, 1.5, 3.0, 4.5]:
 		var mon := _build_monitor(Vector3(x, 1.8, LAB_D / 2 - 0.15))
 		monitors.append(mon)
 
@@ -105,12 +106,8 @@ func _ready() -> void:
 	Chamber.make_prop_box(self, Vector3(2.4, 1.0, 0.9), Vector3(-6.0, 0.5, 0), Color(0.25, 0.27, 0.31))
 
 	# Label plate
-	var lbl := Label3D.new()
-	lbl.text = "ARRAY ACCESS - AUTHORIZED PERSONNEL ONLY"
-	lbl.position = Vector3(-6.0, 1.05, -0.46)
-	lbl.font_size = 22
-	lbl.modulate = Color(1.0, 0.94, 0.71)
-	add_child(lbl)
+	ActUtil.wall_label(self, "ARRAY ACCESS - AUTHORIZED PERSONNEL ONLY",
+		Vector3(-6.0, 1.05, -0.46), 18, Color(1.0, 0.94, 0.71))
 
 	# Array keycard
 	array_keycard_node = StaticBody3D.new()
@@ -181,23 +178,73 @@ func _ready() -> void:
 			AudioManager.door()
 	})
 
-	# Desk
+	# Desk + drawers
 	Chamber.make_prop_box(self, Vector3(1.8, 0.85, 0.9), Vector3(ox - 0.8, 0.42, oz - 0.5), Color(0.22, 0.20, 0.18))
+	# Drawer fronts
+	for dy in [0.30, 0.62]:
+		Chamber.make_prop_box(self, Vector3(0.55, 0.22, 0.04), Vector3(ox - 0.8, dy, oz - 0.05), Color(0.14, 0.13, 0.11), false)
+		Chamber.make_prop_box(self, Vector3(0.10, 0.04, 0.04), Vector3(ox - 0.8, dy, oz - 0.03), Color(0.55, 0.51, 0.39), false)
 
-	# Scattered papers
+	# Captain's chair on castors
+	Chamber.make_prop_box(self, Vector3(0.55, 0.45, 0.55), Vector3(ox - 0.8, 0.22, oz + 0.4), Color(0.14, 0.16, 0.20))
+	Chamber.make_prop_box(self, Vector3(0.55, 1.30, 0.10), Vector3(ox - 0.8, 1.10, oz + 0.75), Color(0.14, 0.16, 0.20), false)
+	# Castor base
+	Chamber.make_prop_box(self, Vector3(0.45, 0.08, 0.45), Vector3(ox - 0.8, 0.04, oz + 0.4), Color(0.14, 0.14, 0.18), false)
+
+	# Scattered papers around the desk
 	for i in range(7):
-		var px := ox - 1.6 + randf_range(-1.2, 1.2)
-		var pz := oz + randf_range(-1.5, 1.5)
+		var px := ox - 1.6 + randf_range(-1.0, 1.0)
+		var pz := oz + randf_range(-0.9, 1.5)
 		var paper := MeshInstance3D.new()
 		var pq := QuadMesh.new()
 		pq.size = Vector2(0.28, 0.35)
 		paper.mesh = pq
-		paper.rotation_degrees = Vector3(-90, randf_range(0, 90), 0)
+		paper.rotation_degrees = Vector3(-90, randf_range(0, 180), 0)
 		paper.position = Vector3(px, 0.02, pz)
 		var pm := StandardMaterial3D.new()
-		pm.albedo_color = Color(0.90, 0.86, 0.76)
+		pm.albedo_color = Color(0.92, 0.88, 0.78)
+		pm.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
 		paper.material_override = pm
 		add_child(paper)
+
+	# Bookshelf on the east wall, stacked with engineering binders
+	var shelf_x: float = ox + o_w / 2 - 0.20
+	Chamber.make_prop_box(self, Vector3(0.20, 2.20, 1.6), Vector3(shelf_x, 1.10, oz + 0.6), Color(0.16, 0.14, 0.12))
+	for shy in [0.45, 0.85, 1.25, 1.65, 2.05]:
+		Chamber.make_prop_box(self, Vector3(0.30, 0.04, 1.5), Vector3(shelf_x - 0.20, shy, oz + 0.6), Color(0.22, 0.18, 0.14), false)
+		# Books on this shelf
+		var bx_off := 0.0
+		while bx_off < 1.4:
+			var bw := randf_range(0.06, 0.12)
+			var bh := randf_range(0.20, 0.34)
+			Chamber.make_prop_box(self, Vector3(0.18, bh, bw),
+				Vector3(shelf_x - 0.25, shy + bh / 2 + 0.02, oz + 0.6 - 0.7 + bx_off + bw / 2),
+				Color(randf_range(0.20, 0.55), randf_range(0.15, 0.40), randf_range(0.15, 0.35)),
+				false)
+			bx_off += bw + 0.01
+
+	# Filing cabinet against the north wall
+	var cab_x: float = ox + o_w / 2 - 0.50
+	var cab_z: float = oz - o_d / 2 + 0.45
+	Chamber.make_prop_box(self, Vector3(0.70, 1.30, 0.55), Vector3(cab_x, 0.65, cab_z), Color(0.30, 0.27, 0.22))
+	for dy in [0.30, 0.65, 1.00]:
+		Chamber.make_prop_box(self, Vector3(0.62, 0.05, 0.04), Vector3(cab_x, dy, cab_z - 0.30), Color(0.18, 0.16, 0.13), false)
+		Chamber.make_prop_box(self, Vector3(0.10, 0.04, 0.05), Vector3(cab_x, dy, cab_z - 0.30), Color(0.55, 0.51, 0.39), false)
+	# Folder stack on top of the cabinet
+	Chamber.make_prop_box(self, Vector3(0.40, 0.04, 0.30), Vector3(cab_x, 1.32, cab_z), Color(0.78, 0.45, 0.20), false)
+	Chamber.make_prop_box(self, Vector3(0.38, 0.04, 0.28), Vector3(cab_x - 0.04, 1.36, cab_z - 0.04), Color(0.42, 0.55, 0.32), false)
+
+	# Coat rack
+	Chamber.make_prop_box(self, Vector3(0.06, 1.85, 0.06), Vector3(ox + o_w / 2 - 1.2, 0.93, oz - o_d / 2 + 0.30), Color(0.22, 0.18, 0.14), false)
+	Chamber.make_prop_box(self, Vector3(0.55, 0.04, 0.55), Vector3(ox + o_w / 2 - 1.2, 0.04, oz - o_d / 2 + 0.30), Color(0.22, 0.18, 0.14), false)
+	# Coat
+	Chamber.make_prop_box(self, Vector3(0.55, 0.95, 0.18), Vector3(ox + o_w / 2 - 1.2, 1.40, oz - o_d / 2 + 0.32), Color(0.27, 0.22, 0.16), false)
+
+	# Whiteboard above the desk
+	var wb_pos := Vector3(ox - 0.8, 1.90, oz - 0.85)
+	Chamber.make_prop_box(self, Vector3(1.4, 0.90, 0.04), wb_pos, Color(0.94, 0.94, 0.92), false)
+	ActUtil.wall_label(self, "0.7 P-units\n442-K\nWE MADE IT", wb_pos + Vector3(0, 0, -0.04),
+		16, Color(0.78, 0.16, 0.16))
 
 	# Warm desk lamp
 	var lamp := MeshInstance3D.new()
@@ -289,14 +336,9 @@ REC: full alert.  Convene crew.
 	array_keycard_slot.material_override = slot_mat
 	array_door.add_child(array_keycard_slot)
 
-	# "ARRAY" label above door
-	var array_lbl := Label3D.new()
-	array_lbl.text = "ARRAY"
-	array_lbl.position = Vector3(ARRAY_DOOR_X, 2.65, LAB_D / 2 - 0.15)
-	array_lbl.rotation_degrees = Vector3(0, 180, 0)
-	array_lbl.font_size = 36
-	array_lbl.modulate = Color(0.86, 0.78, 0.62)
-	add_child(array_lbl)
+	# "ARRAY" label above door — billboard keeps the text readable from any angle
+	ActUtil.wall_label(self, "ARRAY", Vector3(ARRAY_DOOR_X, 2.65, LAB_D / 2 - 0.20),
+		36, Color(0.95, 0.80, 0.55))
 
 	Interactable.attach(array_door, "Try array door", "trigger_event", {
 		"callback": Callable(self, "_try_open_array_door"),

@@ -25,44 +25,166 @@ func _ready() -> void:
 	Chamber.add_door(self, "z", D/2 - 0.05, 0, "STORAGE", Color(0.28, 0.27, 0.23),
 		func(): GameState.engineering_door_open = true, "Open STORAGE")
 
-	# Central reactor housing
+	# Central reactor housing — segmented industrial cylinder with bolts and panels
 	var housing := MeshInstance3D.new()
 	var cyl := CylinderMesh.new()
 	cyl.top_radius = 1.6
-	cyl.bottom_radius = 1.6
+	cyl.bottom_radius = 1.7
 	cyl.height = H - 0.4
 	housing.mesh = cyl
 	housing.position = Vector3(0, (H - 0.4) / 2, 0)
 	var hmat := StandardMaterial3D.new()
-	hmat.albedo_color = Color(0.23, 0.25, 0.29)
+	hmat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	hmat.albedo_color = Color(0.36, 0.36, 0.40)
+	hmat.metallic = 0.75
+	hmat.roughness = 0.45
 	housing.material_override = hmat
 	add_child(housing)
 	# Collider for housing
 	var hbody := StaticBody3D.new()
 	var hshape := CollisionShape3D.new()
 	var hcyl := CylinderShape3D.new()
-	hcyl.radius = 1.6
+	hcyl.radius = 1.7
 	hcyl.height = H - 0.4
 	hshape.shape = hcyl
 	hbody.add_child(hshape)
 	hbody.position = Vector3(0, (H - 0.4) / 2, 0)
 	add_child(hbody)
 
-	# Yellow reactor band
+	# Riveted hoop bands at 4 heights
+	for hy in [0.45, 1.30, 2.20, 3.30]:
+		var hoop := MeshInstance3D.new()
+		var hb := CylinderMesh.new()
+		hb.top_radius = 1.74
+		hb.bottom_radius = 1.74
+		hb.height = 0.10
+		hoop.mesh = hb
+		hoop.position = Vector3(0, hy, 0)
+		var hpm := StandardMaterial3D.new()
+		hpm.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+		hpm.albedo_color = Color(0.20, 0.22, 0.26)
+		hpm.metallic = 0.85
+		hpm.roughness = 0.40
+		hoop.material_override = hpm
+		add_child(hoop)
+		# Rivet bumps around each hoop
+		for ang_i in range(16):
+			var ang: float = ang_i * TAU / 16.0
+			var rivet := MeshInstance3D.new()
+			var rb := SphereMesh.new()
+			rb.radius = 0.05
+			rb.height = 0.10
+			rivet.mesh = rb
+			rivet.position = Vector3(cos(ang) * 1.78, hy, sin(ang) * 1.78)
+			var rm := StandardMaterial3D.new()
+			rm.albedo_color = Color(0.55, 0.55, 0.59)
+			rm.metallic = 0.9
+			rm.roughness = 0.35
+			rivet.material_override = rm
+			add_child(rivet)
+
+	# Yellow hazard band at the base
 	var band := MeshInstance3D.new()
 	var bcyl := CylinderMesh.new()
-	bcyl.top_radius = 1.7
-	bcyl.bottom_radius = 1.7
-	bcyl.height = 0.4
+	bcyl.top_radius = 1.76
+	bcyl.bottom_radius = 1.76
+	bcyl.height = 0.30
 	band.mesh = bcyl
-	band.position = Vector3(0, (H - 0.4) / 2, 0)
+	band.position = Vector3(0, 0.20, 0)
 	var bmat := StandardMaterial3D.new()
+	bmat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
 	bmat.albedo_color = Color(0.86, 0.70, 0.12)
 	bmat.emission_enabled = true
 	bmat.emission = Color(0.86, 0.70, 0.12)
-	bmat.emission_energy_multiplier = 0.3
+	bmat.emission_energy_multiplier = 0.4
 	band.material_override = bmat
 	add_child(band)
+
+	# Coolant hoses running from the housing to the wall tanks (east)
+	for hi in [-0.6, 0.0, 0.6]:
+		var pipe_a := MeshInstance3D.new()
+		var pa := BoxMesh.new()
+		pa.size = Vector3(W/2 - 1.7, 0.12, 0.12)
+		pipe_a.mesh = pa
+		pipe_a.position = Vector3(W/4 + 0.4, 1.7 + hi, hi)
+		var pam := StandardMaterial3D.new()
+		pam.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+		pam.albedo_color = Color(0.40, 0.25, 0.16) if hi > 0 else Color(0.20, 0.30, 0.45)
+		pam.metallic = 0.4
+		pam.roughness = 0.55
+		pipe_a.material_override = pam
+		add_child(pipe_a)
+
+	# Gauge cluster on the housing (south face)
+	for gi in 4:
+		var gx: float = -0.6 + gi * 0.4
+		var gauge := MeshInstance3D.new()
+		var gm := CylinderMesh.new()
+		gm.top_radius = 0.14
+		gm.bottom_radius = 0.14
+		gm.height = 0.04
+		gauge.mesh = gm
+		gauge.rotation_degrees = Vector3(90, 0, 0)
+		gauge.position = Vector3(gx, 1.85, -1.72)
+		var gmat := StandardMaterial3D.new()
+		gmat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+		gmat.albedo_color = Color(0.94, 0.92, 0.86)
+		gauge.material_override = gmat
+		add_child(gauge)
+		# Gauge needle
+		var needle := MeshInstance3D.new()
+		var nb := BoxMesh.new()
+		nb.size = Vector3(0.02, 0.10, 0.005)
+		needle.mesh = nb
+		needle.position = Vector3(gx, 1.85, -1.74)
+		needle.rotation_degrees = Vector3(0, 0, randf_range(-50, 50))
+		var nm := StandardMaterial3D.new()
+		nm.albedo_color = Color(0.86, 0.16, 0.12)
+		nm.emission_enabled = true
+		nm.emission = Color(0.86, 0.16, 0.12)
+		nm.emission_energy_multiplier = 0.6
+		needle.material_override = nm
+		add_child(needle)
+
+	# Valve wheel on top of housing
+	for vi in [Vector3(0.9, H - 0.6, -0.6), Vector3(-0.9, H - 0.6, 0.6)]:
+		var stem := MeshInstance3D.new()
+		var sb := CylinderMesh.new()
+		sb.top_radius = 0.05
+		sb.bottom_radius = 0.05
+		sb.height = 0.30
+		stem.mesh = sb
+		stem.position = vi
+		var stm := StandardMaterial3D.new()
+		stm.albedo_color = Color(0.16, 0.18, 0.22)
+		stm.metallic = 0.7
+		stem.material_override = stm
+		add_child(stem)
+		var wheel := MeshInstance3D.new()
+		var wb := CylinderMesh.new()
+		wb.top_radius = 0.22
+		wb.bottom_radius = 0.22
+		wb.height = 0.05
+		wheel.mesh = wb
+		wheel.position = vi + Vector3(0, 0.18, 0)
+		var wmat := StandardMaterial3D.new()
+		wmat.albedo_color = Color(0.78, 0.20, 0.16)
+		wmat.metallic = 0.6
+		wmat.roughness = 0.40
+		wheel.material_override = wmat
+		add_child(wheel)
+		# Spokes
+		for sp in 4:
+			var spoke := MeshInstance3D.new()
+			var spb := BoxMesh.new()
+			spb.size = Vector3(0.40, 0.03, 0.04)
+			spoke.mesh = spb
+			spoke.position = vi + Vector3(0, 0.18, 0)
+			spoke.rotation_degrees = Vector3(0, sp * 45, 0)
+			var spm := StandardMaterial3D.new()
+			spm.albedo_color = Color(0.20, 0.20, 0.22)
+			spoke.material_override = spm
+			add_child(spoke)
 
 	# Pulsing core sphere above
 	core = MeshInstance3D.new()
@@ -108,13 +230,8 @@ func _ready() -> void:
 	smat.emission_energy_multiplier = 0.3
 	screen.material_override = smat
 	add_child(screen)
-	var slbl := Label3D.new()
-	slbl.text = "CALIBRATION 442-K\n\nARRAY  =  0.7 P-UNITS\nSTATUS =  ACTIVE\n\n*** READ TAPE ***"
-	slbl.position = Vector3(-W/2 + 0.20, 1.5, -4.0)
-	slbl.rotation_degrees = Vector3(0, 90, 0)
-	slbl.font_size = 22
-	slbl.modulate = Color(0.78, 0.90, 0.98)
-	add_child(slbl)
+	ActUtil.wall_label(self, "CALIBRATION 442-K\n\nARRAY  =  0.7 P-UNITS\nSTATUS =  ACTIVE\n\n*** READ TAPE ***",
+		Vector3(-W/2 + 0.22, 1.5, -4.0), 18, Color(0.78, 0.90, 0.98))
 
 	# Note 11 - maintenance tape on shelf below the panel
 	Interactable.make_note(self, Vector3(-W/2 + 0.55, 0.85, -4.0), "note_11", "Play tape")
@@ -138,13 +255,8 @@ func _ready() -> void:
 		sm2.emission_energy_multiplier = 0.3
 		s2.material_override = sm2
 		add_child(s2)
-		var lbl2 := Label3D.new()
-		lbl2.text = ptext
-		lbl2.position = Vector3(-W/2 + 0.20, 1.5, panel_z)
-		lbl2.rotation_degrees = Vector3(0, 90, 0)
-		lbl2.font_size = 18
-		lbl2.modulate = Color(0.63, 0.86, 0.71)
-		add_child(lbl2)
+		ActUtil.wall_label(self, ptext, Vector3(-W/2 + 0.22, 1.5, panel_z),
+			14, Color(0.63, 0.86, 0.71))
 
 	# Coolant tanks along east wall
 	for cfg2 in [[-5.0, "COOL A"], [-1.0, "COOL B"], [3.0, "COOL C"], [6.0, "COOL D"]]:
@@ -219,15 +331,22 @@ func _ready() -> void:
 	warn_bulb.material_override = wbmat
 	add_child(warn_bulb)
 
-	# EXIT sign
-	Chamber.make_prop_box(self, Vector3(0.06, 0.30, 0.80), Vector3(W/2 - 0.10, 2.4, 6.5), Color(0.31, 0.86, 0.39), false)
-	var exit_lbl := Label3D.new()
-	exit_lbl.text = "EXIT"
-	exit_lbl.position = Vector3(W/2 - 0.18, 2.4, 6.5)
-	exit_lbl.rotation_degrees = Vector3(0, -90, 0)
-	exit_lbl.font_size = 30
-	exit_lbl.modulate = Color(0.08, 0.12, 0.08)
-	add_child(exit_lbl)
+	# EXIT sign — emissive backplate + readable text
+	var exit_box := MeshInstance3D.new()
+	var ebm := BoxMesh.new()
+	ebm.size = Vector3(0.06, 0.30, 0.80)
+	exit_box.mesh = ebm
+	exit_box.position = Vector3(W/2 - 0.10, 2.4, 6.5)
+	var ebmat := StandardMaterial3D.new()
+	ebmat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	ebmat.albedo_color = Color(0.05, 0.20, 0.09)
+	ebmat.emission_enabled = true
+	ebmat.emission = Color(0.18, 0.92, 0.32)
+	ebmat.emission_energy_multiplier = 1.4
+	exit_box.material_override = ebmat
+	add_child(exit_box)
+	ActUtil.wall_label(self, "EXIT", Vector3(W/2 - 0.18, 2.4, 6.5), 26,
+		Color(0.06, 0.06, 0.08), Color(0.55, 1.0, 0.65, 0.9))
 
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)
 
@@ -280,14 +399,9 @@ func _build_coolant_tank(x: float, z: float, label_text: String) -> void:
 	band_mat.albedo_color = Color(0.86, 0.70, 0.12)
 	band.material_override = band_mat
 	add_child(band)
-	# Label text
-	var lbl := Label3D.new()
-	lbl.text = label_text
-	lbl.position = Vector3(x - 0.45, 1.50, z)
-	lbl.rotation_degrees = Vector3(0, 90, 0)
-	lbl.font_size = 18
-	lbl.modulate = Color(0.16, 0.12, 0.08)
-	add_child(lbl)
+	# Label text — billboard so it reads from the room centre regardless of approach
+	ActUtil.wall_label(self, label_text, Vector3(x - 0.45, 1.50, z), 18,
+		Color(0.18, 0.12, 0.06), Color(1, 0.95, 0.8, 0.7))
 
 
 func _process(dt: float) -> void:

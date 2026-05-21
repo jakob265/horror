@@ -71,6 +71,41 @@ func _ready() -> void:
 	add_child(intercom)
 	OlenManager.add_proximity_trigger(1, Vector3(0, 1.6, 0), intercom, 12.0, 3.0, true)
 
+	# Extra floor clutter to bring the bay alive
+	# Pile of medical supplies near east wall
+	Chamber.make_prop_box(self, Vector3(0.6, 0.4, 0.5), Vector3(5.0, 0.20, 1.5), Color(0.78, 0.78, 0.82))
+	Chamber.make_prop_box(self, Vector3(0.55, 0.06, 0.45), Vector3(5.0, 0.42, 1.5), Color(0.86, 0.16, 0.16), false)
+	# Toppled IV stand
+	Chamber.make_prop_box(self, Vector3(0.45, 0.08, 1.4), Vector3(2.0, 0.05, 3.5), Color(0.55, 0.55, 0.59), false)
+	# Vital monitor cart in the corner
+	Chamber.make_prop_box(self, Vector3(0.45, 0.95, 0.45), Vector3(-4.8, 0.47, -1.8), Color(0.20, 0.22, 0.27))
+	Chamber.make_prop_box(self, Vector3(0.40, 0.30, 0.06), Vector3(-4.8, 1.10, -2.0), Color(0.04, 0.16, 0.18), false)
+	var vitscr := MeshInstance3D.new()
+	var vsq := QuadMesh.new()
+	vsq.size = Vector2(0.34, 0.24)
+	vitscr.mesh = vsq
+	vitscr.position = Vector3(-4.8, 1.10, -2.04)
+	vitscr.rotation_degrees = Vector3(0, 180, 0)
+	var vsmat := StandardMaterial3D.new()
+	vsmat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	vsmat.albedo_color = Color(0.04, 0.10, 0.16)
+	vsmat.emission_enabled = true
+	vsmat.emission = Color(0.22, 0.86, 0.32)
+	vsmat.emission_energy_multiplier = 0.6
+	vitscr.material_override = vsmat
+	add_child(vitscr)
+	# Scattered cables
+	for cz in [-3.5, -0.5, 3.5]:
+		Chamber.make_prop_box(self, Vector3(0.06, 0.04, 1.4), Vector3(-3.0, 0.04, cz), Color(0.14, 0.14, 0.16), false)
+	# Wall-mounted defibrillator on east wall
+	Chamber.make_prop_box(self, Vector3(0.06, 0.40, 0.36), Vector3(5.92, 1.55, -2.0), Color(0.86, 0.55, 0.16), false)
+	# Floor decal warning stripe
+	for dz in [-6, 6]:
+		for dx in [-3, -1, 1, 3]:
+			Chamber.make_prop_box(self, Vector3(0.40, 0.02, 0.18), Vector3(dx, 0.02, dz), Color(0.86, 0.70, 0.12, 0.7), false)
+	# Hanging cable bundle from ceiling
+	Chamber.make_prop_box(self, Vector3(0.10, 1.2, 0.10), Vector3(0, 3.0, 0.5), Color(0.16, 0.16, 0.20), false)
+
 	# Spawn the player
 	if GameState.player:
 		GameState.player.global_position = Vector3(4.4, 0.5, -3.0)
@@ -89,9 +124,55 @@ func _make_pod(pos: Vector3, welded: bool) -> void:
 	Chamber.make_prop_box(self, Vector3(0.9, 0.4, 2.4), pos + Vector3(0, 0.20, 0), Color(0.20, 0.22, 0.25))
 	# Body
 	Chamber.make_prop_box(self, Vector3(0.9, 1.0, 2.4), pos + Vector3(0, 0.95, 0), Color(0.27, 0.30, 0.35))
+	# Base side panel - cabling channel
+	Chamber.make_prop_box(self, Vector3(0.86, 0.16, 2.20), pos + Vector3(0, 0.32, 0), Color(0.12, 0.12, 0.14), false)
+	# Tubing along both sides
+	for sx in [-0.55, 0.55]:
+		Chamber.make_prop_box(self, Vector3(0.08, 0.08, 2.20), pos + Vector3(sx, 0.55, 0), Color(0.62, 0.31, 0.22), false)
+		Chamber.make_prop_box(self, Vector3(0.08, 0.08, 2.20), pos + Vector3(sx, 0.72, 0), Color(0.31, 0.43, 0.62), false)
+	# Frost rim around the lid edge
+	for fz in [-1.10, 1.10]:
+		Chamber.make_prop_box(self, Vector3(0.90, 0.04, 0.06), pos + Vector3(0, 1.50, fz), Color(0.78, 0.86, 0.94), false)
+	# Status LEDs at the head end
+	var led_palette: Array[Color] = [Color(0.86, 0.18, 0.18), Color(0.86, 0.62, 0.16), Color(0.18, 0.86, 0.32)]
+	for li in 3:
+		var led_col: Color = led_palette[li]
+		var led := MeshInstance3D.new()
+		var lb := BoxMesh.new()
+		lb.size = Vector3(0.06, 0.06, 0.02)
+		led.mesh = lb
+		led.position = pos + Vector3(-0.30 + li * 0.10, 0.62, -1.21)
+		var lm := StandardMaterial3D.new()
+		lm.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+		lm.albedo_color = led_col
+		lm.emission_enabled = true
+		lm.emission = led_col
+		lm.emission_energy_multiplier = 0.9
+		led.material_override = lm
+		add_child(led)
+	# Small head-end readout screen
+	var rs := MeshInstance3D.new()
+	var rsb := BoxMesh.new()
+	rsb.size = Vector3(0.34, 0.18, 0.02)
+	rs.mesh = rsb
+	rs.position = pos + Vector3(0, 0.90, -1.215)
+	var rsm := StandardMaterial3D.new()
+	rsm.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	rsm.albedo_color = Color(0.04, 0.10, 0.20)
+	rsm.emission_enabled = true
+	rsm.emission = Color(0.22, 0.45, 0.86)
+	rsm.emission_energy_multiplier = 0.6
+	rs.material_override = rsm
+	add_child(rs)
+	# Pod name plate on the side
+	ActUtil.wall_label(self, "V-0" + str(int((pos.x + 4.4) / 2.2) + 1), pos + Vector3(0, 1.10, 1.25), 12,
+		Color(0.92, 0.95, 1.0), Color(0, 0, 0, 0.7))
 	# Lid
 	if welded:
 		Chamber.make_prop_box(self, Vector3(0.85, 0.10, 2.30), pos + Vector3(0, 1.6, 0), Color(0.16, 0.16, 0.18))
+		# Crude weld beads along the lid seam
+		for wz in [-0.80, -0.30, 0.20, 0.70]:
+			Chamber.make_prop_box(self, Vector3(0.92, 0.04, 0.10), pos + Vector3(0, 1.55, wz), Color(0.31, 0.20, 0.16), false)
 		# Crayon drawing prop
 		var draw := MeshInstance3D.new()
 		var quad := QuadMesh.new()
@@ -107,9 +188,28 @@ func _make_pod(pos: Vector3, welded: bool) -> void:
 			"DADDY and ME, in crayon. Charred at the edges. Felix kept it taped to his pod.",
 			5.0, Color(0.7, 0.6, 0.5))
 	else:
+		# Glass canopy (inside the open lid)
+		var glass := MeshInstance3D.new()
+		var gb := BoxMesh.new()
+		gb.size = Vector3(0.70, 0.10, 2.10)
+		glass.mesh = gb
+		glass.position = pos + Vector3(0, 1.52, 0)
+		var gmat := StandardMaterial3D.new()
+		gmat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+		gmat.albedo_color = Color(0.55, 0.78, 0.95, 0.35)
+		gmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		gmat.emission_enabled = true
+		gmat.emission = Color(0.55, 0.78, 0.95)
+		gmat.emission_energy_multiplier = 0.15
+		gmat.metallic = 0.0
+		gmat.roughness = 0.05
+		glass.material_override = gmat
+		add_child(glass)
 		# Open lid tilted up
 		var lid := Chamber.make_prop_box(self, Vector3(0.85, 0.10, 2.30), pos + Vector3(0, 1.8, -0.6), Color(0.23, 0.27, 0.33))
 		lid.rotation_degrees = Vector3(-25, 0, 0)
+		# Lid hinge mount at the head end
+		Chamber.make_prop_box(self, Vector3(0.80, 0.10, 0.10), pos + Vector3(0, 1.55, 1.15), Color(0.16, 0.16, 0.20), false)
 
 
 # --- Callbacks -----------------------------------------------------------

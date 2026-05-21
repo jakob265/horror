@@ -72,23 +72,28 @@ func _ready() -> void:
 			"dim": false,
 		})
 
-	# Half-open pressure bulkhead at z=-2
+	# Half-open pressure bulkhead at z=-2 — jambs + raised door panel (walk under)
 	var bulk_z := -2.0
 	for jx in [-W/2 + 0.30, W/2 - 0.30]:
 		Chamber.make_prop_box(self, Vector3(0.40, H, 0.40), Vector3(jx, H/2, bulk_z), Color(0.31, 0.27, 0.20))
 	# Header
 	Chamber.make_prop_box(self, Vector3(W - 0.6, 0.40, 0.40), Vector3(0, H - 0.20, bulk_z), Color(0.31, 0.27, 0.20))
-	# Bulkhead door half-open
-	var bulk_door := Chamber.make_prop_box(self, Vector3(W - 0.8, 2.0, 0.10), Vector3(0, 2.0, bulk_z), Color(0.43, 0.35, 0.23))
-	# Hazard stripes
-	for sy in [0.6, -0.6]:
-		Chamber.make_prop_box(self, Vector3(W - 1.2, 0.10, 0.20), Vector3(0, 2.0 + sy, bulk_z - 0.06), Color(0.86, 0.70, 0.12), false)
+	# Bulkhead door raised — sits at the top of the frame, player walks underneath.
+	# Marked non-colliding so the door panel itself doesn't block traversal.
+	var bulk_door := Chamber.make_prop_box(self, Vector3(W - 0.8, 0.90, 0.10), Vector3(0, H - 0.85, bulk_z), Color(0.43, 0.35, 0.23), false)
+	# Hazard stripes on the raised door
+	for sy in [0.25, -0.25]:
+		Chamber.make_prop_box(self, Vector3(W - 1.2, 0.10, 0.20), Vector3(0, H - 0.85 + sy, bulk_z - 0.06), Color(0.86, 0.70, 0.12), false)
+	# Door track / runner so it looks like it slid up
+	Chamber.make_prop_box(self, Vector3(W - 0.6, 0.06, 0.18), Vector3(0, H - 0.45, bulk_z - 0.18), Color(0.16, 0.16, 0.20), false)
 	# Label
 	var bulk_lbl := Label3D.new()
 	bulk_lbl.text = "ARRAY ACCESS"
 	bulk_lbl.position = Vector3(0, H - 0.20, bulk_z - 0.25)
 	bulk_lbl.font_size = 20
 	bulk_lbl.modulate = Color(0.86, 0.78, 0.62)
+	bulk_lbl.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
+	bulk_lbl.no_depth_test = false
 	add_child(bulk_lbl)
 
 	# West alcove: sealed maintenance hatch at z=-8

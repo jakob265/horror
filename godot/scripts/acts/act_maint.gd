@@ -140,6 +140,82 @@ func _ready() -> void:
 		stripe.material_override = smat
 		add_child(stripe)
 
+	# Extra maintenance clutter — tool cart, oil drum, dropped wrench
+	# Toolbox cart against the west wall
+	Chamber.make_prop_box(self, Vector3(0.45, 0.45, 0.65), Vector3(-W/2 + 0.5, 0.22, 5.0), Color(0.62, 0.51, 0.27))
+	for hdy in [0.20, 0.46]:
+		Chamber.make_prop_box(self, Vector3(0.42, 0.06, 0.06), Vector3(-W/2 + 0.5, hdy, 4.72), Color(0.30, 0.27, 0.23), false)
+	# Oil drum
+	var drum := MeshInstance3D.new()
+	var dm := CylinderMesh.new()
+	dm.top_radius = 0.30
+	dm.bottom_radius = 0.30
+	dm.height = 0.90
+	drum.mesh = dm
+	drum.position = Vector3(W/2 - 0.6, 0.45, -7.0)
+	var drmat := StandardMaterial3D.new()
+	drmat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	drmat.albedo_color = Color(0.62, 0.27, 0.20)
+	drmat.metallic = 0.7
+	drmat.roughness = 0.45
+	drum.material_override = drmat
+	add_child(drum)
+	# Drum band
+	for db in [0.30, 0.60]:
+		var dband := MeshInstance3D.new()
+		var dbcyl := CylinderMesh.new()
+		dbcyl.top_radius = 0.32
+		dbcyl.bottom_radius = 0.32
+		dbcyl.height = 0.04
+		dband.mesh = dbcyl
+		dband.position = Vector3(W/2 - 0.6, db, -7.0)
+		var dbmat := StandardMaterial3D.new()
+		dbmat.albedo_color = Color(0.16, 0.16, 0.18)
+		dbmat.metallic = 0.6
+		dband.material_override = dbmat
+		add_child(dband)
+	# Yellow hazard band
+	var hazb := MeshInstance3D.new()
+	var hazc := CylinderMesh.new()
+	hazc.top_radius = 0.32
+	hazc.bottom_radius = 0.32
+	hazc.height = 0.18
+	hazb.mesh = hazc
+	hazb.position = Vector3(W/2 - 0.6, 0.78, -7.0)
+	var hazmat := StandardMaterial3D.new()
+	hazmat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	hazmat.albedo_color = Color(0.86, 0.70, 0.16)
+	hazmat.emission_enabled = true
+	hazmat.emission = Color(0.86, 0.70, 0.16)
+	hazmat.emission_energy_multiplier = 0.25
+	hazb.material_override = hazmat
+	add_child(hazb)
+	# Dropped wrench on the floor
+	Chamber.make_prop_box(self, Vector3(0.06, 0.04, 0.32), Vector3(0.4, 0.04, 2.0), Color(0.66, 0.69, 0.75), false)
+	# Coiled hose against east wall
+	Chamber.make_prop_box(self, Vector3(0.40, 0.40, 0.40), Vector3(W/2 - 0.6, 0.20, -2.5), Color(0.16, 0.16, 0.18))
+	# Wall-mounted gauge cluster
+	for gi in 3:
+		var gx: float = -W/2 + 0.12
+		var gy: float = 1.7
+		var gz: float = -3.5 + gi * 0.4
+		var gauge := MeshInstance3D.new()
+		var gm := CylinderMesh.new()
+		gm.top_radius = 0.10
+		gm.bottom_radius = 0.10
+		gm.height = 0.04
+		gauge.mesh = gm
+		gauge.rotation_degrees = Vector3(0, 0, 90)
+		gauge.position = Vector3(gx, gy, gz)
+		var gmat2 := StandardMaterial3D.new()
+		gmat2.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+		gmat2.albedo_color = Color(0.92, 0.90, 0.86)
+		gauge.material_override = gmat2
+		add_child(gauge)
+	# Dust motes for the cramped vent atmosphere
+	ActUtil.add_dust_motes(self, Vector3(0, 1.4, 0), Vector3(2.0, 0.8, 8.0), 60,
+		Color(0.82, 0.84, 0.88, 0.18))
+
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)
 
 

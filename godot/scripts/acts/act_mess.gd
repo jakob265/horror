@@ -19,27 +19,40 @@ func _ready() -> void:
 	Chamber.add_door(self, "z", D/2 - 0.05, 0, "LAB", Color(0.28, 0.27, 0.23),
 		func(): GameState.mess_door_open = true, "Open LAB")
 
-	# Communal table down the middle
-	var table_y := 0.85
-	Chamber.make_prop_box(self, Vector3(2.0, 0.85, 8.5), Vector3(0, 0.42, 0), Color(0.43, 0.33, 0.25))
+	# Communal table down the middle — wider + longer than before
+	var table_y := 0.82
+	# Trestle legs
+	for tz in [-4.2, 0.0, 4.2]:
+		Chamber.make_prop_box(self, Vector3(2.6, 0.72, 0.12), Vector3(0, 0.36, tz), Color(0.27, 0.20, 0.14))
+	# Table top (wider 2.8 x deeper 9.6, no floating)
+	Chamber.make_prop_box(self, Vector3(2.8, 0.10, 9.6), Vector3(0, 0.82, 0), Color(0.47, 0.36, 0.27))
+	# Table edge trim
+	for ex in [-1.42, 1.42]:
+		Chamber.make_prop_box(self, Vector3(0.04, 0.06, 9.6), Vector3(ex, 0.85, 0), Color(0.36, 0.27, 0.20), false)
 
-	# 5 place settings alternating sides
-	_place_setting(-0.55, -3.0, table_y, Color(0.86, 0.84, 0.80), Color(0.70, 0.39, 0.23), Color(0.47, 0.35, 0.27), false, "VOSS")
-	_place_setting(0.55, -1.5, table_y, Color(0.86, 0.84, 0.80), Color.TRANSPARENT, Color(0.62, 0.23, 0.20), true, "OKAFOR")
-	_place_setting(-0.55, 0.0, table_y, Color(0.86, 0.84, 0.80), Color(0.47, 0.55, 0.31), Color(0.31, 0.43, 0.51), false, "PARK")
-	_place_setting(0.55, 1.5, table_y, Color(0.86, 0.84, 0.80), Color(0.70, 0.39, 0.23), Color(0.16, 0.23, 0.31), false, "HARGROVE")
-	_place_setting(-0.55, 3.0, table_y, Color(0.86, 0.84, 0.80), Color(0.59, 0.47, 0.27), Color(0.70, 0.59, 0.39), false, "SATO")
+	# 5 place settings alternating sides — wider spacing thanks to bigger table
+	_place_setting(-0.80, -3.8, table_y, Color(0.86, 0.84, 0.80), Color(0.70, 0.39, 0.23), Color(0.47, 0.35, 0.27), false, "VOSS")
+	_place_setting(0.80, -1.9, table_y, Color(0.86, 0.84, 0.80), Color.TRANSPARENT, Color(0.62, 0.23, 0.20), true, "OKAFOR")
+	_place_setting(-0.80, 0.0, table_y, Color(0.86, 0.84, 0.80), Color(0.47, 0.55, 0.31), Color(0.31, 0.43, 0.51), false, "PARK")
+	_place_setting(0.80, 1.9, table_y, Color(0.86, 0.84, 0.80), Color(0.70, 0.39, 0.23), Color(0.16, 0.23, 0.31), false, "HARGROVE")
+	_place_setting(-0.80, 3.8, table_y, Color(0.86, 0.84, 0.80), Color(0.59, 0.47, 0.27), Color(0.70, 0.59, 0.39), false, "SATO")
+
+	# Centerpiece: bread basket + salt/pepper shakers
+	Chamber.make_prop_box(self, Vector3(0.50, 0.16, 0.36), Vector3(0, 0.94, 0), Color(0.55, 0.42, 0.27), false)
+	Chamber.make_prop_box(self, Vector3(0.40, 0.10, 0.30), Vector3(0, 1.02, 0), Color(0.86, 0.70, 0.42), false)
+	Chamber.make_prop_box(self, Vector3(0.08, 0.16, 0.08), Vector3(0.4, 0.95, 1.0), Color(0.94, 0.92, 0.86), false)
+	Chamber.make_prop_box(self, Vector3(0.08, 0.16, 0.08), Vector3(0.5, 0.95, 1.0), Color(0.12, 0.12, 0.14), false)
 
 	# Felix's chair tipped over
-	var fell_chair := Chamber.make_prop_box(self, Vector3(0.45, 0.95, 0.45), Vector3(1.6, 0.10, -1.5), Color(0.33, 0.27, 0.23))
+	var fell_chair := Chamber.make_prop_box(self, Vector3(0.45, 0.95, 0.45), Vector3(2.0, 0.10, -1.9), Color(0.33, 0.27, 0.23))
 	fell_chair.rotation_degrees = Vector3(0, 0, 90)
 	Interactable.attach(fell_chair, "Look at the fallen chair", "examine_only", {
 		"text": "Felix's chair is tipped over on the floor.  His mug is on its side on the table, brown ring soaked into the wood.  His plate is empty - either he didn't eat or someone cleared it before he got here.  Knowing Felix it was the second one.",
 		"duration": 6.0,
 	})
 
-	# Upright chairs at the four other settings
-	for cfg in [[-1.5, -3.0], [-1.5, 0.0], [1.5, 1.5], [-1.5, 3.0]]:
+	# Upright chairs at the four other settings — match wider seating spacing
+	for cfg in [[-1.8, -3.8], [-1.8, 0.0], [1.8, 1.9], [-1.8, 3.8]]:
 		var cx: float = cfg[0]
 		var cz: float = cfg[1]
 		Chamber.make_prop_box(self, Vector3(0.45, 0.85, 0.45), Vector3(cx, 0.42, cz), Color(0.33, 0.27, 0.23))
@@ -47,7 +60,7 @@ func _ready() -> void:
 		Chamber.make_prop_box(self, Vector3(0.45, 1.10, 0.10), Vector3(cx, 0.95, back_z), Color(0.33, 0.27, 0.23))
 
 	# Note 16 - Yuna's note under Mara's plate
-	Interactable.make_note(self, Vector3(-0.55, table_y + 0.02, -3.3), "note_16", "Slide out the folded note")
+	Interactable.make_note(self, Vector3(-0.80, table_y + 0.10, -3.6), "note_16", "Slide out the folded note")
 
 	# Galley counter along east wall
 	Chamber.make_prop_box(self, Vector3(2.0, 0.95, D - 1.0), Vector3(W/2 - 1.0, 0.47, 0), Color(0.37, 0.39, 0.43))
@@ -118,29 +131,50 @@ func _ready() -> void:
 
 
 func _place_setting(x: float, z: float, table_y: float, plate_color: Color, food_color: Color, mug_color: Color, empty: bool, plate_name: String) -> void:
-	Chamber.make_prop_box(self, Vector3(0.42, 0.04, 0.42), Vector3(x, table_y + 0.04, z), plate_color)
+	# Plate (slightly raised so it sits flush on the table top)
+	Chamber.make_prop_box(self, Vector3(0.42, 0.05, 0.42), Vector3(x, table_y + 0.06, z), plate_color)
 	if not empty:
+		# Food as a flat oval slab rather than a sphere — looks like a meal, not a ball
 		var food := MeshInstance3D.new()
-		var sphere := SphereMesh.new()
-		sphere.radius = 0.15
-		sphere.height = 0.08
-		food.mesh = sphere
-		food.position = Vector3(x, table_y + 0.10, z)
+		var food_box := BoxMesh.new()
+		food_box.size = Vector3(0.30, 0.05, 0.24)
+		food.mesh = food_box
+		food.position = Vector3(x, table_y + 0.11, z)
 		var fm := StandardMaterial3D.new()
+		fm.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
 		fm.albedo_color = food_color
+		fm.roughness = 0.85
 		food.material_override = fm
 		add_child(food)
-	Chamber.make_prop_box(self, Vector3(0.12, 0.18, 0.12), Vector3(x + 0.32, table_y + 0.13, z - 0.18), mug_color)
+		# Small side garnish/sauce smear
+		Chamber.make_prop_box(self, Vector3(0.10, 0.02, 0.10), Vector3(x + 0.12, table_y + 0.08, z + 0.08),
+			Color(food_color.r * 0.7, food_color.g * 0.6, food_color.b * 0.5), false)
+	# Mug (cylinder-shaped so it reads as crockery, not a block)
+	var mug := MeshInstance3D.new()
+	var mb := CylinderMesh.new()
+	mb.top_radius = 0.055
+	mb.bottom_radius = 0.045
+	mb.height = 0.16
+	mug.mesh = mb
+	mug.position = Vector3(x + 0.32, table_y + 0.16, z - 0.18)
+	var mmat := StandardMaterial3D.new()
+	mmat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	mmat.albedo_color = mug_color
+	mmat.roughness = 0.5
+	mug.material_override = mmat
+	add_child(mug)
 	# Cutlery
-	Chamber.make_prop_box(self, Vector3(0.03, 0.02, 0.20), Vector3(x - 0.30, table_y + 0.03, z), Color(0.74, 0.76, 0.80), false)
-	Chamber.make_prop_box(self, Vector3(0.03, 0.02, 0.20), Vector3(x + 0.30, table_y + 0.03, z + 0.05), Color(0.74, 0.76, 0.80), false)
-	# Name plate
+	Chamber.make_prop_box(self, Vector3(0.03, 0.02, 0.20), Vector3(x - 0.30, table_y + 0.08, z), Color(0.74, 0.76, 0.80), false)
+	Chamber.make_prop_box(self, Vector3(0.03, 0.02, 0.20), Vector3(x + 0.30, table_y + 0.08, z + 0.05), Color(0.74, 0.76, 0.80), false)
+	# Name plate — laid flat on the table, in front of the place setting
 	var nplate := Label3D.new()
 	nplate.text = plate_name
-	nplate.position = Vector3(x, table_y + 0.06, z + 0.55)
+	nplate.position = Vector3(x, table_y + 0.10, z + 0.32)
 	nplate.rotation_degrees = Vector3(-90, 0, 0)
-	nplate.font_size = 24
+	nplate.font_size = 20
 	nplate.modulate = Color(0.16, 0.12, 0.08)
+	nplate.outline_size = 4
+	nplate.outline_modulate = Color(0.94, 0.92, 0.86, 0.9)
 	add_child(nplate)
 
 

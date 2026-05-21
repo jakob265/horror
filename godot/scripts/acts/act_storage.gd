@@ -38,28 +38,42 @@ func _ready() -> void:
 		var opened := label_str == "VOSS"
 		_build_pod(east_x, pod_zs[i], label_str, not opened, opened)
 
-	# Console at south end with tape (Note 17)
-	var console := Chamber.make_prop_box(self, Vector3(2.0, 1.0, 0.8), Vector3(0, 0.50, -D/2 + 1.4), Color(0.20, 0.24, 0.29))
+	# Tape console — set against the south wall to the side so player has clearance.
+	var con_z: float = -D/2 + 2.6
+	var console := Chamber.make_prop_box(self, Vector3(2.0, 1.0, 0.8), Vector3(-3.5, 0.50, con_z), Color(0.20, 0.24, 0.29))
+	# Sloped panel + buttons so it reads as a real console
+	Chamber.make_prop_box(self, Vector3(1.6, 0.30, 0.30), Vector3(-3.5, 0.85, con_z - 0.32), Color(0.14, 0.16, 0.20), false)
+	for bi in 5:
+		Chamber.make_prop_box(self, Vector3(0.10, 0.04, 0.10),
+			Vector3(-3.5 - 0.40 + bi * 0.18, 1.01, con_z - 0.30),
+			Color(0.86 - bi * 0.15, 0.30 + bi * 0.10, 0.23), false)
+	# Recessed screen
 	var scr := MeshInstance3D.new()
 	var sq := QuadMesh.new()
 	sq.size = Vector2(1.4, 0.7)
 	scr.mesh = sq
-	scr.position = Vector3(0, 0.80, -D/2 + 0.99)
+	scr.position = Vector3(-3.5, 1.30, con_z + 0.30)
 	var sm := StandardMaterial3D.new()
-	sm.albedo_color = Color(0.06, 0.16, 0.20)
+	sm.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	sm.albedo_color = Color(0.04, 0.10, 0.14)
 	sm.emission_enabled = true
 	sm.emission = Color(0.55, 0.86, 0.78)
 	sm.emission_energy_multiplier = 0.3
 	scr.material_override = sm
+	scr.rotation_degrees = Vector3(0, 180, 0)
 	add_child(scr)
+	# Screen back support
+	Chamber.make_prop_box(self, Vector3(1.5, 0.85, 0.08), Vector3(-3.5, 1.30, con_z + 0.32), Color(0.10, 0.10, 0.14), false)
+	# Screen label — billboard so text reads correctly from the aisle
 	var slabel := Label3D.new()
 	slabel.text = "CRYO STORAGE - CRESTFALL-9\n10 pods.  4 cycling.  1 staged.  5 dark.\n\n*** PLAY TECH LOG ***"
-	slabel.position = Vector3(0, 0.80, -D/2 + 0.97)
-	slabel.font_size = 20
+	slabel.position = Vector3(-3.5, 1.30, con_z + 0.27)
+	slabel.font_size = 18
 	slabel.modulate = Color(0.55, 0.86, 0.78)
+	slabel.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
 	add_child(slabel)
-	# Tape
-	Interactable.make_note(self, Vector3(0, 1.08, -D/2 + 1.0), "note_17", "Play tech tape")
+	# Tape lying on top of the console
+	Interactable.make_note(self, Vector3(-3.0, 1.04, con_z), "note_17", "Play tech tape")
 
 	# Centre aisle floor lights
 	for fz in range(-9, 10, 3):
@@ -97,9 +111,12 @@ func _ready() -> void:
 	})
 	var plaque_lbl := Label3D.new()
 	plaque_lbl.text = "CRESTFALL-9   CREW MANIFEST\nVOSS  OKAFOR  PARK  HARGROVE  SATO"
-	plaque_lbl.position = Vector3(0, H - 0.5, D/2 - 0.14)
-	plaque_lbl.font_size = 16
-	plaque_lbl.modulate = Color(0.16, 0.12, 0.08)
+	plaque_lbl.position = Vector3(0, H - 0.5, D/2 - 0.18)
+	plaque_lbl.font_size = 18
+	plaque_lbl.modulate = Color(0.92, 0.82, 0.55)
+	plaque_lbl.billboard = BaseMaterial3D.BILLBOARD_FIXED_Y
+	plaque_lbl.outline_size = 4
+	plaque_lbl.outline_modulate = Color(0.08, 0.06, 0.04)
 	add_child(plaque_lbl)
 
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)
@@ -158,13 +175,16 @@ func _build_pod(x: float, z: float, label_str: String, occupied: bool, opened: b
 		inner.material_override = imat
 		add_child(inner)
 
-	# Name plate
+	# Name plate — placed on the aisle-facing side of the pod, rotated to face the centre
+	var aisle_dir: float = 1.0 if x < 0 else -1.0  # west pods face +X, east pods face -X
 	var plate_lbl := Label3D.new()
 	plate_lbl.text = label_str
-	plate_lbl.position = Vector3(x + 0.55, 0.60, z - 0.5)
-	plate_lbl.rotation_degrees = Vector3(0, 90, 0)
+	plate_lbl.position = Vector3(x + 0.55 * aisle_dir, 0.60, z - 0.5)
+	plate_lbl.rotation_degrees = Vector3(0, 90 * aisle_dir, 0)
 	plate_lbl.font_size = 22
-	plate_lbl.modulate = Color(0.16, 0.12, 0.08)
+	plate_lbl.modulate = Color(0.86, 0.92, 0.98)
+	plate_lbl.outline_size = 4
+	plate_lbl.outline_modulate = Color(0.05, 0.06, 0.10)
 	add_child(plate_lbl)
 
 	# Status light

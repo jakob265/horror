@@ -44,13 +44,9 @@ func _ready() -> void:
 	var entry_door := Chamber.make_prop_box(self, Vector3(ENTRY_W, 2.4, 0.10),
 		Vector3(0, 1.2, -RD / 2 + 0.05), Color(0.70, 0.59, 0.51))
 
-	# ARRAY label above entry
-	var entry_lbl := Label3D.new()
-	entry_lbl.text = "ARRAY"
-	entry_lbl.position = Vector3(0, 2.7, -RD / 2 + 0.1)
-	entry_lbl.font_size = 28
-	entry_lbl.modulate = Color(0.86, 0.78, 0.62)
-	add_child(entry_lbl)
+	# ARRAY label above entry — billboard so it always reads correctly
+	ActUtil.wall_label(self, "ARRAY", Vector3(0, 2.7, -RD / 2 + 0.30), 28,
+		Color(0.95, 0.80, 0.55))
 
 	# Central tower
 	var tower_pos := Vector3(0, 0, 4)
@@ -143,13 +139,8 @@ func _ready() -> void:
 		smat.emission_energy_multiplier = 0.4
 		screen.material_override = smat
 		add_child(screen)
-		var lbl := Label3D.new()
-		lbl.text = "SIGNAL ORIGIN\nBEARING: 000.000\nDIST:    0.000 m\n(SELF)"
-		lbl.position = Vector3(sx, 1.10, sz - 0.30)
-		lbl.rotation_degrees = Vector3(0, ang_deg, 0)
-		lbl.font_size = 14
-		lbl.modulate = Color(0.06, 0.10, 0.16)
-		add_child(lbl)
+		ActUtil.wall_label(self, "SIGNAL ORIGIN\nBEARING: 000.000\nDIST:    0.000 m\n(SELF)",
+			Vector3(sx, 1.10, sz - 0.30), 14, Color(0.55, 0.86, 0.95))
 
 	# Hargrove-Shape at tower base, facing tower
 	hargrove_shape = HorrorShape.create(HorrorShape.KIND_HARGROVE, Vector3(tower_pos.x, 0, tower_pos.z + 1.6), 180)
@@ -180,13 +171,9 @@ func _ready() -> void:
 	tscol.shape = tscs
 	term_screen.add_child(tscol)
 	add_child(term_screen)
-	var tlbl := Label3D.new()
-	tlbl.text = "[ ARRAY CONTROL ]\n  USE TERMINAL"
-	tlbl.position = Vector3(tower_pos.x, 1.15, tower_pos.z - 2.48)
-	tlbl.rotation_degrees = Vector3(35, 0, 0)
-	tlbl.font_size = 16
-	tlbl.modulate = Color(0.06, 0.20, 0.14)
-	add_child(tlbl)
+	ActUtil.wall_label(self, "[ ARRAY CONTROL ]\n  USE TERMINAL",
+		Vector3(tower_pos.x, 1.15, tower_pos.z - 2.48), 16,
+		Color(0.55, 0.95, 0.75))
 	Interactable.attach(term_screen, "Use terminal", "trigger_event", {
 		"callback": Callable(self, "_open_terminal"),
 	})

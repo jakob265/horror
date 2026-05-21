@@ -148,13 +148,87 @@ func _ready() -> void:
 
 	# Side comms alcove (west wall)
 	var alcove := Chamber.make_prop_box(self, Vector3(1.4, 1.6, 0.6), Vector3(-W/2 + 0.50, 0.80, 3.0), Color(0.20, 0.22, 0.27))
-	var alc_lbl := Label3D.new()
-	alc_lbl.text = "LONG-RANGE\n  carrier:  OFFLINE\n  buffer:   FULL\n  msgs out: 0\n  msgs in:  0"
-	alc_lbl.position = Vector3(-W/2 + 0.81, 1.00, 3.0)
-	alc_lbl.rotation_degrees = Vector3(0, 90, 0)
-	alc_lbl.font_size = 14
-	alc_lbl.modulate = Color(0.62, 0.78, 0.94)
-	add_child(alc_lbl)
+	# Emissive screen on the alcove face
+	var alc_screen := MeshInstance3D.new()
+	var asq := QuadMesh.new()
+	asq.size = Vector2(1.10, 0.50)
+	alc_screen.mesh = asq
+	alc_screen.position = Vector3(-W/2 + 1.22, 1.00, 3.0)
+	alc_screen.rotation_degrees = Vector3(0, 90, 0)
+	var asmat := StandardMaterial3D.new()
+	asmat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	asmat.albedo_color = Color(0.04, 0.10, 0.18)
+	asmat.emission_enabled = true
+	asmat.emission = Color(0.10, 0.22, 0.45)
+	asmat.emission_energy_multiplier = 0.4
+	alc_screen.material_override = asmat
+	add_child(alc_screen)
+	ActUtil.wall_label(self, "LONG-RANGE\n  carrier:  OFFLINE\n  buffer:   FULL\n  msgs out: 0\n  msgs in:  0",
+		Vector3(-W/2 + 1.25, 1.00, 3.0), 13, Color(0.62, 0.78, 0.94))
+
+	# More fill — a star chart, a radio bench, a coffee station — to break up the empty north sides
+	# Radio / comms bench against west wall just south of the alcove
+	var radio_bench := Chamber.make_prop_box(self, Vector3(1.6, 0.90, 0.55), Vector3(-W/2 + 0.80, 0.45, 5.6), Color(0.20, 0.22, 0.27))
+	# Radio chassis on top
+	Chamber.make_prop_box(self, Vector3(1.0, 0.40, 0.40), Vector3(-W/2 + 0.75, 1.10, 5.6), Color(0.14, 0.16, 0.20), false)
+	# Indicator LEDs
+	var led_palette: Array[Color] = [Color(0.86, 0.22, 0.22), Color(0.86, 0.62, 0.22), Color(0.22, 0.86, 0.32), Color(0.22, 0.55, 0.86), Color(0.78, 0.42, 0.86)]
+	for li in 5:
+		var led_color: Color = led_palette[li]
+		var led := MeshInstance3D.new()
+		var lb := BoxMesh.new()
+		lb.size = Vector3(0.06, 0.06, 0.02)
+		led.mesh = lb
+		led.position = Vector3(-W/2 + 0.55 + li * 0.10, 1.18, 5.4)
+		var lm := StandardMaterial3D.new()
+		lm.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+		lm.albedo_color = led_color
+		lm.emission_enabled = true
+		lm.emission = led_color
+		lm.emission_energy_multiplier = 1.2
+		led.material_override = lm
+		add_child(led)
+	# Coiled headset cable bunched on the bench
+	Chamber.make_prop_box(self, Vector3(0.20, 0.06, 0.20), Vector3(-W/2 + 1.40, 0.93, 5.6), Color(0.10, 0.10, 0.12), false)
+	# Mug stained ring next to it
+	Chamber.make_prop_box(self, Vector3(0.14, 0.16, 0.14), Vector3(-W/2 + 1.50, 0.98, 5.30), Color(0.55, 0.31, 0.24), false)
+
+	# Star map case at the back of the room (north wall)
+	var star_case := Chamber.make_prop_box(self, Vector3(2.6, 1.0, 0.08), Vector3(-4, 1.80, D/2 - 0.22), Color(0.04, 0.05, 0.10))
+	var star_emi := MeshInstance3D.new()
+	var seq := BoxMesh.new()
+	seq.size = Vector3(2.55, 0.94, 0.04)
+	star_emi.mesh = seq
+	star_emi.position = Vector3(-4, 1.80, D/2 - 0.18)
+	var semat := StandardMaterial3D.new()
+	semat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	semat.albedo_color = Color(0.06, 0.10, 0.20)
+	semat.emission_enabled = true
+	semat.emission = Color(0.20, 0.34, 0.62)
+	semat.emission_energy_multiplier = 0.45
+	star_emi.material_override = semat
+	add_child(star_emi)
+	Interactable.attach(star_case, "Examine the star map", "examine_only", {
+		"text": "A back-lit chart of the local stellar neighbourhood.  KEPLER-442 highlighted.  Distance to Sol: 1206 ly.  A green line traces the inbound signal vector.  It points back along the path you flew in on.",
+		"duration": 6.0,
+	})
+
+	# Pendant lamps over each crew station for proper task lighting
+	for sx in [-5.0, -2.5, 0.0, 2.5, 5.0]:
+		Chamber.make_prop_box(self, Vector3(0.06, 0.30, 0.06), Vector3(sx, H - 0.30, 1.8), Color(0.16, 0.16, 0.20), false)
+		var bulb := MeshInstance3D.new()
+		var ss := SphereMesh.new()
+		ss.radius = 0.10
+		ss.height = 0.20
+		bulb.mesh = ss
+		bulb.position = Vector3(sx, H - 0.60, 1.8)
+		var bm := StandardMaterial3D.new()
+		bm.albedo_color = Color(0.88, 0.92, 1.0)
+		bm.emission_enabled = true
+		bm.emission = Color(0.78, 0.86, 1.0)
+		bm.emission_energy_multiplier = 1.4
+		bulb.material_override = bm
+		add_child(bulb)
 
 	# Hargrove-Shape at the back, facing away
 	var hg := HorrorShape.create(HorrorShape.KIND_HARGROVE, Vector3(0, plat_y, -D/2 + 1.5), 0)
@@ -198,14 +272,8 @@ func _crew_station(x: float, z: float, label_text: String, screen_color: Color, 
 	smat.emission_energy_multiplier = 0.3
 	screen.material_override = smat
 	add_child(screen)
-	# Text
-	var lbl := Label3D.new()
-	lbl.text = label_text
-	lbl.position = Vector3(x, 1.20, z + 0.12)
-	lbl.rotation_degrees = Vector3(0, 180, 0)
-	lbl.font_size = 14
-	lbl.modulate = text_color
-	add_child(lbl)
+	# Text — billboard so the label always reads correctly from the captain's chair
+	ActUtil.wall_label(self, label_text, Vector3(x, 1.20, z + 0.12), 14, text_color)
 
 
 func _process(_dt: float) -> void:
