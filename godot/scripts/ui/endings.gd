@@ -95,60 +95,110 @@ const ENDING_B := [
 @onready var title: Label = $Title
 @onready var subtitle: Label = $Subtitle
 @onready var button: Button = $Continue
+@onready var skip_hint: Label = $SkipHint
 
 var button_armed := false
+var streaming := false
+var _pending_lines: Array = []
+var _pending_sub: String = ""
+var _line_timer: Timer = null
+var _finish_timer: Timer = null
 
 
 func _ready() -> void:
 	title.visible = false
 	subtitle.visible = false
 	button.visible = false
+	if skip_hint:
+		skip_hint.visible = false
 	button.pressed.connect(_on_continue)
+	# Skip-hint fades in shortly after the ending begins
+	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
 func play_ending_a() -> void:
 	AudioManager.ramp_ending_hum(0.50, 2.0)
 	get_tree().create_timer(2.1).timeout.connect(AudioManager.cut_hum)
 	bg.color = Color(0, 0, 0, 1)
-	_stream(ENDING_A, 4.0, 1.4, 1.2, "You came back.")
+	_stream(ENDING_A, 2.0, 0.6, 0.65, "You came back.")
 
 
 func play_ending_b() -> void:
-	AudioManager.ramp_ending_hum(0.35, 8.0)
+	AudioManager.ramp_ending_hum(0.35, 6.0)
 	bg.color = Color(1.0, 0.86, 0.71, 0)
 	var tween := create_tween()
-	tween.tween_property(bg, "color", Color(1.0, 0.86, 0.71, 1), 4.0).set_delay(2.0)
-	tween.tween_property(bg, "color", Color(0, 0, 0, 1), 2.0).set_delay(0.5)
-	_stream(ENDING_B, 9.0, 1.4, 1.1, "Something answered.")
+	tween.tween_property(bg, "color", Color(1.0, 0.86, 0.71, 1), 3.0).set_delay(1.5)
+	tween.tween_property(bg, "color", Color(0, 0, 0, 1), 1.8).set_delay(0.4)
+	_stream(ENDING_B, 4.0, 0.6, 0.6, "Something answered.")
 
 
+# Stream lines into the lines_box one at a time, then reveal title + button.
+# All timing is driven by a single Timer so the whole thing can be cancelled
+# (skip key) without leaving stray timers behind.
 func _stream(lines: Array, start_delay: float, gap_blank: float, gap_line: float, sub: String) -> void:
+	streaming = true
+	_pending_sub = sub
+	# Build a schedule: (delay_from_start, line). Blanks insert a gap but no entry.
+	_pending_lines.clear()
 	var delay := start_delay
 	for raw in lines:
 		var line: String = raw.strip_edges()
 		if line == "":
 			delay += gap_blank
 			continue
-		var current_delay := delay
-		get_tree().create_timer(current_delay).timeout.connect(
-			func(): _add_line(line)
-		)
+		_pending_lines.append({"at": delay, "text": line})
 		delay += gap_line
-	# Show title + button
-	get_tree().create_timer(delay + 2.0).timeout.connect(
-		func():
-			for c in lines_box.get_children():
-				c.queue_free()
-			title.visible = true
-			subtitle.text = sub
-			subtitle.visible = true
+	# Skip hint fades in after a short pause
+	get_tree().create_timer(1.5).timeout.connect(_show_skip_hint)
+	# Drive the stream off a single timer that ticks once per line
+	_tick_lines(0)
+	# Reveal title + button after the last line + a beat
+	_schedule_finish(delay + 1.4)
+
+
+func _tick_lines(idx: int) -> void:
+	if not streaming or idx >= _pending_lines.size():
+		return
+	var entry: Dictionary = _pending_lines[idx]
+	var at: float = float(entry["at"])
+	var t := get_tree().create_timer(at if idx == 0 else max(0.05, float(_pending_lines[idx]["at"]) - float(_pending_lines[idx - 1]["at"])))
+	t.timeout.connect(func():
+		if not streaming or not is_instance_valid(self):
+			return
+		_add_line(entry["text"])
+		_tick_lines(idx + 1)
 	)
-	get_tree().create_timer(delay + 5.0).timeout.connect(
-		func():
-			button.visible = true
-			button_armed = true
-			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+
+func _schedule_finish(after: float) -> void:
+	get_tree().create_timer(after).timeout.connect(func():
+		if not streaming or not is_instance_valid(self):
+			return
+		_show_finish()
 	)
+
+
+func _show_skip_hint() -> void:
+	if skip_hint and is_instance_valid(skip_hint):
+		skip_hint.visible = true
+		var tween := create_tween()
+		skip_hint.modulate.a = 0.0
+		tween.tween_property(skip_hint, "modulate:a", 1.0, 0.8)
+
+
+func _show_finish() -> void:
+	for c in lines_box.get_children():
+		c.queue_free()
+	title.visible = true
+	subtitle.text = _pending_sub
+	subtitle.visible = true
+	if skip_hint:
+		skip_hint.visible = false
+	button.visible = true
+	button_armed = true
+	streaming = false
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	button.grab_focus()
 
 
 func _add_line(line: String) -> void:
@@ -159,13 +209,18 @@ func _add_line(line: String) -> void:
 	lbl.add_theme_color_override("font_color", Color(0.90, 0.90, 0.92, 0.0))
 	lines_box.add_child(lbl)
 	var tween := create_tween()
-	tween.tween_property(lbl, "modulate:a", 1.0, 0.8)
+	tween.tween_property(lbl, "modulate:a", 1.0, 0.5)
 
 
+# Called from main._unhandled_input via the existing input plumbing.
 func handle_input(event: InputEvent) -> void:
-	if not button_armed: return
-	if event is InputEventKey and event.pressed:
-		if event.keycode in [KEY_ENTER, KEY_E, KEY_SPACE]:
+	if event is InputEventKey and event.pressed and not event.echo:
+		if streaming and event.keycode in [KEY_ENTER, KEY_E, KEY_SPACE, KEY_ESCAPE]:
+			# Skip the streaming, jump straight to the title + button.
+			streaming = false
+			_show_finish()
+			return
+		if button_armed and event.keycode in [KEY_ENTER, KEY_E, KEY_SPACE]:
 			_on_continue()
 
 

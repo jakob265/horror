@@ -95,6 +95,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		player.handle_input(event)
 	if GameState.terminal_ui and GameState.terminal_ui.has_method("handle_input"):
 		GameState.terminal_ui.handle_input(event)
+	# Endings handle their own skip + continue keys
+	if in_ending and ending_overlay and ending_overlay.has_method("handle_input"):
+		ending_overlay.handle_input(event)
 
 
 func _open_pause() -> void:
@@ -164,4 +167,7 @@ func _on_ending_done() -> void:
 		hud.visible = true
 	if InteractionManager.prompt_label:
 		InteractionManager.prompt_label.visible = true
+	# Clear the modal stack pushed by start_ending so the player isn't frozen
+	# in the seconds before _quit_to_menu disposes the player anyway.
+	GameState.modal_count = 0
 	_quit_to_menu()
