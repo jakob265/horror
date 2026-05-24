@@ -348,6 +348,29 @@ func _ready() -> void:
 	ActUtil.wall_label(self, "EXIT", Vector3(W/2 - 0.18, 2.4, 6.5), 26,
 		Color(0.06, 0.06, 0.08), Color(0.55, 1.0, 0.65, 0.9))
 
+	# Ceiling pipes already partially exist, add more atmospheric clutter
+	ActUtil.add_ceiling_pipes(self, W, D, H)
+	# Floor decals around the reactor
+	ActUtil.add_floor_decals(self, W, D, Vector3.ZERO, Color(0.86, 0.86, 0.16, 0.6))
+	# Wall vents
+	ActUtil.wall_vent(self, "x", W/2 - 0.05, 8.0, 3.0, Vector2(0.7, 0.5))
+	ActUtil.wall_vent(self, "x", -W/2 + 0.05, 8.0, 3.0, Vector2(0.7, 0.5))
+
+	# Signage above the doors
+	ActUtil.wall_label(self, "<-  HYDROPONICS",
+		Vector3(0, Chamber.DOOR_H + 0.30, -D/2 + 0.18), 16, Color(0.55, 0.95, 0.65))
+	ActUtil.wall_label(self, "STORAGE  ->",
+		Vector3(0, Chamber.DOOR_H + 0.30, D/2 - 0.18), 16, Color(0.62, 0.78, 0.94))
+
+	# Power cable thicket leading from reactor base to east wall
+	for ci in 4:
+		Chamber.make_prop_box(self, Vector3(W/2 - 2.0, 0.10, 0.08),
+			Vector3(W/4, 0.06, -1.0 + ci * 0.30),
+			Color(0.14, 0.14, 0.18), false)
+
+	# A workbench-mounted vise on the tool bench
+	Chamber.make_prop_box(self, Vector3(0.18, 0.16, 0.14), Vector3(-W/2 + 1.0, 0.93, 5.5), Color(0.55, 0.55, 0.59), false)
+
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)
 
 

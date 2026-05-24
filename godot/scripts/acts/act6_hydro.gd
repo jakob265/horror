@@ -145,6 +145,17 @@ func _ready() -> void:
 		"duration": 10.0,
 	})
 
+	# Sign over each door
+	ActUtil.wall_label(self, "<-  RESEARCH LAB",
+		Vector3(0, Chamber.DOOR_H + 0.30, -D/2 + 0.18), 16, Color(0.55, 0.95, 0.65))
+	ActUtil.wall_label(self, "ENGINEERING  ->",
+		Vector3(0, Chamber.DOOR_H + 0.30, D/2 - 0.18), 16, Color(0.86, 0.70, 0.42))
+	# Wall vents
+	ActUtil.wall_vent(self, "x", -W/2 + 0.05, 0, 2.8, Vector2(0.6, 0.4))
+	ActUtil.wall_vent(self, "x", W/2 - 0.05, 0, 2.8, Vector2(0.6, 0.4))
+	# Floor decals
+	ActUtil.add_floor_decals(self, W, D, Vector3.ZERO, Color(0.42, 0.86, 0.55, 0.4))
+
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)
 
 

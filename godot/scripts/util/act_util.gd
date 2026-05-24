@@ -205,6 +205,125 @@ static func wall_label(parent: Node3D, text: String, pos: Vector3, font_size: in
 	return lbl
 
 
+# Drop floor decals (warning stripes, evac arrows) so floors don't look bare.
+static func add_floor_decals(parent: Node3D, w: float, d: float, center: Vector3 = Vector3.ZERO, accent: Color = Color(0.86, 0.70, 0.16, 0.7)) -> void:
+	# Hazard stripes near the four walls
+	for ax in [-w/2 + 0.6, w/2 - 0.6]:
+		for az in range(-int(d/2) + 1, int(d/2), 3):
+			var stripe := MeshInstance3D.new()
+			var q := QuadMesh.new()
+			q.size = Vector2(0.30, 0.12)
+			stripe.mesh = q
+			stripe.rotation_degrees = Vector3(-90, 0, 0)
+			stripe.position = center + Vector3(ax, 0.02, az)
+			var sm := StandardMaterial3D.new()
+			sm.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+			sm.albedo_color = accent
+			sm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			sm.emission_enabled = true
+			sm.emission = accent
+			sm.emission_energy_multiplier = 0.15
+			stripe.material_override = sm
+			parent.add_child(stripe)
+
+
+# Drop a row of ceiling pipes / conduits across the room. Cheap visual density.
+static func add_ceiling_pipes(parent: Node3D, w: float, d: float, h: float, center: Vector3 = Vector3.ZERO) -> void:
+	for cz in range(-int(d/2) + 1, int(d/2), 3):
+		# Main pipe (industrial dark)
+		var p1 := MeshInstance3D.new()
+		var b1 := BoxMesh.new()
+		b1.size = Vector3(w - 0.6, 0.12, 0.12)
+		p1.mesh = b1
+		p1.position = center + Vector3(0, h - 0.18, cz)
+		var m1 := StandardMaterial3D.new()
+		m1.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+		m1.albedo_color = Color(0.30, 0.27, 0.22)
+		m1.metallic = 0.5
+		m1.roughness = 0.55
+		p1.material_override = m1
+		parent.add_child(p1)
+		# Secondary smaller pipe (coloured)
+		var p2 := MeshInstance3D.new()
+		var b2 := BoxMesh.new()
+		b2.size = Vector3(w - 0.6, 0.08, 0.08)
+		p2.mesh = b2
+		p2.position = center + Vector3(0, h - 0.34, cz + 0.30)
+		var m2 := StandardMaterial3D.new()
+		m2.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+		m2.albedo_color = Color(0.22, 0.40, 0.55)
+		m2.metallic = 0.45
+		m2.roughness = 0.50
+		p2.material_override = m2
+		parent.add_child(p2)
+
+
+# Mount a vent grille on a wall, oriented so the slats face the room interior.
+static func wall_vent(parent: Node3D, axis: String, fixed: float, gap_center: float, y: float = 2.3, size: Vector2 = Vector2(0.7, 0.5)) -> void:
+	var thick := 0.04
+	var size3: Vector3
+	var pos: Vector3
+	if axis == "x":
+		size3 = Vector3(thick, size.y, size.x)
+		pos = Vector3(fixed, y, gap_center)
+	else:
+		size3 = Vector3(size.x, size.y, thick)
+		pos = Vector3(gap_center, y, fixed)
+	var frame := MeshInstance3D.new()
+	var fb := BoxMesh.new()
+	fb.size = size3
+	frame.mesh = fb
+	frame.position = pos
+	var fm := StandardMaterial3D.new()
+	fm.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	fm.albedo_color = Color(0.16, 0.18, 0.22)
+	fm.metallic = 0.55
+	fm.roughness = 0.45
+	frame.material_override = fm
+	parent.add_child(frame)
+	# Slats
+	for slat in 5:
+		var slat_pos := pos
+		var slat_size: Vector3
+		if axis == "x":
+			slat_size = Vector3(thick * 1.4, 0.04, size.x - 0.10)
+			slat_pos.y = y - size.y * 0.4 + slat * (size.y * 0.2)
+		else:
+			slat_size = Vector3(size.x - 0.10, 0.04, thick * 1.4)
+			slat_pos.y = y - size.y * 0.4 + slat * (size.y * 0.2)
+		var sl := MeshInstance3D.new()
+		var sb := BoxMesh.new()
+		sb.size = slat_size
+		sl.mesh = sb
+		sl.position = slat_pos
+		var sm2 := StandardMaterial3D.new()
+		sm2.albedo_color = Color(0.10, 0.10, 0.13)
+		sm2.metallic = 0.3
+		sl.material_override = sm2
+		parent.add_child(sl)
+
+
+# Drop a small wall poster / placard (paper sign) at a position.
+static func wall_poster(parent: Node3D, axis: String, fixed: float, pos: Vector3, size: Vector2, color: Color) -> void:
+	var thick := 0.02
+	var size3: Vector3
+	if axis == "x":
+		size3 = Vector3(thick, size.y, size.x)
+	else:
+		size3 = Vector3(size.x, size.y, thick)
+	var ms := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = size3
+	ms.mesh = bm
+	ms.position = pos
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	mat.albedo_color = color
+	mat.roughness = 0.85
+	ms.material_override = mat
+	parent.add_child(ms)
+
+
 static func spawn_player(pos: Vector3, rotation_y: float = 0.0) -> void:
 	if GameState.player:
 		GameState.player.global_position = pos

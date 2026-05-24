@@ -347,6 +347,40 @@ REC: full alert.  Convene crew.
 	# Intercom 5 - just inside the array door (proximity)
 	ActUtil.register_intercom(self, 5, Vector3(-4.6, 1.7, LAB_D / 2 - 0.15), 180, Vector3(-6, 1.6, LAB_D / 2 - 1.2), 3.5)
 
+	# Extra fill — lab equipment + ceiling clutter so the room feels lived-in
+	# Microscope + sample tray on the west bench (need a bench first)
+	Chamber.make_prop_box(self, Vector3(0.55, 0.85, 0.5), Vector3(-LAB_W/2 + 0.40, 0.42, -3.0), Color(0.31, 0.31, 0.35))
+	Chamber.make_prop_box(self, Vector3(0.14, 0.40, 0.14), Vector3(-LAB_W/2 + 0.40, 1.05, -3.0), Color(0.20, 0.22, 0.27), false)
+	Chamber.make_prop_box(self, Vector3(0.20, 0.06, 0.12), Vector3(-LAB_W/2 + 0.40, 1.30, -3.0), Color(0.16, 0.16, 0.20), false)
+	# Petri dish on the bench
+	Chamber.make_prop_box(self, Vector3(0.08, 0.02, 0.08), Vector3(-LAB_W/2 + 0.55, 0.87, -3.20), Color(0.86, 0.88, 0.92, 0.6), false)
+
+	# A glass-fronted instrument cabinet on the west wall
+	Chamber.make_prop_box(self, Vector3(0.06, 1.6, 1.2), Vector3(-LAB_W/2 + 0.05, 1.65, 3.0), Color(0.20, 0.22, 0.27))
+	# Interior shelves
+	for sy in [1.10, 1.60, 2.10]:
+		Chamber.make_prop_box(self, Vector3(0.04, 0.04, 1.10), Vector3(-LAB_W/2 + 0.10, sy, 3.0), Color(0.40, 0.42, 0.45), false)
+		# Items on shelf
+		for sz in [-0.40, -0.10, 0.20]:
+			Chamber.make_prop_box(self, Vector3(0.06, 0.18, 0.08), Vector3(-LAB_W/2 + 0.10, sy + 0.11, 3.0 + sz), Color(0.62, 0.70, 0.82, 0.5), false)
+
+	# Storage crates stacked NE corner
+	Chamber.make_prop_box(self, Vector3(0.7, 0.55, 0.5), Vector3(5.5, 0.28, 4.5), Color(0.55, 0.43, 0.27))
+	Chamber.make_prop_box(self, Vector3(0.65, 0.45, 0.45), Vector3(5.5, 0.78, 4.5), Color(0.43, 0.31, 0.20))
+	Chamber.make_prop_box(self, Vector3(0.50, 0.30, 0.50), Vector3(5.0, 0.16, 5.0), Color(0.55, 0.43, 0.27))
+
+	# Whiteboard on south wall (west of door gap)
+	Chamber.make_prop_box(self, Vector3(1.6, 1.2, 0.06), Vector3(-4.0, 1.7, -LAB_D/2 + 0.15), Color(0.94, 0.92, 0.96))
+	ActUtil.wall_label(self, "WAVEFORM 442-K\n   0.7 Pu\n   STABLE",
+		Vector3(-4.0, 1.7, -LAB_D/2 + 0.10), 14, Color(0.20, 0.20, 0.20))
+
+	# Ceiling pipes + cable runs
+	ActUtil.add_ceiling_pipes(self, LAB_W, LAB_D, LAB_H)
+	# Floor decals near the array door
+	ActUtil.add_floor_decals(self, LAB_W, LAB_D, Vector3.ZERO, Color(0.86, 0.86, 0.16, 0.55))
+	# Wall vents
+	ActUtil.wall_vent(self, "x", -LAB_W/2 + 0.05, -1.5, 2.8, Vector2(0.6, 0.4))
+
 	# Player spawns at the south end of the corridor
 	ActUtil.spawn_player(Vector3(0, 0.5, -13.5), 0)
 

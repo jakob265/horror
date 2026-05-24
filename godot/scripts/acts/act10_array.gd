@@ -181,6 +181,104 @@ func _ready() -> void:
 	# Intercom 6 - proximity to terminal, 2s delay
 	ActUtil.register_intercom(self, 6, Vector3(tower_pos.x, 1.7, tower_pos.z - 2.95), 0, Vector3(tower_pos.x, 1.6, tower_pos.z - 2.6), 2.2, 2.0)
 
+	# Tower base ring of cable conduits piling outward
+	for i in range(12):
+		var a := float(i) * TAU / 12.0
+		var r := 2.4 + (i % 3) * 0.3
+		Chamber.make_prop_box(self, Vector3(0.18, 0.18, 0.18),
+			Vector3(tower_pos.x + cos(a) * r, 0.10, tower_pos.z + sin(a) * r),
+			Color(0.20, 0.20, 0.24))
+	# Heavy floor cables snaking out from the tower base
+	for i in range(8):
+		var a := float(i) * TAU / 8.0
+		var len := 6.0
+		var cable := MeshInstance3D.new()
+		var cb := BoxMesh.new()
+		cb.size = Vector3(0.10, 0.06, len)
+		cable.mesh = cb
+		cable.position = Vector3(tower_pos.x + cos(a) * (1.5 + len/2), 0.05,
+			tower_pos.z + sin(a) * (1.5 + len/2))
+		cable.rotation_degrees = Vector3(0, -rad_to_deg(a) + 90, 0)
+		var cmat := StandardMaterial3D.new()
+		cmat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+		cmat.albedo_color = Color(0.14, 0.14, 0.18)
+		cmat.metallic = 0.3
+		cable.material_override = cmat
+		add_child(cable)
+
+	# Equipment racks along the east and west walls
+	var rack_led_palette: Array[Color] = [Color(0.86, 0.22, 0.22), Color(0.86, 0.70, 0.22), Color(0.22, 0.86, 0.42)]
+	for rack_z in [-10, -4, 2, 8]:
+		for wx in [-RW/2 + 0.5, RW/2 - 0.5]:
+			Chamber.make_prop_box(self, Vector3(0.6, 2.4, 1.4), Vector3(wx, 1.2, rack_z), Color(0.18, 0.20, 0.24))
+			# Indicator LEDs
+			for ly in [0.6, 1.2, 1.8]:
+				var led_col: Color = rack_led_palette[int(ly * 5) % 3]
+				var led := MeshInstance3D.new()
+				var lb := BoxMesh.new()
+				lb.size = Vector3(0.04, 0.06, 0.06)
+				led.mesh = lb
+				led.position = Vector3(wx + (-0.30 if wx > 0 else 0.30), ly, rack_z)
+				var lmat := StandardMaterial3D.new()
+				lmat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+				lmat.albedo_color = led_col
+				lmat.emission_enabled = true
+				lmat.emission = led_col
+				lmat.emission_energy_multiplier = 1.2
+				led.material_override = lmat
+				add_child(led)
+			# Ventilation slots on the front
+			for sy in [0.30, 2.10]:
+				Chamber.make_prop_box(self, Vector3(0.04, 0.06, 1.10),
+					Vector3(wx + (-0.30 if wx > 0 else 0.30), sy, rack_z),
+					Color(0.06, 0.06, 0.08), false)
+
+	# Server tower triplet against the north wall
+	for tx in [-9, 0, 9]:
+		Chamber.make_prop_box(self, Vector3(1.2, 2.4, 0.8), Vector3(tx, 1.2, RD/2 - 0.6), Color(0.16, 0.18, 0.22))
+		# Glowing slits
+		for sy_i in 5:
+			Chamber.make_prop_box(self, Vector3(0.10, 0.04, 0.40), Vector3(tx - 0.4 + sy_i * 0.20, 1.95, RD/2 - 1.05),
+				Color(0.22, 0.62, 0.86), false)
+
+	# Cable mass hanging from the ceiling on the south end
+	for cx in [-6, -3, 0, 3, 6]:
+		Chamber.make_prop_box(self, Vector3(0.06, 1.20, 0.06), Vector3(cx, RH - 0.65, -10), Color(0.14, 0.14, 0.18), false)
+		Chamber.make_prop_box(self, Vector3(0.20, 0.20, 0.06), Vector3(cx, RH - 1.30, -10), Color(0.20, 0.20, 0.24), false)
+
+	# Big warning floor decals around the tower
+	for ang in range(0, 360, 60):
+		var a := deg_to_rad(float(ang))
+		var stripe := MeshInstance3D.new()
+		var q := QuadMesh.new()
+		q.size = Vector2(0.60, 0.16)
+		stripe.mesh = q
+		stripe.rotation_degrees = Vector3(-90, ang, 0)
+		stripe.position = Vector3(tower_pos.x + cos(a) * 4.8, 0.025, tower_pos.z + sin(a) * 4.8)
+		var sm := StandardMaterial3D.new()
+		sm.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+		sm.albedo_color = Color(0.86, 0.70, 0.16, 0.65)
+		sm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		sm.emission_enabled = true
+		sm.emission = Color(0.86, 0.70, 0.16)
+		sm.emission_energy_multiplier = 0.3
+		stripe.material_override = sm
+		add_child(stripe)
+
+	# Catwalk gantry across the upper middle of the room
+	Chamber.make_prop_box(self, Vector3(RW - 6, 0.20, 0.6), Vector3(0, 4.5, -2.0), Color(0.20, 0.22, 0.27), false)
+	# Catwalk railings
+	for ry in [4.95, 5.30]:
+		Chamber.make_prop_box(self, Vector3(RW - 6, 0.04, 0.04), Vector3(0, ry, -2.30), Color(0.86, 0.70, 0.16), false)
+		Chamber.make_prop_box(self, Vector3(RW - 6, 0.04, 0.04), Vector3(0, ry, -1.70), Color(0.86, 0.70, 0.16), false)
+	# Catwalk support columns
+	for cx in [-10, -5, 5, 10]:
+		Chamber.make_prop_box(self, Vector3(0.20, 4.5, 0.20), Vector3(cx, 2.25, -2.0), Color(0.16, 0.18, 0.22), false)
+
+	# Dust motes — heavy atmosphere in a vast space
+	ActUtil.add_dust_motes(self, Vector3(0, 2.0, 0), Vector3(12, 2.5, 14), 160,
+		Color(0.78, 0.74, 0.68, 0.16))
+
 	# Player spawn
 	ActUtil.spawn_player(Vector3(0, 0.5, -12.5), 0)
 

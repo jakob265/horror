@@ -146,6 +146,91 @@ func _ready() -> void:
 		"duration": 5.0,
 	})
 
+	# Extra corridor clutter so the long walk to the array doesn't feel sterile
+	# Discarded clipboard
+	Chamber.make_prop_box(self, Vector3(0.22, 0.02, 0.30), Vector3(-1.2, 0.04, -3.0), Color(0.55, 0.43, 0.27))
+	Chamber.make_prop_box(self, Vector3(0.20, 0.005, 0.26), Vector3(-1.2, 0.05, -3.0), Color(0.92, 0.88, 0.78), false)
+	# Knocked-over barrel
+	var barrel := MeshInstance3D.new()
+	var bm := CylinderMesh.new()
+	bm.top_radius = 0.28
+	bm.bottom_radius = 0.28
+	bm.height = 0.80
+	barrel.mesh = bm
+	barrel.position = Vector3(-1.5, 0.28, 7.0)
+	barrel.rotation_degrees = Vector3(0, 0, 90)
+	var bmat := StandardMaterial3D.new()
+	bmat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	bmat.albedo_color = Color(0.55, 0.30, 0.22)
+	bmat.metallic = 0.6
+	bmat.roughness = 0.5
+	barrel.material_override = bmat
+	add_child(barrel)
+	# Hazard bands on barrel
+	for hb in [0.20, -0.20]:
+		var hbnd := MeshInstance3D.new()
+		var hbc := CylinderMesh.new()
+		hbc.top_radius = 0.30
+		hbc.bottom_radius = 0.30
+		hbc.height = 0.10
+		hbnd.mesh = hbc
+		hbnd.position = Vector3(-1.5 + hb, 0.28, 7.0)
+		hbnd.rotation_degrees = Vector3(0, 0, 90)
+		var hbmat := StandardMaterial3D.new()
+		hbmat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+		hbmat.albedo_color = Color(0.86, 0.70, 0.16)
+		hbmat.emission_enabled = true
+		hbmat.emission = Color(0.86, 0.70, 0.16)
+		hbmat.emission_energy_multiplier = 0.2
+		hbnd.material_override = hbmat
+		add_child(hbnd)
+
+	# Cable trough on the floor pulled out of conduit
+	Chamber.make_prop_box(self, Vector3(0.08, 0.06, 2.0), Vector3(1.6, 0.05, -10.0), Color(0.20, 0.18, 0.16), false)
+	Chamber.make_prop_box(self, Vector3(0.08, 0.06, 2.0), Vector3(1.7, 0.04, -10.5), Color(0.55, 0.40, 0.18), false)
+
+	# Coiled hose against east wall further down
+	var hose := MeshInstance3D.new()
+	var hc := CylinderMesh.new()
+	hc.top_radius = 0.30
+	hc.bottom_radius = 0.30
+	hc.height = 0.10
+	hose.mesh = hc
+	hose.position = Vector3(W/2 - 0.5, 0.20, -11.0)
+	hose.rotation_degrees = Vector3(90, 0, 0)
+	var hmat2 := StandardMaterial3D.new()
+	hmat2.albedo_color = Color(0.18, 0.18, 0.20)
+	hmat2.metallic = 0.3
+	hmat2.roughness = 0.7
+	hose.material_override = hmat2
+	add_child(hose)
+
+	# Service trolley pushed against the wall just past the bulkhead
+	Chamber.make_prop_box(self, Vector3(0.55, 0.75, 0.50), Vector3(W/2 - 0.55, 0.37, 0.0), Color(0.20, 0.22, 0.27))
+	Chamber.make_prop_box(self, Vector3(0.50, 0.04, 0.45), Vector3(W/2 - 0.55, 0.78, 0.0), Color(0.16, 0.16, 0.20), false)
+
+	# More wall posters / placards along the corridor
+	for ply in [["DANGER\nHIGH ENERGY", Color(0.95, 0.55, 0.20), 5.0],
+		["AUTHORIZED\nPERSONNEL", Color(0.78, 0.55, 0.20), 11.0],
+		["FAULT", Color(0.55, 0.20, 0.20), 13.5]]:
+		ActUtil.wall_poster(self, "x", -W/2 + 0.05, Vector3(-W/2 + 0.06, 1.85, ply[2]), Vector2(0.45, 0.35), Color(0.20, 0.16, 0.12))
+		ActUtil.wall_label(self, ply[0], Vector3(-W/2 + 0.04, 1.85, ply[2]), 12,
+			ply[1], Color(0, 0, 0, 0.7))
+
+	# Hanging chains from ceiling on the south half
+	for cz in [-12.0, -8.0]:
+		Chamber.make_prop_box(self, Vector3(0.06, 1.0, 0.06), Vector3(1.0, H - 0.6, cz), Color(0.16, 0.16, 0.20), false)
+		# Hook at the bottom
+		Chamber.make_prop_box(self, Vector3(0.12, 0.06, 0.06), Vector3(1.0, H - 1.10, cz), Color(0.20, 0.20, 0.24), false)
+
+	# Wall vents
+	ActUtil.wall_vent(self, "x", -W/2 + 0.05, -6.0, 2.6, Vector2(0.5, 0.4))
+	ActUtil.wall_vent(self, "x", W/2 - 0.05, 4.0, 2.6, Vector2(0.5, 0.4))
+
+	# Dust motes for the gloomy corridor atmosphere
+	ActUtil.add_dust_motes(self, Vector3(0, 1.4, 0), Vector3(2.4, 0.8, 14), 100,
+		Color(0.72, 0.78, 0.86, 0.2))
+
 	# Floor smears
 	for sz in range(-2, 14, 2):
 		var smear := MeshInstance3D.new()

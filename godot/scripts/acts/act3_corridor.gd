@@ -71,6 +71,44 @@ func _ready() -> void:
 		"callback": Callable(self, "_trigger_ic3").bind(ic3),
 	})
 
+	# Corridor atmosphere — ceiling conduits + occasional floor stripe
+	for cz in range(-4, 18, 3):
+		# Cable run on the ceiling
+		Chamber.make_prop_box(self, Vector3(CORRIDOR_W - 0.4, 0.08, 0.14),
+			Vector3(0, H - 0.20, cz), Color(0.20, 0.24, 0.29), false)
+		Chamber.make_prop_box(self, Vector3(CORRIDOR_W - 0.4, 0.06, 0.10),
+			Vector3(0.4, H - 0.36, cz + 0.4), Color(0.42, 0.27, 0.20), false)
+	# Floor emergency stripes — clear evacuation arrows pointing back south
+	for fz in range(-4, 18, 4):
+		var stripe := MeshInstance3D.new()
+		var q := QuadMesh.new()
+		q.size = Vector2(0.30, 0.50)
+		stripe.mesh = q
+		stripe.rotation_degrees = Vector3(-90, 0, 0)
+		stripe.position = Vector3(-2.4, 0.02, fz)
+		var sm := StandardMaterial3D.new()
+		sm.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+		sm.albedo_color = Color(0.30, 0.86, 0.42, 0.6)
+		sm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		sm.emission_enabled = true
+		sm.emission = Color(0.30, 0.86, 0.42)
+		sm.emission_energy_multiplier = 0.3
+		stripe.material_override = sm
+		add_child(stripe)
+	# Side recess with a wall-mounted fire extinguisher
+	Chamber.make_prop_box(self, Vector3(0.10, 0.50, 0.40), Vector3(-2.95, 0.30, -4.0), Color(0.18, 0.18, 0.22))
+	Chamber.make_prop_box(self, Vector3(0.18, 0.55, 0.18), Vector3(-2.85, 0.42, -4.0), Color(0.86, 0.24, 0.20), false)
+	# Wall poster: "EVAC ROUTE"
+	ActUtil.wall_poster(self, "x", -3.0, Vector3(-2.93, 1.65, -3.0), Vector2(0.40, 0.30), Color(0.95, 0.92, 0.78))
+	ActUtil.wall_label(self, "EVAC", Vector3(-2.90, 1.85, -3.0), 12, Color(0.20, 0.42, 0.20), Color(0.92, 0.92, 0.78, 0.7))
+	# Hanging cable bundle near intercom
+	Chamber.make_prop_box(self, Vector3(0.06, 0.60, 0.06), Vector3(0.6, H - 0.5, 16.0), Color(0.16, 0.16, 0.20), false)
+	# Service-trolley parked against west wall (north end)
+	Chamber.make_prop_box(self, Vector3(0.55, 0.85, 0.50), Vector3(-2.6, 0.42, 16.5), Color(0.20, 0.22, 0.27))
+	Chamber.make_prop_box(self, Vector3(0.50, 0.06, 0.42), Vector3(-2.6, 0.88, 16.5), Color(0.16, 0.16, 0.20), false)
+	# A toolbox on the trolley
+	Chamber.make_prop_box(self, Vector3(0.36, 0.18, 0.22), Vector3(-2.6, 0.97, 16.5), Color(0.78, 0.55, 0.20), false)
+
 	# Spawn near south door
 	ActUtil.spawn_player(Vector3(0, 0.5, -5.5), 0)
 

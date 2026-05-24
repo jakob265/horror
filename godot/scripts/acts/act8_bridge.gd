@@ -243,6 +243,18 @@ func _ready() -> void:
 		"duration": 5.0,
 	})
 
+	# Ceiling cable runs + atmospheric ambience
+	ActUtil.add_ceiling_pipes(self, W, D, H)
+	# Sign over the storage door
+	ActUtil.wall_label(self, "<-  STORAGE",
+		Vector3(0, Chamber.DOOR_H + 0.30, -D/2 + 0.18), 16, Color(0.62, 0.78, 0.94))
+	# Sign over the maintenance door
+	ActUtil.wall_label(self, "MAINTENANCE  ->",
+		Vector3(0, Chamber.DOOR_H + 0.30, D/2 - 0.18), 16, Color(0.86, 0.70, 0.42))
+	# Wall vents
+	ActUtil.wall_vent(self, "x", -W/2 + 0.05, -4.0, 2.8, Vector2(0.5, 0.4))
+	ActUtil.wall_vent(self, "x", W/2 - 0.05, -4.0, 2.8, Vector2(0.5, 0.4))
+
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)
 
 

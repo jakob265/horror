@@ -119,6 +119,22 @@ func _ready() -> void:
 	plaque_lbl.outline_modulate = Color(0.08, 0.06, 0.04)
 	add_child(plaque_lbl)
 
+	# Ceiling cable runs + ambient floor stripes for atmosphere
+	ActUtil.add_ceiling_pipes(self, W, D, H)
+	ActUtil.add_floor_decals(self, W, D, Vector3.ZERO, Color(0.42, 0.62, 0.86, 0.5))
+
+	# Spare cryo parts in the SW corner
+	for ci in 3:
+		Chamber.make_prop_box(self, Vector3(0.6, 0.40, 0.4),
+			Vector3(-W/2 + 1.0, 0.20 + ci * 0.45, -D/2 + 3.5),
+			Color(0.55, 0.55, 0.59))
+	# Wall sign above north door
+	ActUtil.wall_label(self, "BRIDGE  ->", Vector3(0, Chamber.DOOR_H + 0.25, D/2 - 0.18), 16,
+		Color(0.62, 0.78, 0.94))
+	# Wall vents
+	ActUtil.wall_vent(self, "x", -W/2 + 0.05, -3.0, 2.6, Vector2(0.6, 0.4))
+	ActUtil.wall_vent(self, "x", W/2 - 0.05, 3.0, 2.6, Vector2(0.6, 0.4))
+
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)
 
 

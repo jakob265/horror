@@ -127,6 +127,37 @@ func _ready() -> void:
 		bulb.material_override = bm
 		add_child(bulb)
 
+	# Ceiling cable runs across the dining area
+	ActUtil.add_ceiling_pipes(self, W, D, H)
+	# Floor decals near the kitchen counter
+	ActUtil.add_floor_decals(self, W, D, Vector3.ZERO, Color(0.86, 0.86, 0.16, 0.5))
+	# Wall vent above the galley counter
+	ActUtil.wall_vent(self, "x", W/2 - 0.05, -5.0, 2.7, Vector2(0.6, 0.4))
+	ActUtil.wall_vent(self, "x", W/2 - 0.05, 5.0, 2.7, Vector2(0.6, 0.4))
+
+	# Refrigerator at end of galley counter
+	Chamber.make_prop_box(self, Vector3(0.8, 1.85, 0.65), Vector3(W/2 - 1.0, 0.92, -D/2 + 1.2), Color(0.86, 0.88, 0.90))
+	# Handle
+	Chamber.make_prop_box(self, Vector3(0.05, 0.40, 0.05), Vector3(W/2 - 1.40, 1.25, -D/2 + 1.2), Color(0.20, 0.22, 0.27), false)
+	# Sticky note on the fridge
+	Chamber.make_prop_box(self, Vector3(0.02, 0.12, 0.12), Vector3(W/2 - 1.38, 1.45, -D/2 + 1.05), Color(0.95, 0.85, 0.40), false)
+
+	# Drinking-fountain on west wall
+	Chamber.make_prop_box(self, Vector3(0.55, 0.95, 0.40), Vector3(-W/2 + 0.30, 0.47, 5.0), Color(0.55, 0.57, 0.61))
+	Chamber.make_prop_box(self, Vector3(0.40, 0.06, 0.30), Vector3(-W/2 + 0.30, 0.97, 5.0), Color(0.20, 0.22, 0.27), false)
+	Chamber.make_prop_box(self, Vector3(0.04, 0.12, 0.04), Vector3(-W/2 + 0.20, 1.05, 4.9), Color(0.78, 0.80, 0.84), false)
+
+	# A spilled tray of cutlery on the floor near Felix's chair
+	for fi in range(4):
+		Chamber.make_prop_box(self, Vector3(0.03, 0.02, 0.20),
+			Vector3(2.4 + randf_range(-0.20, 0.20), 0.03, -1.5 + fi * 0.10),
+			Color(0.74, 0.76, 0.80), false)
+
+	# Crew-favourites menu chalkboard on the south wall
+	Chamber.make_prop_box(self, Vector3(0.06, 1.0, 1.4), Vector3(-W/2 + 0.10, 1.50, -D/2 + 3.0), Color(0.12, 0.14, 0.10))
+	ActUtil.wall_label(self, "TONIGHT\nHargrove's chili\n( extra spice )\nYuna's bread\n( fresh )",
+		Vector3(-W/2 + 0.06, 1.50, -D/2 + 3.0), 14, Color(0.94, 0.92, 0.78))
+
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)
 
 
