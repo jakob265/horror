@@ -99,18 +99,50 @@ func do_blackout(duration: float) -> void:
 	blackout.emit(duration)
 
 
-# Flash the procedural screamer face full-screen with a stinger + blackout.
-# The overlay plays its own audio in _ready.
+# Lunge the high-quality 3D entity into the camera, lit, with screen FX on top.
+# Virtual, not a photo. Non-lethal — the monster is freed after the flash.
 func scare_flash() -> void:
-	var ui := _ui_layer()
-	if ui == null:
-		AudioManager.shape_sting()
-		AudioManager.boom()
-		blackout.emit(0.5)
-		return
-	ui.add_child(JumpscareOverlay.new())
-	blackout.emit(0.55)
+	AudioManager.shape_sting()
+	AudioManager.boom()
+	blackout.emit(0.7)          # cut the room lights so the lunging face dominates
 	flicker_pulse.emit(1.0)
+	var ui := _ui_layer()
+	if ui:
+		ui.add_child(JumpscareOverlay.new())
+	var cam: Camera3D = InteractionManager.camera
+	var player: Node3D = GameState.player
+	if cam == null or player == null or not is_instance_valid(cam):
+		return
+	var holder: Node = player.get_parent()
+	if holder == null:
+		return
+	var fwd := -cam.global_transform.basis.z
+	fwd.y = 0.0
+	if fwd.length() < 0.01:
+		fwd = Vector3(0, 0, -1)
+	fwd = fwd.normalized()
+	var kinds := [HorrorShape.KIND_FELIX, HorrorShape.KIND_YUNA, HorrorShape.KIND_HARGROVE]
+	var m := HorrorShape.create(kinds[randi() % 3], Vector3.ZERO, 0.0)
+	var sv := 2.3
+	m.scale = Vector3(sv, sv, sv)
+	holder.add_child(m)
+	# Put the head right at the camera, just in front of it.
+	var base := cam.global_position + fwd * 0.62
+	m.global_position = Vector3(base.x, cam.global_position.y - 2.00 * sv + 0.18, base.z)
+	m.look_at(Vector3(cam.global_position.x, m.global_position.y, cam.global_position.z), Vector3.UP)
+	# Dramatic front light on the face (between face and camera).
+	var lt := OmniLight3D.new()
+	lt.light_energy = 6.5
+	lt.omni_range = 4.5
+	lt.light_color = Color(1.0, 0.92, 0.88)
+	lt.position = Vector3(0, 2.00, -0.55)
+	m.add_child(lt)
+	# Lunge in.
+	var tw := m.create_tween()
+	tw.tween_property(m, "scale", Vector3(sv * 1.25, sv * 1.25, sv * 1.25), 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	get_tree().create_timer(0.7).timeout.connect(func():
+		if is_instance_valid(m):
+			m.queue_free())
 
 
 # A full jump scare: a beat of build-up, then the face. Non-lethal.
