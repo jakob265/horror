@@ -208,12 +208,33 @@ func _ready() -> void:
 		Chamber.make_prop_box(self, Vector3(2 * ring_outer + 0.4, 0.20, 0.6), Vector3(0, ring_y, cz), Color(0.33, 0.35, 0.39))
 	for cx in [-ring_outer, ring_outer]:
 		Chamber.make_prop_box(self, Vector3(0.6, 0.20, 2 * ring_outer + 0.4), Vector3(cx, ring_y, 0), Color(0.33, 0.35, 0.39))
-	# Outer hand rails (yellow)
-	for cfg in [[0.0, -ring_outer - 0.3, 2 * ring_outer + 0.4, 0.05],
-				[0.0, ring_outer + 0.3, 2 * ring_outer + 0.4, 0.05],
-				[-ring_outer - 0.3, 0.0, 0.05, 2 * ring_outer + 0.4],
-				[ring_outer + 0.3, 0.0, 0.05, 2 * ring_outer + 0.4]]:
-		Chamber.make_prop_box(self, Vector3(cfg[2], 1.0, cfg[3]), Vector3(cfg[0], ring_y + 0.6, cfg[1]), Color(0.70, 0.59, 0.16))
+	# Proper industrial guard railing around the reactor catwalk — hazard-yellow
+	# top/mid rails on dark posts with a kick plate, instead of a solid box.
+	var rail_base := ring_y + 0.10            # catwalk top surface
+	var edge := ring_outer + 0.30
+	var rlen := 2.0 * ring_outer + 0.4
+	var yellow := Color(0.82, 0.68, 0.10)
+	var post_c := Color(0.15, 0.15, 0.18)
+	var kick_c := Color(0.20, 0.20, 0.23)
+	# Each edge: [along_axis, fixed_coord]
+	for e in [["x", -edge], ["x", edge], ["z", -edge], ["z", edge]]:
+		var along: String = e[0]
+		var fixed: float = e[1]
+		# Posts
+		var n_posts := 7
+		for pi in n_posts:
+			var t := -rlen / 2.0 + rlen * float(pi) / float(n_posts - 1)
+			var ppos: Vector3 = Vector3(t, rail_base + 0.5, fixed) if along == "x" else Vector3(fixed, rail_base + 0.5, t)
+			Chamber.make_prop_box(self, Vector3(0.06, 1.0, 0.06), ppos, post_c, false)
+		# Top + mid rails + kick plate
+		for r in [[0.95, 0.06, yellow], [0.45, 0.05, yellow], [0.14, 0.16, kick_c]]:
+			var ry: float = rail_base + r[0]
+			var thick: float = r[1]
+			var rsize: Vector3 = Vector3(rlen, thick, thick) if along == "x" else Vector3(thick, thick, rlen)
+			if r[2] == kick_c:
+				rsize = Vector3(rlen, thick, 0.03) if along == "x" else Vector3(0.03, thick, rlen)
+			var rpos: Vector3 = Vector3(0, ry, fixed) if along == "x" else Vector3(fixed, ry, 0)
+			Chamber.make_prop_box(self, rsize, rpos, r[2], false)
 
 	# Calibration maintenance panel (west wall)
 	var panel := Chamber.make_prop_box(self, Vector3(1.5, 1.1, 0.10), Vector3(-W/2 + 0.10, 1.5, -4.0), Color(0.23, 0.27, 0.31))

@@ -110,21 +110,38 @@ func _ready() -> void:
 	# Note 10
 	Interactable.make_note(self, Vector3(0, 0.45, -3.0), "note_10", "Read hydroponics journal")
 
-	# Lemon-tree cutting in clay pot
-	var pot := Chamber.make_prop_box(self, Vector3(0.32, 0.32, 0.32), Vector3(5.5, 0.55, -6.0), Color(0.62, 0.51, 0.39))
-	# Stem
-	Chamber.make_prop_box(self, Vector3(0.10, 1.4, 0.10), Vector3(5.5, 1.50, -6.0), Color(0.31, 0.23, 0.20), false)
+	# Lemon-tree cutting in a clay pot — stood on the floor in a clear aisle
+	# (was floating ~0.4 m up and clipping the end of the x=5 planter trough).
+	var lemon_x := 3.75
+	var lemon_z := -4.5
+	var pot := Chamber.make_prop_box(self, Vector3(0.34, 0.34, 0.34), Vector3(lemon_x, 0.17, lemon_z), Color(0.62, 0.51, 0.39))
+	# Soil
+	Chamber.make_prop_box(self, Vector3(0.28, 0.06, 0.28), Vector3(lemon_x, 0.35, lemon_z), Color(0.16, 0.12, 0.09), false)
+	# Trunk rising out of the pot
+	Chamber.make_prop_box(self, Vector3(0.09, 1.0, 0.09), Vector3(lemon_x, 0.85, lemon_z), Color(0.31, 0.23, 0.20), false)
 	# Foliage
 	var leaf := MeshInstance3D.new()
 	var ls := SphereMesh.new()
-	ls.radius = 0.30
-	ls.height = 0.6
+	ls.radius = 0.34
+	ls.height = 0.66
 	leaf.mesh = ls
-	leaf.position = Vector3(5.5, 2.20, -6.0)
+	leaf.position = Vector3(lemon_x, 1.45, lemon_z)
 	var leafmat := StandardMaterial3D.new()
 	leafmat.albedo_color = Color(0.27, 0.43, 0.27)
 	leaf.material_override = leafmat
 	add_child(leaf)
+	# A couple of lemons in the foliage
+	for lc in [Vector3(0.18, 1.40, 0.06), Vector3(-0.13, 1.52, -0.10)]:
+		var lemon := MeshInstance3D.new()
+		var lsm := SphereMesh.new()
+		lsm.radius = 0.05
+		lsm.height = 0.11
+		lemon.mesh = lsm
+		lemon.position = Vector3(lemon_x + lc.x, lc.y, lemon_z + lc.z)
+		var lemon_mat := StandardMaterial3D.new()
+		lemon_mat.albedo_color = Color(0.86, 0.78, 0.22)
+		lemon.material_override = lemon_mat
+		add_child(lemon)
 	Interactable.attach(pot, "Look at the pot", "examine_only", {
 		"text": "A clay pot with a young lemon-tree cutting.  A tag in Yuna's handwriting reads 'home'.  She drew a sun with a face on the tag.",
 		"duration": 5.0,
