@@ -9,10 +9,27 @@ var _streams := {}              # key -> AudioStreamWAV
 var _hum_player: AudioStreamPlayer
 var _signal_player: AudioStreamPlayer
 var _signal_harm_player: AudioStreamPlayer
+# Dynamic-dread music layers
+var _drone_player: AudioStreamPlayer
+var _dread_player: AudioStreamPlayer
+var _dread_cur := 0.0
+var _dread_tgt := 0.0
+var _music_on := false
 
 # Pool of one-shot players (reused so we don't spawn nodes every SFX)
 var _oneshot_pool: Array[AudioStreamPlayer] = []
 const POOL_SIZE := 8
+
+
+func _process(dt: float) -> void:
+	# Smoothly chase the target dread level and map it onto the two music beds.
+	_dread_cur += (_dread_tgt - _dread_cur) * minf(1.0, dt * 1.5)
+	if _drone_player:
+		var amp := lerpf(0.06, 0.26, _dread_cur) if _music_on else _dread_cur * 0.06
+		_drone_player.volume_db = -80.0 if amp <= 0.002 else linear_to_db(amp)
+	if _dread_player:
+		var d := _dread_cur * _dread_cur * 0.5
+		_dread_player.volume_db = -80.0 if d <= 0.003 else linear_to_db(d)
 
 
 func _ready() -> void:
@@ -25,6 +42,10 @@ func _ready() -> void:
 	_signal_player.play()
 	_signal_harm_player = _make_player(_streams["signal_tone_harm"], -80.0)
 	_signal_harm_player.play()
+	_drone_player = _make_player(_streams["drone_bed"], -80.0)
+	_drone_player.play()
+	_dread_player = _make_player(_streams["dread_layer"], -80.0)
+	_dread_player.play()
 	for i in POOL_SIZE:
 		var p := AudioStreamPlayer.new()
 		add_child(p)
@@ -56,6 +77,10 @@ func _bake_all() -> void:
 	_streams["heartbeat"] = _bake(_gen_heartbeat())
 	_streams["power_down"] = _bake(_apply_fade(_gen_square(70.0, 0.45, 0.28), 0.005, 0.35))
 	_streams["whisper_long"] = _bake(_apply_fade(_mix(_gen_noise(3.0, 0.13), _gen_warble(70.0, 3.0, 3.5, 22.0, 0.09)), 0.6, 1.0))
+	# --- Dynamic-dread music beds (seamless loops; freqs are N/8 so 8 s loops
+	#     cleanly, LFO periods divide the loop length) ---
+	_streams["drone_bed"] = _bake_loop(_make_drone())
+	_streams["dread_layer"] = _bake_loop(_make_dread())
 
 
 # --- Public SFX ------------------------------------------------------------
@@ -104,10 +129,27 @@ func ramp_ending_hum(target_linear: float, seconds: float) -> void:
 	)
 
 
+# Dynamic dread: 0 = calm, 1 = maximum. Drives the drone + dissonant layers.
+func set_dread(level: float) -> void:
+	_dread_tgt = clampf(level, 0.0, 1.0)
+	_music_on = true
+
+
+func stop_music() -> void:
+	_music_on = false
+	_dread_tgt = 0.0
+	_dread_cur = 0.0
+	if _drone_player:
+		_drone_player.volume_db = -80.0
+	if _dread_player:
+		_dread_player.volume_db = -80.0
+
+
 func cut_hum() -> void:
 	_hum_player.volume_db = -80.0
 	_signal_player.volume_db = -80.0
 	_signal_harm_player.volume_db = -80.0
+	stop_music()
 
 
 # --- Internals -------------------------------------------------------------
@@ -189,6 +231,33 @@ func _gen_square(freq: float, duration: float, amp: float) -> PackedFloat32Array
 	for i in n:
 		out[i] = amp if (i % int(period)) < (period / 2.0) else -amp
 	return out
+
+
+# Dark drone bed: a low, slightly-detuned minor triad with a slow swell.
+func _make_drone() -> PackedFloat32Array:
+	var dur := 8.0
+	var m := _mix(
+		_mix(_gen_sine(55.0, dur, 0.34), _gen_sine(65.375, dur, 0.20)),
+		_mix(_gen_sine(82.375, dur, 0.18), _gen_sine(55.25, dur, 0.16)))
+	return _apply_amp_lfo(m, 0.125, 0.5)
+
+
+# Dread layer: a dissonant, slowly-beating cluster (minor 2nd + tritone) that
+# only swells in when threat is high.
+func _make_dread() -> PackedFloat32Array:
+	var dur := 8.0
+	var m := _mix(
+		_mix(_gen_sine(220.0, dur, 0.22), _gen_sine(221.5, dur, 0.20)),
+		_mix(_gen_sine(311.125, dur, 0.13), _gen_sine(466.0, dur, 0.07)))
+	return _apply_amp_lfo(m, 0.25, 0.6)
+
+
+func _apply_amp_lfo(samples: PackedFloat32Array, hz: float, depth: float) -> PackedFloat32Array:
+	var n := samples.size()
+	for i in n:
+		var t := float(i) / SAMPLE_RATE
+		samples[i] *= (1.0 - depth) + depth * (0.5 + 0.5 * sin(TAU * hz * t))
+	return samples
 
 
 func _gen_heartbeat() -> PackedFloat32Array:

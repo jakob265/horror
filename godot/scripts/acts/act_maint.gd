@@ -230,6 +230,8 @@ func _ready() -> void:
 	})
 
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)
+	# Once you're a few steps into the crawl, something is suddenly there.
+	get_tree().create_timer(5.0).timeout.connect(func(): ScareDirector.jump_scare())
 
 
 func _build_sparker(x: float, z: float) -> void:

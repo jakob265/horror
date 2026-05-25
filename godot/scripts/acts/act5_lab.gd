@@ -454,6 +454,8 @@ func _take_array_keycard() -> void:
 		slot_mat.albedo_color = Color(0.31, 0.86, 0.35)
 		slot_mat.emission = Color(0.31, 0.86, 0.35)
 	InteractionManager.show_examine("ARRAY ACCESS KEYCARD secured.  The way to the array room is open.", 4.0)
+	# Key-item beat: something is right behind you the moment you take it.
+	ScareDirector.jump_scare()
 
 
 func _try_open_array_door() -> void:
