@@ -7,6 +7,8 @@ extends Node
 signal flicker_pulse(strength: float)
 signal blackout(duration: float)
 
+const JumpscareOverlay := preload("res://scripts/ui/jumpscare.gd")
+
 var intensity := 0.0          # 0..1
 var enabled := false
 var _t := 0.0
@@ -97,40 +99,29 @@ func do_blackout(duration: float) -> void:
 	blackout.emit(duration)
 
 
-# A full jump scare: a beat of build-up, then a shape lunges into view right
-# in front of the camera with a stinger + blackout, then vanishes. Non-lethal.
+# Flash the procedural screamer face full-screen with a stinger + blackout.
+# The overlay plays its own audio in _ready.
+func scare_flash() -> void:
+	var ui := _ui_layer()
+	if ui == null:
+		AudioManager.shape_sting()
+		AudioManager.boom()
+		blackout.emit(0.5)
+		return
+	ui.add_child(JumpscareOverlay.new())
+	blackout.emit(0.55)
+	flicker_pulse.emit(1.0)
+
+
+# A full jump scare: a beat of build-up, then the face. Non-lethal.
 func jump_scare() -> void:
-	var cam: Camera3D = InteractionManager.camera
-	var player: Node3D = GameState.player
-	if cam == null or player == null or not is_instance_valid(cam):
+	if GameState.player == null:
 		return
 	AudioManager.set_dread(1.0)
 	AudioManager.breath()
-	get_tree().create_timer(0.7).timeout.connect(func():
-		if not is_instance_valid(cam) or GameState.player == null:
-			return
-		var fwd := -cam.global_transform.basis.z
-		fwd.y = 0.0
-		if fwd.length() < 0.01:
-			fwd = Vector3(0, 0, -1)
-		fwd = fwd.normalized()
-		var pos: Vector3 = player.global_position + fwd * 1.7
-		pos.y = 0.0
-		var kinds := [HorrorShape.KIND_FELIX, HorrorShape.KIND_YUNA, HorrorShape.KIND_HARGROVE]
-		var shape := HorrorShape.create(kinds[randi() % 3], pos, 0.0)
-		var holder: Node = player.get_parent()
-		if holder == null:
-			return
-		holder.add_child(shape)
-		var look_pos := Vector3(player.global_position.x, 0.0, player.global_position.z)
-		if look_pos.distance_to(shape.global_position) > 0.1:
-			shape.look_at(look_pos, Vector3.UP)
-		AudioManager.shape_sting()
-		AudioManager.boom()
-		blackout.emit(0.55)
-		flicker_pulse.emit(1.0)
-		get_tree().create_timer(0.5).timeout.connect(func():
-			if is_instance_valid(shape):
-				shape.queue_free()
-		)
-	)
+	get_tree().create_timer(0.7).timeout.connect(scare_flash)
+
+
+func _ui_layer() -> Node:
+	var main := get_tree().root.get_node_or_null("Main")
+	return main.get_node_or_null("UILayer") if main else null

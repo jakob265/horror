@@ -43,45 +43,59 @@ static func create(p_kind: String, position: Vector3, rotation_y: float, crouche
 
 
 func _build() -> void:
-	var body_color := Color(0.07, 0.07, 0.085)
-	var torso_h := 0.55 if crouched else 0.95
-	var torso_y := 0.55 if crouched else 1.05
+	# Near-black, but faintly self-lit so the gaunt silhouette reads in the dark
+	# instead of vanishing into it. The crew, but wrong: too tall, too thin.
+	var body_color := Color(0.05, 0.05, 0.065)
+	var glow := Color(0.16, 0.18, 0.24)      # cold pale wraith glow
+	var glow_e := 0.22
+	var torso_h := 0.70 if crouched else 1.15
+	var torso_y := 0.62 if crouched else 1.20
 
-	torso = _box(Vector3(0.45, torso_h, 0.30), Vector3(0, torso_y, 0), body_color)
+	# Tapered torso (wider shoulders, narrow waist) via two stacked boxes
+	torso = _box(Vector3(0.42, torso_h * 0.6, 0.22), Vector3(0, torso_y + torso_h * 0.18, 0), body_color, glow, glow_e)
 	add_child(torso)
+	add_child(_box(Vector3(0.30, torso_h * 0.5, 0.20), Vector3(0, torso_y - torso_h * 0.18, 0), body_color, glow, glow_e))
+	# Hunched neck
+	add_child(_box(Vector3(0.10, 0.18, 0.10), Vector3(0, torso_y + torso_h * 0.55, 0.02), body_color, glow, glow_e))
 
 	head_pivot = Node3D.new()
-	head_pivot.position = Vector3(0, torso_y + torso_h * 0.55, 0)
+	head_pivot.position = Vector3(0, torso_y + torso_h * 0.62, 0.02)
 	add_child(head_pivot)
 	head = MeshInstance3D.new()
 	var sphere := SphereMesh.new()
-	sphere.radius = 0.11
-	sphere.height = 0.22
+	sphere.radius = 0.13
+	sphere.height = 0.30
 	head.mesh = sphere
 	var head_mat := StandardMaterial3D.new()
 	head_mat.albedo_color = body_color
+	head_mat.emission_enabled = true
+	head_mat.emission = glow
+	head_mat.emission_energy_multiplier = glow_e
 	head.material_override = head_mat
 	head_pivot.add_child(head)
+	# Glowing red eyes + dark mouth on the -Z face (the side that turns to you).
+	for ex in [-0.05, 0.05]:
+		head_pivot.add_child(_box(Vector3(0.035, 0.022, 0.02), Vector3(ex, 0.02, -0.12), Color(0.95, 0.10, 0.07), Color(0.95, 0.12, 0.08), 3.0))
+	head_pivot.add_child(_box(Vector3(0.09, 0.05, 0.02), Vector3(0, -0.06, -0.12), Color(0.02, 0.0, 0.0), Color(0.30, 0.02, 0.02), 0.8))
 
-	# Left arm
-	var left_arm := _box(Vector3(0.10, 0.65, 0.10), Vector3(-0.28, torso_y - 0.05, 0), body_color)
+	# Long thin arms hanging past the knees
+	var left_arm := _box(Vector3(0.08, 0.95, 0.08), Vector3(-0.26, torso_y - 0.20, 0), body_color, glow, glow_e)
 	add_child(left_arm)
-	# Right arm with pivot for waving
 	right_arm_pivot = Node3D.new()
-	right_arm_pivot.position = Vector3(0.28, torso_y + 0.30, 0)
+	right_arm_pivot.position = Vector3(0.26, torso_y + 0.32, 0)
 	add_child(right_arm_pivot)
-	right_arm = _box(Vector3(0.10, 0.65, 0.10), Vector3(0, -0.32, 0), body_color)
+	right_arm = _box(Vector3(0.08, 0.95, 0.08), Vector3(0, -0.47, 0), body_color, glow, glow_e)
 	right_arm_pivot.add_child(right_arm)
-	# Legs
-	add_child(_box(Vector3(0.13, 0.85, 0.18), Vector3(-0.13, 0.42, 0), body_color))
-	add_child(_box(Vector3(0.13, 0.85, 0.18), Vector3(0.13, 0.42, 0), body_color))
+	# Long legs
+	add_child(_box(Vector3(0.12, 1.05, 0.16), Vector3(-0.12, 0.52, 0), body_color, glow, glow_e))
+	add_child(_box(Vector3(0.12, 1.05, 0.16), Vector3(0.12, 0.52, 0), body_color, glow, glow_e))
 
 	if crouched:
 		head_pivot.rotation_degrees.x = 20
 		right_arm_pivot.rotation_degrees.x = 40
 
 
-func _box(size: Vector3, pos: Vector3, color: Color) -> MeshInstance3D:
+func _box(size: Vector3, pos: Vector3, color: Color, emit_color: Color = Color(0, 0, 0), emit_energy: float = 0.0) -> MeshInstance3D:
 	var m := MeshInstance3D.new()
 	var b := BoxMesh.new()
 	b.size = size
@@ -89,6 +103,10 @@ func _box(size: Vector3, pos: Vector3, color: Color) -> MeshInstance3D:
 	m.position = pos
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = color
+	if emit_energy > 0.0:
+		mat.emission_enabled = true
+		mat.emission = emit_color
+		mat.emission_energy_multiplier = emit_energy
 	m.material_override = mat
 	return m
 
@@ -119,15 +137,17 @@ func update_behavior(player_pos: Vector3, camera: Camera3D, dt: float) -> void:
 			_vanish()
 		return
 	_seen_t = maxf(0.0, _seen_t - dt)
-	# Creep toward the player while unwatched, keeping a small standoff.
+	# Creep toward the player while unwatched. If it reaches you, it gets you.
 	var to_player := player_pos - global_position
 	to_player.y = 0.0
 	var dist := to_player.length()
-	if dist > 2.0:
-		global_position += to_player.normalized() * minf(dt * _creep_speed, dist - 2.0)
-		var look_pos := Vector3(player_pos.x, global_position.y, player_pos.z)
-		if look_pos.distance_to(global_position) > 0.1:
-			look_at(look_pos, Vector3.UP)
+	if dist <= 1.1:
+		_contact_scare()
+		return
+	global_position += to_player.normalized() * minf(dt * _creep_speed, dist - 0.5)
+	var look_pos := Vector3(player_pos.x, global_position.y, player_pos.z)
+	if look_pos.distance_to(global_position) > 0.1:
+		look_at(look_pos, Vector3.UP)
 
 
 func _is_seen(camera: Camera3D) -> bool:
@@ -156,6 +176,16 @@ func _vanish() -> void:
 	_seen_t = 0.0
 	_respawn_at = Time.get_ticks_msec() / 1000.0 + randf_range(2.5, 6.0)
 	AudioManager.whisper()
+
+
+# It reached the player: jumpscare, then retreat with a longer cooldown so it
+# doesn't immediately maul you again. Non-lethal — just a fright.
+func _contact_scare() -> void:
+	ScareDirector.scare_flash()
+	visible = false
+	_hidden = true
+	_seen_t = 0.0
+	_respawn_at = Time.get_ticks_msec() / 1000.0 + randf_range(5.0, 9.0)
 
 
 func _reappear(camera: Camera3D) -> void:
