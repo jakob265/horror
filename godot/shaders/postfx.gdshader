@@ -5,14 +5,14 @@ shader_type canvas_item;
 // the UI, so HUD/menus stay crisp.
 
 uniform sampler2D screen_tex : hint_screen_texture, filter_linear;
-uniform float ca_amount : hint_range(0.0, 0.02) = 0.0035;
-uniform float vignette_strength : hint_range(0.0, 1.0) = 0.55;
-uniform float vignette_start : hint_range(0.0, 1.0) = 0.32;
-uniform float grain_amount : hint_range(0.0, 0.4) = 0.055;
+uniform float ca_amount : hint_range(0.0, 0.02) = 0.006;
+uniform float vignette_strength : hint_range(0.0, 1.0) = 0.85;
+uniform float vignette_start : hint_range(0.0, 1.0) = 0.20;
+uniform float grain_amount : hint_range(0.0, 0.4) = 0.09;
 uniform float saturation : hint_range(0.0, 2.0) = 0.90;
-uniform float contrast : hint_range(0.5, 2.0) = 1.06;
-uniform vec3 cold_tint = vec3(0.93, 0.98, 1.07);
-uniform float scanline_amount : hint_range(0.0, 0.2) = 0.025;
+uniform float contrast : hint_range(0.5, 2.0) = 1.07;
+uniform vec3 cold_tint = vec3(0.90, 0.99, 1.09);
+uniform float scanline_amount : hint_range(0.0, 0.2) = 0.03;
 
 float hash(vec2 p) {
 	return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);

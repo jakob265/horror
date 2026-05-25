@@ -24,12 +24,12 @@ static func setup_lighting(parent: Node3D, ambient: Color, fog_col: Color, fog_d
 	e.fog_height = 6.0
 	e.fog_height_density = 0.20
 	e.volumetric_fog_enabled = true
-	e.volumetric_fog_density = 0.008 + fog_density * 0.2
+	e.volumetric_fog_density = 0.022 + fog_density * 0.7
 	e.volumetric_fog_albedo = ambient.lerp(Color.WHITE, 0.4)
-	e.volumetric_fog_anisotropy = 0.25
-	e.volumetric_fog_length = 40.0
-	e.volumetric_fog_gi_inject = 0.3
-	e.volumetric_fog_ambient_inject = 0.5
+	e.volumetric_fog_anisotropy = 0.3
+	e.volumetric_fog_length = 48.0
+	e.volumetric_fog_gi_inject = 0.6
+	e.volumetric_fog_ambient_inject = 0.9
 	e.volumetric_fog_temporal_reprojection_enabled = true
 	e.tonemap_mode = Environment.TONE_MAPPER_ACES
 	e.tonemap_exposure = 1.35
@@ -58,9 +58,9 @@ static func setup_lighting(parent: Node3D, ambient: Color, fog_col: Color, fog_d
 	e.set_glow_level(4, 0.45)
 	e.set_glow_level(5, 0.25)
 	e.adjustment_enabled = true
-	e.adjustment_brightness = 1.05
-	e.adjustment_contrast = 1.04
-	e.adjustment_saturation = 0.88
+	e.adjustment_brightness = 1.0
+	e.adjustment_contrast = 1.11
+	e.adjustment_saturation = 0.80
 	env.environment = e
 	parent.add_child(env)
 

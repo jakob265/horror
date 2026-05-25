@@ -37,8 +37,11 @@ func _setup_postfx() -> void:
 	bbc.copy_mode = BackBufferCopy.COPY_MODE_VIEWPORT
 	layer.add_child(bbc)
 	var rect := ColorRect.new()
+	rect.set_anchors_preset(Control.PRESET_FULL_RECT)
 	rect.anchor_right = 1.0
 	rect.anchor_bottom = 1.0
+	rect.offset_right = 0.0
+	rect.offset_bottom = 0.0
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var mat := ShaderMaterial.new()
 	mat.shader = load("res://shaders/postfx.gdshader")
