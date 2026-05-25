@@ -27,15 +27,13 @@ func _ready() -> void:
 	_show_main_menu()
 
 
-# Cinematic post pass over the 3D view (vignette, grain, chromatic aberration,
-# cold grade). Sits on a CanvasLayer below UILayer so HUD/menus stay crisp.
+# Cinematic overlay over the 3D view (vignette + grain). Sits on a CanvasLayer
+# below UILayer so HUD/menus stay crisp. It alpha-composites its own output over
+# the 3D (no screen sampling), which is why it renders reliably.
 func _setup_postfx() -> void:
 	var layer := CanvasLayer.new()
 	layer.layer = 0
 	add_child(layer)
-	var bbc := BackBufferCopy.new()
-	bbc.copy_mode = BackBufferCopy.COPY_MODE_VIEWPORT
-	layer.add_child(bbc)
 	var rect := ColorRect.new()
 	rect.set_anchors_preset(Control.PRESET_FULL_RECT)
 	rect.anchor_right = 1.0
