@@ -206,7 +206,12 @@ func _add_line(line: String) -> void:
 	lbl.text = line
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.add_theme_font_size_override("font_size", 16)
-	lbl.add_theme_color_override("font_color", Color(0.90, 0.90, 0.92, 0.0))
+	lbl.add_theme_color_override("font_color", Color(0.90, 0.90, 0.92, 1.0))
+	# Start fully transparent (modulate) and fade in. NOTE: the alpha must live
+	# on modulate, not font_color — the old code put alpha 0 on font_color AND
+	# tweened modulate (already 1.0), so every line rendered invisibly = the
+	# "black screen, no text" bug.
+	lbl.modulate.a = 0.0
 	lines_box.add_child(lbl)
 	var tween := create_tween()
 	tween.tween_property(lbl, "modulate:a", 1.0, 0.5)

@@ -132,6 +132,8 @@ func _ready() -> void:
 		"Pre-flight crew photo.  Five people, all smiling.  You stand on the left.  Felix has his arm around your shoulder.  Yuna is laughing at something Hargrove just said.  Felix told a joke at the scanner that morning.  You can't remember the joke.",
 		8.0, Color(0.86, 0.84, 0.76))
 
+	ActUtil.haunt(self, {"intensity": 0.20, "flicker_rate": 0.9})
+
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)
 
 

@@ -381,6 +381,12 @@ REC: full alert.  Convene crew.
 	# Wall vents
 	ActUtil.wall_vent(self, "x", -LAB_W/2 + 0.05, -1.5, 2.8, Vector2(0.6, 0.4))
 
+	ActUtil.haunt(self, {
+		"intensity": 0.46,
+		"lurkers": [{"kind": "hargrove", "points": [
+			Vector3(0, 0, -8), Vector3(-5, 0, 2), Vector3(5, 0, 3), Vector3(0, 0, 5)]}],
+	})
+
 	# Player spawns at the south end of the corridor
 	ActUtil.spawn_player(Vector3(0, 0.5, -13.5), 0)
 

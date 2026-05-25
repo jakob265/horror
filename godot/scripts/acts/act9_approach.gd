@@ -250,6 +250,20 @@ func _ready() -> void:
 	add_child(hargrove_shape)
 	ShapeTracker.register(hargrove_shape)
 
+	# Environmental dread along the approach: scrawls + a long blood smear.
+	ActUtil.wall_scrawl(self, "TURN\nBACK", Vector3(-2.42, 1.9, -2.0), 90, 48)
+	ActUtil.wall_scrawl(self, "DON'T\nLISTEN", Vector3(2.42, 1.9, 6.0), -90, 44)
+	for bz in range(0, 9):
+		ActUtil.blood_decal(self, Vector3(0.4 - bz * 0.1, 0.02, -6.0 + bz * 1.6), Vector2(0.6, 1.0))
+
+	# The long dark walk to the array — peak dread, it stalks the whole length.
+	ActUtil.haunt(self, {
+		"intensity": 0.90,
+		"flicker_rate": 1.5,
+		"lurkers": [{"kind": "hargrove", "points": [
+			Vector3(0, 0, 14), Vector3(0, 0, 6), Vector3(-1.5, 0, -2), Vector3(1.5, 0, -8)], "creep": 0.9}],
+	})
+
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)
 
 

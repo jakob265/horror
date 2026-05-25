@@ -106,6 +106,9 @@ func _ready() -> void:
 	# Hanging cable bundle from ceiling
 	Chamber.make_prop_box(self, Vector3(0.10, 1.2, 0.10), Vector3(0, 3.0, 0.5), Color(0.16, 0.16, 0.20), false)
 
+	# Haunt — subtle for the intro: only flickering emergency lights.
+	ActUtil.haunt(self, {"intensity": 0.12, "flicker_rate": 0.7})
+
 	# Spawn the player
 	if GameState.player:
 		GameState.player.global_position = Vector3(4.4, 0.5, -3.0)

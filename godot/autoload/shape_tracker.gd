@@ -17,8 +17,13 @@ func clear() -> void:
 
 func update(player_pos: Vector3, dt: float) -> void:
 	var target: float = 0.0
+	var camera: Camera3D = InteractionManager.camera
 	for s in shapes:
-		if not is_instance_valid(s) or not s.visible:
+		if not is_instance_valid(s):
+			continue
+		if s.has_method("update_behavior"):
+			s.update_behavior(player_pos, camera, dt)
+		if not s.visible:
 			continue
 		var d: float = s.global_position.distance_to(player_pos)
 		if d < 4.0:

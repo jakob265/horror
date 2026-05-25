@@ -2,6 +2,10 @@ class_name ActUtil
 extends RefCounted
 # Common helpers for act scripts.
 
+# Preloaded so the flicker component works even if the global class-name cache
+# (.godot/) hasn't been rebuilt yet on a fresh checkout.
+const FlickerComponent := preload("res://scripts/components/flicker.gd")
+
 # Per-act lighting setup. Configures Chamber.current_light_* so the
 # room-builder can drop matching ceiling fixtures automatically, and configures
 # the per-act Environment with Forward+ features.
@@ -348,6 +352,83 @@ static func spawn_player(pos: Vector3, rotation_y: float = 0.0) -> void:
 	if GameState.player:
 		GameState.player.global_position = pos
 		GameState.player.rotation_degrees = Vector3(0, rotation_y, 0)
+
+
+# ---------------------------------------------------------------------------
+# HORROR
+# ---------------------------------------------------------------------------
+
+# One-stop "make this room haunted" call. Sets the ScareDirector intensity for
+# ambient dread, makes the room's lights flicker, and spawns stalking shapes.
+#   opts = {
+#     intensity: float (0..1),
+#     flicker: bool (default true), flicker_rate: float,
+#     lurkers: [ {kind: String, points: [Vector3,...], creep: float}, ... ],
+#   }
+static func haunt(act: Node3D, opts: Dictionary = {}) -> void:
+	ScareDirector.set_intensity(opts.get("intensity", 0.3))
+	if opts.get("flicker", true):
+		_flicker_lights(act, opts.get("flicker_rate", 1.0))
+	for cfg in opts.get("lurkers", []):
+		var pts: Array = cfg.get("points", [])
+		if pts.is_empty():
+			continue
+		var shape := HorrorShape.create(cfg.get("kind", HorrorShape.KIND_FELIX), pts[0], 0.0)
+		shape.set_lurk(pts, cfg.get("creep", 0.55))
+		act.add_child(shape)
+		ShapeTracker.register(shape)
+
+
+static func _flicker_lights(node: Node, rate: float) -> void:
+	for child in node.get_children():
+		if child is OmniLight3D or child is SpotLight3D:
+			var f: Node = FlickerComponent.new()
+			child.add_child(f)
+			f.setup(child, rate)
+		if child.get_child_count() > 0:
+			_flicker_lights(child, rate)
+
+
+# A dark wet stain on a surface (floor by default). normal = "up"/"x"/"z".
+static func blood_decal(parent: Node3D, pos: Vector3, size: Vector2, facing: String = "up", color: Color = Color(0.22, 0.04, 0.05, 0.85)) -> void:
+	var q := QuadMesh.new()
+	q.size = size
+	var mi := MeshInstance3D.new()
+	mi.mesh = q
+	mi.position = pos
+	match facing:
+		"up":
+			mi.rotation_degrees = Vector3(-90, randf_range(0, 360), 0)
+		"x":
+			mi.rotation_degrees = Vector3(0, 90, 0)
+		"z":
+			mi.rotation_degrees = Vector3(0, 0, 0)
+	var m := StandardMaterial3D.new()
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	m.albedo_color = color
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	m.roughness = 0.3
+	m.metallic = 0.2
+	mi.material_override = m
+	parent.add_child(mi)
+
+
+# Red scrawl on a wall — billboard-free so it stays stuck to the wall.
+static func wall_scrawl(parent: Node3D, text: String, pos: Vector3, face_y_deg: float, font_size: int = 40, color: Color = Color(0.55, 0.05, 0.06)) -> Label3D:
+	var lbl := Label3D.new()
+	lbl.text = text
+	lbl.position = pos
+	lbl.rotation_degrees = Vector3(0, face_y_deg, 0)
+	lbl.font_size = font_size
+	lbl.modulate = color
+	lbl.billboard = BaseMaterial3D.BILLBOARD_DISABLED
+	lbl.shaded = false
+	lbl.double_sided = true
+	lbl.outline_size = 2
+	lbl.outline_modulate = Color(0.10, 0.0, 0.0, 0.8)
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	parent.add_child(lbl)
+	return lbl
 
 
 static func register_intercom(parent: Node3D, intercom_id: int, position: Vector3, rotation_y: float = 0.0, trigger_at: Vector3 = Vector3.INF, radius: float = 3.5, delay: float = 0.0, manual: bool = false) -> IntercomPanel:

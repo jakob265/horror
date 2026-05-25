@@ -19,6 +19,14 @@ var torso: MeshInstance3D
 var stare_time := 0.0
 var farewell_done := false
 
+# --- Lurk / stalk behaviour ---
+var lurking := false
+var lurk_points: Array = []
+var _seen_t := 0.0
+var _hidden := false
+var _respawn_at := -1.0
+var _creep_speed := 0.55
+
 
 static func reset_session() -> void:
 	felix_amara_fired = false
@@ -83,6 +91,101 @@ func _box(size: Vector3, pos: Vector3, color: Color) -> MeshInstance3D:
 	mat.albedo_color = color
 	m.material_override = mat
 	return m
+
+
+# --- Lurk / stalk behaviour -----------------------------------------------
+# A lurking shape creeps toward the player while unobserved, vanishes the
+# instant the player looks straight at it, then reappears somewhere behind
+# them. Classic "it's gone when you turn back, and closer than before."
+
+func set_lurk(points: Array, creep_speed: float = 0.55) -> void:
+	lurk_points = points.duplicate()
+	lurking = true
+	_hidden = false
+	_creep_speed = creep_speed
+
+
+func update_behavior(player_pos: Vector3, camera: Camera3D, dt: float) -> void:
+	if not lurking or camera == null:
+		return
+	var now := Time.get_ticks_msec() / 1000.0
+	if _hidden:
+		if now >= _respawn_at:
+			_reappear(camera)
+		return
+	if _is_seen(camera):
+		_seen_t += dt
+		if _seen_t >= 0.20:
+			_vanish()
+		return
+	_seen_t = maxf(0.0, _seen_t - dt)
+	# Creep toward the player while unwatched, keeping a small standoff.
+	var to_player := player_pos - global_position
+	to_player.y = 0.0
+	var dist := to_player.length()
+	if dist > 2.0:
+		global_position += to_player.normalized() * minf(dt * _creep_speed, dist - 2.0)
+		var look_pos := Vector3(player_pos.x, global_position.y, player_pos.z)
+		if look_pos.distance_to(global_position) > 0.1:
+			look_at(look_pos, Vector3.UP)
+
+
+func _is_seen(camera: Camera3D) -> bool:
+	var origin := camera.global_position
+	var fwd := -camera.global_transform.basis.z
+	var head_pos := global_position + Vector3(0, 1.0, 0)
+	var to := head_pos - origin
+	var dist := to.length()
+	if dist > 22.0 or dist < 0.2:
+		return dist <= 0.2
+	if fwd.dot(to / dist) < 0.82:
+		return false
+	# Line-of-sight: the shape has no collider, so a clear ray (no hit) means
+	# nothing is between camera and shape.
+	var space := camera.get_world_3d().direct_space_state
+	var params := PhysicsRayQueryParameters3D.create(origin, head_pos)
+	params.collide_with_areas = false
+	params.collide_with_bodies = true
+	var hit := space.intersect_ray(params)
+	return hit.is_empty()
+
+
+func _vanish() -> void:
+	visible = false
+	_hidden = true
+	_seen_t = 0.0
+	_respawn_at = Time.get_ticks_msec() / 1000.0 + randf_range(2.5, 6.0)
+	AudioManager.whisper()
+
+
+func _reappear(camera: Camera3D) -> void:
+	if lurk_points.is_empty():
+		visible = true
+		_hidden = false
+		return
+	var origin := camera.global_position
+	var fwd := -camera.global_transform.basis.z
+	var best: Vector3 = lurk_points[0]
+	var best_dot := 2.0
+	for p in lurk_points:
+		var d: Vector3 = p - origin
+		d.y = 0.0
+		if d.length() < 0.5:
+			continue
+		var dot := fwd.dot(d.normalized())
+		if dot < best_dot:
+			best_dot = dot
+			best = p
+	global_position = best
+	visible = true
+	_hidden = false
+	_seen_t = 0.0
+	var pl: Node3D = GameState.player
+	if pl:
+		var look_pos := Vector3(pl.global_position.x, global_position.y, pl.global_position.z)
+		if look_pos.distance_to(global_position) > 0.1:
+			look_at(look_pos, Vector3.UP)
+	AudioManager.breath()
 
 
 # --- Stare detection (Felix only) ----------------------------------------

@@ -109,6 +109,18 @@ func _ready() -> void:
 	# A toolbox on the trolley
 	Chamber.make_prop_box(self, Vector3(0.36, 0.18, 0.22), Vector3(-2.6, 0.97, 16.5), Color(0.78, 0.55, 0.20), false)
 
+	# Environmental dread: a dragged blood trail and a scrawl on the wall.
+	for bz in range(0, 7):
+		ActUtil.blood_decal(self, Vector3(-0.6 + bz * 0.15, 0.02, 2.0 + bz * 1.1), Vector2(0.5, 0.8))
+	ActUtil.wall_scrawl(self, "WE NEVER\nLEFT", Vector3(-2.92, 1.9, 7.0), 90, 44)
+
+	# Something paces the length of the corridor, glimpsed at the far end.
+	ActUtil.haunt(self, {
+		"intensity": 0.32,
+		"lurkers": [{"kind": "felix", "points": [
+			Vector3(0, 0, 16), Vector3(2, 0, 9), Vector3(-2, 0, 2), Vector3(0, 0, 13)], "creep": 0.7}],
+	})
+
 	# Spawn near south door
 	ActUtil.spawn_player(Vector3(0, 0.5, -5.5), 0)
 

@@ -153,6 +153,12 @@ func _ready() -> void:
 	ActUtil.add_dust_motes(self, Vector3(0, 1.6, 0), Vector3(7, 1.8, 6), 80,
 		Color(0.85, 0.86, 0.92, 0.15))
 
+	ActUtil.haunt(self, {
+		"intensity": 0.34,
+		"lurkers": [{"kind": "yuna", "points": [
+			Vector3(0, 0, 4), Vector3(-5, 0, 2), Vector3(5, 0, -2), Vector3(-4, 0, -4)]}],
+	})
+
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)
 
 

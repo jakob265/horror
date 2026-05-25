@@ -371,6 +371,12 @@ func _ready() -> void:
 	# A workbench-mounted vise on the tool bench
 	Chamber.make_prop_box(self, Vector3(0.18, 0.16, 0.14), Vector3(-W/2 + 1.0, 0.93, 5.5), Color(0.55, 0.55, 0.59), false)
 
+	ActUtil.haunt(self, {
+		"intensity": 0.58,
+		"lurkers": [{"kind": "hargrove", "points": [
+			Vector3(-7, 0, 6), Vector3(7, 0, 6), Vector3(-7, 0, -6), Vector3(7, 0, -6)], "creep": 0.7}],
+	})
+
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)
 
 

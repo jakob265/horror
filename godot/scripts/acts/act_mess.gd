@@ -157,6 +157,12 @@ func _ready() -> void:
 	ActUtil.wall_label(self, "TONIGHT\nHargrove's chili\n( extra spice )\nYuna's bread\n( fresh )",
 		Vector3(-W/2 + 0.06, 1.50, -D/2 + 3.0), 14, Color(0.94, 0.92, 0.78))
 
+	ActUtil.haunt(self, {
+		"intensity": 0.40,
+		"lurkers": [{"kind": "yuna", "points": [
+			Vector3(0, 0, 5), Vector3(-6, 0, 3), Vector3(6, 0, -3), Vector3(0, 0, -5)]}],
+	})
+
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)
 
 

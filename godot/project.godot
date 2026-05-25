@@ -20,6 +20,7 @@ InteractionManager="*res://autoload/interaction_manager.gd"
 OlenManager="*res://autoload/olen_manager.gd"
 ShapeTracker="*res://autoload/shape_tracker.gd"
 AudioManager="*res://autoload/audio_manager.gd"
+ScareDirector="*res://autoload/scare_director.gd"
 SceneRouter="*res://autoload/scene_router.gd"
 
 [display]

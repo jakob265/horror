@@ -279,6 +279,15 @@ func _ready() -> void:
 	ActUtil.add_dust_motes(self, Vector3(0, 2.0, 0), Vector3(12, 2.5, 14), 160,
 		Color(0.78, 0.74, 0.68, 0.16))
 
+	# Lurkers out in the dark fringes of the huge room; slow creep so they
+	# don't crowd the terminal. Intensity backs off a touch for the climax.
+	ActUtil.haunt(self, {
+		"intensity": 0.62,
+		"flicker_rate": 1.0,
+		"lurkers": [{"kind": "hargrove", "points": [
+			Vector3(-11, 0, 9), Vector3(11, 0, 9), Vector3(0, 0, 12), Vector3(-11, 0, -4)], "creep": 0.5}],
+	})
+
 	# Player spawn
 	ActUtil.spawn_player(Vector3(0, 0.5, -12.5), 0)
 

@@ -48,6 +48,14 @@ func _bake_all() -> void:
 	_streams["door"]           = _bake(_apply_fade(_gen_noise(0.5, 0.25), 0.05, 0.4))
 	_streams["scrape"]         = _bake(_apply_fade(_mix(_gen_noise(0.6, 0.3), _gen_sine(70.0, 0.6, 0.4)), 0.05, 0.3))
 	_streams["ending_tone"]    = _bake(_apply_fade(_mix(_gen_sine(164.81, 4.0, 0.35), _gen_sine(246.94, 4.0, 0.30)), 0.8, 1.2))
+	# --- Horror SFX ---
+	_streams["whisper"]   = _bake(_apply_fade(_mix(_gen_noise(1.4, 0.16), _gen_warble(90.0, 1.4, 6.0, 30.0, 0.10)), 0.30, 0.55))
+	_streams["breath"]    = _bake(_apply_fade(_gen_noise(1.9, 0.13), 0.65, 0.75))
+	_streams["boom"]      = _bake(_apply_fade(_mix(_gen_sine(31.0, 1.3, 0.95), _gen_noise(1.3, 0.22)), 0.015, 1.05))
+	_streams["knock"]     = _bake(_apply_fade(_mix(_gen_sine(120.0, 0.10, 0.8), _gen_noise(0.10, 0.5)), 0.002, 0.08))
+	_streams["heartbeat"] = _bake(_gen_heartbeat())
+	_streams["power_down"] = _bake(_apply_fade(_gen_square(70.0, 0.45, 0.28), 0.005, 0.35))
+	_streams["whisper_long"] = _bake(_apply_fade(_mix(_gen_noise(3.0, 0.13), _gen_warble(70.0, 3.0, 3.5, 22.0, 0.09)), 0.6, 1.0))
 
 
 # --- Public SFX ------------------------------------------------------------
@@ -60,6 +68,18 @@ func keypad_reject()  -> void: _one_shot("keypad_reject",  -6.0)
 func door()           -> void: _one_shot("door",           -8.0)
 func scrape()         -> void: _one_shot("scrape",         -6.0)
 func ending_tone()    -> void: _one_shot("ending_tone",    -6.0)
+func whisper()        -> void: _one_shot("whisper",        -15.0)
+func whisper_long()   -> void: _one_shot("whisper_long",   -16.0)
+func breath()         -> void: _one_shot("breath",         -17.0)
+func boom()           -> void: _one_shot("boom",           -7.0)
+func knock()          -> void: _one_shot("knock",          -9.0)
+func heartbeat()      -> void: _one_shot("heartbeat",      -12.0)
+func power_down()     -> void: _one_shot("power_down",     -10.0)
+
+
+# A one-shot at a chosen volume (lets the ScareDirector scale by intensity).
+func play_at(key: String, db: float) -> void:
+	_one_shot(key, db)
 
 
 func set_signal_proximity_volume(v: float) -> void:
@@ -168,6 +188,20 @@ func _gen_square(freq: float, duration: float, amp: float) -> PackedFloat32Array
 	var period := SAMPLE_RATE / freq
 	for i in n:
 		out[i] = amp if (i % int(period)) < (period / 2.0) else -amp
+	return out
+
+
+func _gen_heartbeat() -> PackedFloat32Array:
+	# lub-dub: two low thuds with a short gap, then a longer rest.
+	var lub := _apply_fade(_gen_sine(46.0, 0.16, 0.95), 0.004, 0.12)
+	var dub := _apply_fade(_gen_sine(39.0, 0.18, 0.72), 0.004, 0.14)
+	var gap1 := PackedFloat32Array(); gap1.resize(int(0.13 * SAMPLE_RATE))
+	var rest := PackedFloat32Array(); rest.resize(int(0.55 * SAMPLE_RATE))
+	var out := PackedFloat32Array()
+	out.append_array(lub)
+	out.append_array(gap1)
+	out.append_array(dub)
+	out.append_array(rest)
 	return out
 
 

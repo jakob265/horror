@@ -135,6 +135,12 @@ func _ready() -> void:
 	ActUtil.wall_vent(self, "x", -W/2 + 0.05, -3.0, 2.6, Vector2(0.6, 0.4))
 	ActUtil.wall_vent(self, "x", W/2 - 0.05, 3.0, 2.6, Vector2(0.6, 0.4))
 
+	ActUtil.haunt(self, {
+		"intensity": 0.62,
+		"lurkers": [{"kind": "hargrove", "points": [
+			Vector3(0, 0, 8), Vector3(-5, 0, 2), Vector3(5, 0, -2), Vector3(0, 0, 6)], "creep": 0.75}],
+	})
+
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)
 
 

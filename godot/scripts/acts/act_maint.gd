@@ -216,6 +216,19 @@ func _ready() -> void:
 	ActUtil.add_dust_motes(self, Vector3(0, 1.4, 0), Vector3(2.0, 0.8, 8.0), 60,
 		Color(0.82, 0.84, 0.88, 0.18))
 
+	# Environmental dread in the crawl.
+	ActUtil.blood_decal(self, Vector3(0.3, 0.02, 1.0), Vector2(0.7, 1.0))
+	ActUtil.blood_decal(self, Vector3(-0.5, 0.02, 4.0), Vector2(0.6, 0.9))
+	ActUtil.wall_scrawl(self, "IT IS\nME NOW", Vector3(-2.15, 1.5, 4.0), 90, 34)
+
+	# Tight, dark service crawl — the stalker is right on top of you here.
+	ActUtil.haunt(self, {
+		"intensity": 0.78,
+		"flicker_rate": 1.4,
+		"lurkers": [{"kind": "hargrove", "points": [
+			Vector3(0, 0, 8), Vector3(0, 0, 2), Vector3(1.2, 0, -3), Vector3(-1.2, 0, 5)], "creep": 0.85}],
+	})
+
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)
 
 

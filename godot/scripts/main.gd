@@ -42,6 +42,7 @@ func _begin_new_game() -> void:
 		main_menu = null
 	HorrorShape.reset_session()
 	GameState.reset_for_new_game()
+	ScareDirector.reset()
 	# Player
 	if player == null:
 		player = PLAYER_SCENE.instantiate()
@@ -136,6 +137,7 @@ func _quit_to_menu() -> void:
 		hud.queue_free()
 		hud = null
 	AudioManager.cut_hum()
+	ScareDirector.reset()
 	_show_main_menu()
 
 

@@ -262,6 +262,9 @@ func _ready() -> void:
 	ActUtil.wall_vent(self, "x", -W/2 + 0.05, -4.0, 2.8, Vector2(0.5, 0.4))
 	ActUtil.wall_vent(self, "x", W/2 - 0.05, -4.0, 2.8, Vector2(0.5, 0.4))
 
+	# No lurker here — the Hargrove-Shape above is a scripted beat. Just dread.
+	ActUtil.haunt(self, {"intensity": 0.66, "flicker_rate": 1.2})
+
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)
 
 

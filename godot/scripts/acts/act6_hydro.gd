@@ -156,6 +156,13 @@ func _ready() -> void:
 	# Floor decals
 	ActUtil.add_floor_decals(self, W, D, Vector3.ZERO, Color(0.42, 0.86, 0.55, 0.4))
 
+	# It weaves between the planter rows — you keep catching it in the gaps.
+	ActUtil.haunt(self, {
+		"intensity": 0.50,
+		"lurkers": [{"kind": "yuna", "points": [
+			Vector3(-6, 0, 4), Vector3(6, 0, 4), Vector3(-6, 0, -4), Vector3(6, 0, -4)], "creep": 0.7}],
+	})
+
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)
 
 

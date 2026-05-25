@@ -142,6 +142,16 @@ func _ready() -> void:
 	ActUtil.wall_label(self, "MEDICAL  /  AUTODOC", Vector3(0, Chamber.DOOR_H + 0.12, D/2 - 0.18), 16,
 		Color(0.86, 0.92, 0.96))
 
+	# Scrawl on the west wall, in the same hand as the other writing.
+	ActUtil.wall_scrawl(self, "WHERE\nIS SATO", Vector3(-6.9, 1.9, -2.0), 90, 40)
+
+	# A stalker drifts among the equipment racks here.
+	ActUtil.haunt(self, {
+		"intensity": 0.28,
+		"lurkers": [{"kind": "felix", "points": [
+			Vector3(0, 0, 4.5), Vector3(-5, 0, 2), Vector3(5, 0, 2), Vector3(-4, 0, -3)]}],
+	})
+
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)
 
 
