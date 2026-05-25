@@ -22,8 +22,28 @@ func _ready() -> void:
 	NotesManager.setup(ui_layer)
 	OlenManager.setup(ui_layer)
 	SceneRouter.setup(world_root, fader)
+	_setup_postfx()
 	# Show main menu
 	_show_main_menu()
+
+
+# Cinematic post pass over the 3D view (vignette, grain, chromatic aberration,
+# cold grade). Sits on a CanvasLayer below UILayer so HUD/menus stay crisp.
+func _setup_postfx() -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = 0
+	add_child(layer)
+	var bbc := BackBufferCopy.new()
+	bbc.copy_mode = BackBufferCopy.COPY_MODE_VIEWPORT
+	layer.add_child(bbc)
+	var rect := ColorRect.new()
+	rect.anchor_right = 1.0
+	rect.anchor_bottom = 1.0
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var mat := ShaderMaterial.new()
+	mat.shader = load("res://shaders/postfx.gdshader")
+	rect.material = mat
+	layer.add_child(rect)
 
 
 func _show_main_menu() -> void:

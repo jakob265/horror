@@ -44,12 +44,19 @@ static func setup_lighting(parent: Node3D, ambient: Color, fog_col: Color, fog_d
 	e.ssr_max_steps = 48
 	e.sdfgi_enabled = false
 	e.glow_enabled = true
-	e.glow_intensity = 0.9
+	e.glow_intensity = 1.0
 	e.glow_strength = 1.0
-	e.glow_bloom = 0.15
+	e.glow_bloom = 0.20
 	e.glow_blend_mode = Environment.GLOW_BLEND_MODE_SOFTLIGHT
-	e.glow_hdr_threshold = 1.0
+	e.glow_hdr_threshold = 0.95
 	e.glow_hdr_scale = 2.0
+	e.glow_normalized = true
+	# Multi-scale bloom so emissive eyes / signs / screens bloom softly.
+	e.set_glow_level(1, 0.30)
+	e.set_glow_level(2, 0.60)
+	e.set_glow_level(3, 0.85)
+	e.set_glow_level(4, 0.45)
+	e.set_glow_level(5, 0.25)
 	e.adjustment_enabled = true
 	e.adjustment_brightness = 1.05
 	e.adjustment_contrast = 1.04
