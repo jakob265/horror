@@ -139,7 +139,7 @@ func _ready() -> void:
 	ActUtil.wall_vent(self, "z", -D/2 + 0.05, 3.5, 2.6)
 
 	# Wall sign above the door
-	ActUtil.wall_label(self, "MEDICAL  /  AUTODOC", Vector3(0, Chamber.DOOR_H + 0.30, D/2 - 0.18), 16,
+	ActUtil.wall_label(self, "MEDICAL  /  AUTODOC", Vector3(0, Chamber.DOOR_H + 0.12, D/2 - 0.18), 16,
 		Color(0.86, 0.92, 0.96))
 
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)

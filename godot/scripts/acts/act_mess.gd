@@ -43,21 +43,20 @@ func _ready() -> void:
 	Chamber.make_prop_box(self, Vector3(0.08, 0.16, 0.08), Vector3(0.4, 0.95, 1.0), Color(0.94, 0.92, 0.86), false)
 	Chamber.make_prop_box(self, Vector3(0.08, 0.16, 0.08), Vector3(0.5, 0.95, 1.0), Color(0.12, 0.12, 0.14), false)
 
-	# Felix's chair tipped over
-	var fell_chair := Chamber.make_prop_box(self, Vector3(0.45, 0.95, 0.45), Vector3(2.0, 0.10, -1.9), Color(0.33, 0.27, 0.23))
-	fell_chair.rotation_degrees = Vector3(0, 0, 90)
+	# Felix's chair tipped over on its side
+	var fell_chair := Chamber.make_chair(self, Vector3(2.0, 0.30, -1.9), Color(0.34, 0.27, 0.22), 0.0)
+	fell_chair.rotation_degrees = Vector3(0, 20, 90)
 	Interactable.attach(fell_chair, "Look at the fallen chair", "examine_only", {
 		"text": "Felix's chair is tipped over on the floor.  His mug is on its side on the table, brown ring soaked into the wood.  His plate is empty - either he didn't eat or someone cleared it before he got here.  Knowing Felix it was the second one.",
 		"duration": 6.0,
 	})
 
-	# Upright chairs at the four other settings — match wider seating spacing
+	# Upright chairs at the four other settings, each turned to face the table
 	for cfg in [[-1.8, -3.8], [-1.8, 0.0], [1.8, 1.9], [-1.8, 3.8]]:
 		var cx: float = cfg[0]
 		var cz: float = cfg[1]
-		Chamber.make_prop_box(self, Vector3(0.45, 0.85, 0.45), Vector3(cx, 0.42, cz), Color(0.33, 0.27, 0.23))
-		var back_z := cz + (-0.55 if cx > 0 else 0.55)
-		Chamber.make_prop_box(self, Vector3(0.45, 1.10, 0.10), Vector3(cx, 0.95, back_z), Color(0.33, 0.27, 0.23))
+		# Chairs on the west side (cx<0) face east (+x -> facing 90); east side faces west (-90)
+		Chamber.make_chair(self, Vector3(cx, 0.0, cz), Color(0.34, 0.27, 0.22), -90.0 if cx > 0 else 90.0)
 
 	# Note 16 - Yuna's note under Mara's plate
 	Interactable.make_note(self, Vector3(-0.80, table_y + 0.10, -3.6), "note_16", "Slide out the folded note")

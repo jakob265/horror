@@ -36,12 +36,11 @@ func _ready() -> void:
 	for dx_dz in [[-4.0, 1.5], [-2.0, 1.0], [0.0, 0.8], [2.0, 1.0], [4.0, 1.5]]:
 		Chamber.make_prop_box(self, Vector3(2.0, 0.06, 0.2), Vector3(dx_dz[0], 0.90, dx_dz[1]), Color(0.31, 0.35, 0.43), false)
 
-	# Crew chairs
+	# Crew chairs — proper seats facing south toward their consoles
 	for cfg in [[-5.0, 3.4], [-2.5, 2.7], [0.0, 2.4], [2.5, 2.7], [5.0, 3.4]]:
 		var cx: float = cfg[0]
 		var cz: float = cfg[1]
-		Chamber.make_prop_box(self, Vector3(0.55, 0.40, 0.55), Vector3(cx, 0.20, cz), Color(0.18, 0.20, 0.24))
-		Chamber.make_prop_box(self, Vector3(0.55, 1.40, 0.10), Vector3(cx, 1.10, cz + 0.45), Color(0.16, 0.18, 0.22), false)
+		Chamber.make_chair(self, Vector3(cx, 0.0, cz), Color(0.17, 0.19, 0.23), 180.0)
 
 	# Note 12 - Mara's recorder on centre station
 	Interactable.make_note(self, Vector3(0, 0.92, 0.6), "note_12", "Play personal recorder")
@@ -53,12 +52,19 @@ func _ready() -> void:
 	for sy_sd in [[0.10, 0.6], [0.20, 1.2]]:
 		Chamber.make_prop_box(self, Vector3(3.5, sy_sd[0], sy_sd[1]), Vector3(0, sy_sd[0] / 2, -2.0 - sy_sd[1] / 2), Color(0.27, 0.29, 0.35))
 
-	# Captain's chair
-	var cap_chair := Chamber.make_prop_box(self, Vector3(0.80, 0.50, 0.80), Vector3(0, plat_y + 0.25, -4.0), Color(0.12, 0.14, 0.18))
-	Chamber.make_prop_box(self, Vector3(0.80, 1.80, 0.12), Vector3(0, plat_y + 1.30, -4.45), Color(0.12, 0.14, 0.18), false)
-	# Armrests
-	for ax in [-0.5, 0.5]:
-		Chamber.make_prop_box(self, Vector3(0.12, 0.30, 0.7), Vector3(ax, plat_y + 0.75, -4.0), Color(0.12, 0.14, 0.18), false)
+	# Captain's chair — pedestal command seat facing the forward window (+z)
+	var cap := Vector3(0, plat_y, -4.0)
+	# Pedestal base
+	Chamber.make_prop_box(self, Vector3(0.55, 0.32, 0.55), cap + Vector3(0, 0.16, 0), Color(0.10, 0.12, 0.16))
+	# Seat cushion
+	var cap_chair := Chamber.make_prop_box(self, Vector3(0.72, 0.14, 0.72), cap + Vector3(0, 0.42, 0), Color(0.14, 0.16, 0.20))
+	# Backrest (south side) + headrest
+	Chamber.make_prop_box(self, Vector3(0.72, 0.85, 0.12), cap + Vector3(0, 0.92, -0.30), Color(0.14, 0.16, 0.20), false)
+	Chamber.make_prop_box(self, Vector3(0.42, 0.26, 0.12), cap + Vector3(0, 1.45, -0.30), Color(0.12, 0.14, 0.18), false)
+	# Armrests reaching forward
+	for ax in [-0.42, 0.42]:
+		Chamber.make_prop_box(self, Vector3(0.10, 0.10, 0.55), cap + Vector3(ax, 0.62, 0.05), Color(0.12, 0.14, 0.18), false)
+		Chamber.make_prop_box(self, Vector3(0.10, 0.22, 0.10), cap + Vector3(ax, 0.52, -0.18), Color(0.12, 0.14, 0.18), false)
 	Interactable.attach(cap_chair, "Sit in the captain's chair", "examine_only", {
 		"text": "You sit in the chair Hargrove used to sit in.  The view from here is excellent.  Five stations below you.  A window above with the dead moon behind it.  You used to mock him for sitting here.  You miss the version of yourself that got to mock anyone for anything.",
 		"duration": 8.0,
@@ -112,12 +118,13 @@ func _ready() -> void:
 		"duration": 10.0,
 	})
 
-	# Forward window frame
-	Chamber.make_prop_box(self, Vector3(W - 2, 0.30, 0.20), Vector3(0, H - 0.5, D/2 - 0.15), Color(0.25, 0.29, 0.35), false)
-	Chamber.make_prop_box(self, Vector3(W - 2, 0.30, 0.20), Vector3(0, H - 2.0, D/2 - 0.15), Color(0.25, 0.29, 0.35), false)
+	# Forward window — a clerestory strip raised clear above the MAINTENANCE
+	# door (door + frame reach y=2.43; window starts at 2.62) so nothing clips.
+	Chamber.make_prop_box(self, Vector3(W - 2, 0.16, 0.20), Vector3(0, 3.60, D/2 - 0.15), Color(0.25, 0.29, 0.35), false)
+	Chamber.make_prop_box(self, Vector3(W - 2, 0.16, 0.20), Vector3(0, 2.70, D/2 - 0.15), Color(0.25, 0.29, 0.35), false)
 	for fx in [-(W - 2) / 2, (W - 2) / 2]:
-		Chamber.make_prop_box(self, Vector3(0.30, 1.7, 0.20), Vector3(fx, H - 1.25, D/2 - 0.15), Color(0.25, 0.29, 0.35), false)
-	# Dark window
+		Chamber.make_prop_box(self, Vector3(0.30, 0.90, 0.20), Vector3(fx, 3.15, D/2 - 0.15), Color(0.25, 0.29, 0.35), false)
+	# Dark window glass
 	var wmat := StandardMaterial3D.new()
 	wmat.albedo_color = Color(0.08, 0.16, 0.27, 0.85)
 	wmat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -126,9 +133,9 @@ func _ready() -> void:
 	wmat.emission_energy_multiplier = 0.3
 	var win := MeshInstance3D.new()
 	var wb := BoxMesh.new()
-	wb.size = Vector3(W - 2.6, 1.4, 0.05)
+	wb.size = Vector3(W - 2.6, 0.82, 0.05)
 	win.mesh = wb
-	win.position = Vector3(0, H - 1.25, D/2 - 0.15)
+	win.position = Vector3(0, 3.15, D/2 - 0.15)
 	win.material_override = wmat
 	add_child(win)
 
@@ -163,8 +170,8 @@ func _ready() -> void:
 	asmat.emission_energy_multiplier = 0.4
 	alc_screen.material_override = asmat
 	add_child(alc_screen)
-	ActUtil.wall_label(self, "LONG-RANGE\n  carrier:  OFFLINE\n  buffer:   FULL\n  msgs out: 0\n  msgs in:  0",
-		Vector3(-W/2 + 1.25, 1.00, 3.0), 13, Color(0.62, 0.78, 0.94))
+	ActUtil.screen_label(self, "LONG-RANGE\n  carrier:  OFFLINE\n  buffer:   FULL\n  msgs out: 0\n  msgs in:  0",
+		Vector3(-W/2 + 1.25, 1.00, 3.0), 90, 13, Color(0.62, 0.78, 0.94))
 
 	# More fill — a star chart, a radio bench, a coffee station — to break up the empty north sides
 	# Radio / comms bench against west wall just south of the alcove
@@ -247,10 +254,10 @@ func _ready() -> void:
 	ActUtil.add_ceiling_pipes(self, W, D, H)
 	# Sign over the storage door
 	ActUtil.wall_label(self, "<-  STORAGE",
-		Vector3(0, Chamber.DOOR_H + 0.30, -D/2 + 0.18), 16, Color(0.62, 0.78, 0.94))
+		Vector3(0, Chamber.DOOR_H + 0.12, -D/2 + 0.18), 16, Color(0.62, 0.78, 0.94))
 	# Sign over the maintenance door
 	ActUtil.wall_label(self, "MAINTENANCE  ->",
-		Vector3(0, Chamber.DOOR_H + 0.30, D/2 - 0.18), 16, Color(0.86, 0.70, 0.42))
+		Vector3(0, Chamber.DOOR_H + 0.12, D/2 - 0.18), 16, Color(0.86, 0.70, 0.42))
 	# Wall vents
 	ActUtil.wall_vent(self, "x", -W/2 + 0.05, -4.0, 2.8, Vector2(0.5, 0.4))
 	ActUtil.wall_vent(self, "x", W/2 - 0.05, -4.0, 2.8, Vector2(0.5, 0.4))
@@ -284,8 +291,8 @@ func _crew_station(x: float, z: float, label_text: String, screen_color: Color, 
 	smat.emission_energy_multiplier = 0.3
 	screen.material_override = smat
 	add_child(screen)
-	# Text — billboard so the label always reads correctly from the captain's chair
-	ActUtil.wall_label(self, label_text, Vector3(x, 1.20, z + 0.12), 14, text_color)
+	# Text fixed to the screen face (south-facing, toward the captain)
+	ActUtil.screen_label(self, label_text, Vector3(x, 1.20, z + 0.12), 180, 14, text_color)
 
 
 func _process(_dt: float) -> void:

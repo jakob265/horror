@@ -129,7 +129,7 @@ func _ready() -> void:
 			Vector3(-W/2 + 1.0, 0.20 + ci * 0.45, -D/2 + 3.5),
 			Color(0.55, 0.55, 0.59))
 	# Wall sign above north door
-	ActUtil.wall_label(self, "BRIDGE  ->", Vector3(0, Chamber.DOOR_H + 0.25, D/2 - 0.18), 16,
+	ActUtil.wall_label(self, "BRIDGE  ->", Vector3(0, Chamber.DOOR_H + 0.12, D/2 - 0.18), 16,
 		Color(0.62, 0.78, 0.94))
 	# Wall vents
 	ActUtil.wall_vent(self, "x", -W/2 + 0.05, -3.0, 2.6, Vector2(0.6, 0.4))

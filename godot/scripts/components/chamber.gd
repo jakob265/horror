@@ -248,3 +248,35 @@ static func make_prop_box(parent: Node3D, size: Vector3, position: Vector3, colo
 	var b := _make_box(size, position, color, name, with_collider, surface)
 	parent.add_child(b)
 	return b
+
+
+# A proper chair: thin seat on four legs with a backrest, instead of a solid
+# block. Returns the StaticBody3D root (one collider for the whole chair) so it
+# can be rotated/tipped and handed to Interactable.attach. The open front faces
+# +Z in local space; set facing_deg so the backrest points away from the table.
+static func make_chair(parent: Node3D, base: Vector3, color: Color, facing_deg: float = 0.0, seat_h: float = 0.45) -> StaticBody3D:
+	var root := StaticBody3D.new()
+	root.name = "chair"
+	root.position = base
+	root.rotation_degrees = Vector3(0, facing_deg, 0)
+	parent.add_child(root)
+	# Single block collider covering the whole chair so the player can't walk through.
+	var shape := CollisionShape3D.new()
+	var col := BoxShape3D.new()
+	var total_h := seat_h + 0.62
+	col.size = Vector3(0.50, total_h, 0.50)
+	shape.shape = col
+	shape.position = Vector3(0, total_h / 2.0, -0.06)
+	root.add_child(shape)
+	var leg_color := color.darkened(0.3)
+	var parts := [
+		[Vector3(0.46, 0.07, 0.46), Vector3(0, seat_h, 0), color],              # seat
+		[Vector3(0.46, 0.55, 0.06), Vector3(0, seat_h + 0.30, -0.21), color],   # backrest
+	]
+	for lz in [-0.18, 0.18]:
+		for lx in [-0.18, 0.18]:
+			parts.append([Vector3(0.05, seat_h, 0.05), Vector3(lx, seat_h / 2.0, lz), leg_color])
+	for p in parts:
+		var part := _make_box(p[0], p[1], p[2], "chair_part", false)
+		root.add_child(part)
+	return root

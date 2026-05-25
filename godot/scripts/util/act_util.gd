@@ -205,6 +205,26 @@ static func wall_label(parent: Node3D, text: String, pos: Vector3, font_size: in
 	return lbl
 
 
+# Text that lies FLAT on a screen / console surface. Unlike wall_label this
+# does NOT billboard — it keeps a fixed Y rotation so it stays glued to the
+# panel and never swings round to clip through the monitor body.
+static func screen_label(parent: Node3D, text: String, pos: Vector3, face_y_deg: float, font_size: int = 16, color: Color = Color(0.78, 0.90, 0.98)) -> Label3D:
+	var lbl := Label3D.new()
+	lbl.text = text
+	lbl.position = pos
+	lbl.rotation_degrees = Vector3(0, face_y_deg, 0)
+	lbl.font_size = font_size
+	lbl.modulate = color
+	lbl.billboard = BaseMaterial3D.BILLBOARD_DISABLED
+	lbl.shaded = false
+	lbl.double_sided = false
+	lbl.no_depth_test = false
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	parent.add_child(lbl)
+	return lbl
+
+
 # Drop floor decals (warning stripes, evac arrows) so floors don't look bare.
 static func add_floor_decals(parent: Node3D, w: float, d: float, center: Vector3 = Vector3.ZERO, accent: Color = Color(0.86, 0.70, 0.16, 0.7)) -> void:
 	# Hazard stripes near the four walls

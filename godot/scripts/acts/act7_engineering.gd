@@ -230,8 +230,8 @@ func _ready() -> void:
 	smat.emission_energy_multiplier = 0.3
 	screen.material_override = smat
 	add_child(screen)
-	ActUtil.wall_label(self, "CALIBRATION 442-K\n\nARRAY  =  0.7 P-UNITS\nSTATUS =  ACTIVE\n\n*** READ TAPE ***",
-		Vector3(-W/2 + 0.22, 1.5, -4.0), 18, Color(0.78, 0.90, 0.98))
+	ActUtil.screen_label(self, "CALIBRATION 442-K\n\nARRAY  =  0.7 P-UNITS\nSTATUS =  ACTIVE\n\n*** READ TAPE ***",
+		Vector3(-W/2 + 0.22, 1.5, -4.0), 90, 18, Color(0.78, 0.90, 0.98))
 
 	# Note 11 - maintenance tape on shelf below the panel
 	Interactable.make_note(self, Vector3(-W/2 + 0.55, 0.85, -4.0), "note_11", "Play tape")
@@ -255,8 +255,8 @@ func _ready() -> void:
 		sm2.emission_energy_multiplier = 0.3
 		s2.material_override = sm2
 		add_child(s2)
-		ActUtil.wall_label(self, ptext, Vector3(-W/2 + 0.22, 1.5, panel_z),
-			14, Color(0.63, 0.86, 0.71))
+		ActUtil.screen_label(self, ptext, Vector3(-W/2 + 0.22, 1.5, panel_z),
+			90, 14, Color(0.63, 0.86, 0.71))
 
 	# Coolant tanks along east wall
 	for cfg2 in [[-5.0, "COOL A"], [-1.0, "COOL B"], [3.0, "COOL C"], [6.0, "COOL D"]]:
@@ -358,9 +358,9 @@ func _ready() -> void:
 
 	# Signage above the doors
 	ActUtil.wall_label(self, "<-  HYDROPONICS",
-		Vector3(0, Chamber.DOOR_H + 0.30, -D/2 + 0.18), 16, Color(0.55, 0.95, 0.65))
+		Vector3(0, Chamber.DOOR_H + 0.12, -D/2 + 0.18), 16, Color(0.55, 0.95, 0.65))
 	ActUtil.wall_label(self, "STORAGE  ->",
-		Vector3(0, Chamber.DOOR_H + 0.30, D/2 - 0.18), 16, Color(0.62, 0.78, 0.94))
+		Vector3(0, Chamber.DOOR_H + 0.12, D/2 - 0.18), 16, Color(0.62, 0.78, 0.94))
 
 	# Power cable thicket leading from reactor base to east wall
 	for ci in 4:
