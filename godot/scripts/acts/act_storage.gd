@@ -20,7 +20,7 @@ func _ready() -> void:
 	Chamber.add_wall(self, "z", -D/2, -W/2, W/2, H, wall, 0.0)
 	Chamber.add_wall(self, "z", D/2, -W/2, W/2, H, wall, 0.0)
 
-	Chamber.add_door(self, "z", -D/2 + 0.05, 0, "ENGINEERING", Color(0.28, 0.27, 0.23), Callable(), "", true)
+	Chamber.add_door(self, "z", -D/2 + 0.05, 0, "AIRLOCK", Color(0.28, 0.27, 0.23), Callable(), "", true)
 	Chamber.add_door(self, "z", D/2 - 0.05, 0, "BRIDGE", Color(0.28, 0.27, 0.23),
 		func(): GameState.storage_door_open = true, "Open BRIDGE")
 

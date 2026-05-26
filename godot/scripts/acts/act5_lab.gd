@@ -381,6 +381,14 @@ REC: full alert.  Convene crew.
 	# Wall vents
 	ActUtil.wall_vent(self, "x", -LAB_W/2 + 0.05, -1.5, 2.8, Vector2(0.6, 0.4))
 
+	# The signal lab — its source. The growth is thickest here, around a body.
+	ActUtil.signal_growth(self, Vector3(7.5, 0.1, -4.0), 1.6)
+	ActUtil.signal_growth(self, Vector3(7.5, 0.1, 4.0), 1.4)
+	ActUtil.corpse(self, Vector3(6.3, 0, -3.0), -30)
+	ActUtil.viscera(self, Vector3(5.5, 0, 5.0))
+	ActUtil.bloody_smears(self, Vector3(7.9, 2.2, 0.0), -90, 5)
+	ActUtil.wall_scrawl(self, "WE OPENED\nIT", Vector3(7.9, 2.0, -1.5), -90, 38)
+	ActUtil.add_peeker(self, Vector3(6.8, 0, 4.5), HorrorShape.KIND_HARGROVE, -130)
 	ActUtil.haunt(self, {
 		"intensity": 0.46,
 		"lurkers": [{"kind": "hargrove", "points": [

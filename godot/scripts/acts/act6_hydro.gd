@@ -173,6 +173,14 @@ func _ready() -> void:
 	# Floor decals
 	ActUtil.add_floor_decals(self, W, D, Vector3.ZERO, Color(0.42, 0.86, 0.55, 0.4))
 
+	# The signal got into the water table. It is growing through everything now.
+	ActUtil.corpse(self, Vector3(-6.0, 0, 5.5), 35, true, Color(0.16, 0.20, 0.16))
+	ActUtil.signal_growth(self, Vector3(7.5, 0.2, 2.0), 1.4)
+	ActUtil.signal_growth(self, Vector3(-7.4, 0.2, -3.0), 1.1)
+	ActUtil.blood_trail(self, Vector3(-3.0, 0, 6.5), Vector3(-5.6, 0, 5.4), 5)
+	ActUtil.wall_scrawl(self, "IT GROWS", Vector3(-7.9, 2.0, 0.0), 90, 40)
+	ActUtil.add_peeker(self, Vector3(6.5, 0, 6.5), HorrorShape.KIND_YUNA, -120)
+
 	# It weaves between the planter rows — you keep catching it in the gaps.
 	ActUtil.haunt(self, {
 		"intensity": 0.50,

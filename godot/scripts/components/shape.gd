@@ -20,6 +20,7 @@ var stare_time := 0.0
 var farewell_done := false
 
 # --- Lurk / stalk behaviour ---
+var peeking := false          # stands and stares; gone for good once looked at
 var lurking := false
 var lurk_points: Array = []
 var _seen_t := 0.0
@@ -178,7 +179,28 @@ func set_lurk(points: Array, creep_speed: float = 0.55) -> void:
 	_creep_speed = creep_speed
 
 
+# Stand and stare at the player; vanish for good the moment they look straight
+# at it. The "I saw someone — now there's no one there" beat.
+func set_peek() -> void:
+	peeking = true
+	lurking = false
+
+
 func update_behavior(player_pos: Vector3, camera: Camera3D, dt: float) -> void:
+	if peeking:
+		if camera == null:
+			return
+		var look_pos := Vector3(player_pos.x, global_position.y, player_pos.z)
+		if look_pos.distance_to(global_position) > 0.1:
+			look_at(look_pos, Vector3.UP)
+		if _is_seen(camera):
+			_seen_t += dt
+			if _seen_t >= 0.18:
+				AudioManager.whisper()
+				queue_free()
+		else:
+			_seen_t = 0.0
+		return
 	if not lurking or camera == null:
 		return
 	var now := Time.get_ticks_msec() / 1000.0

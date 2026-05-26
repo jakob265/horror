@@ -221,6 +221,13 @@ func _ready() -> void:
 	ActUtil.blood_decal(self, Vector3(-0.5, 0.02, 4.0), Vector2(0.6, 0.9))
 	ActUtil.wall_scrawl(self, "IT IS\nME NOW", Vector3(-2.15, 1.5, 4.0), 90, 34)
 
+	# More of the crawl's horrors: a body wedged in, viscera, a growth, smears.
+	ActUtil.corpse(self, Vector3(-1.5, 0, -2.0), 6)
+	ActUtil.viscera(self, Vector3(1.2, 0, 6.0))
+	ActUtil.signal_growth(self, Vector3(2.0, 0.1, -6.0), 0.8)
+	ActUtil.bloody_smears(self, Vector3(2.2, 1.6, 1.0), -90, 3)
+	ActUtil.add_peeker(self, Vector3(0, 0, 9.0), HorrorShape.KIND_HARGROVE, 180)
+
 	# Tight, dark service crawl — the stalker is right on top of you here.
 	ActUtil.haunt(self, {
 		"intensity": 0.78,

@@ -384,6 +384,12 @@ static func haunt(act: Node3D, opts: Dictionary = {}) -> void:
 		shape.set_lurk(pts, cfg.get("creep", 0.55))
 		act.add_child(shape)
 		ShapeTracker.register(shape)
+	# Stationary "peekers" — stand and stare, gone the instant you look at them.
+	for cfg in opts.get("peekers", []):
+		var s := HorrorShape.create(cfg.get("kind", HorrorShape.KIND_HARGROVE), cfg.get("pos", Vector3.ZERO), cfg.get("rot", 0.0))
+		s.set_peek()
+		act.add_child(s)
+		ShapeTracker.register(s)
 
 
 static func _flicker_lights(node: Node, rate: float) -> void:
@@ -486,6 +492,133 @@ static func blood_trail(parent: Node3D, from: Vector3, to: Vector3, count: int =
 		var sz := lerpf(0.95, 0.35, f)
 		blood_decal(parent, Vector3(p.x, 0.02, p.z), Vector2(sz, sz * randf_range(0.7, 1.15)),
 			"up", Color(0.20, 0.03, 0.04, lerpf(0.85, 0.5, f)))
+
+
+# A body hanging by the neck from a ceiling cable, canted and slowly still.
+# `top` is the ceiling attach point. No collider.
+static func hanging_corpse(parent: Node3D, top: Vector3, hang_len: float = 1.7, suit: Color = Color(0.13, 0.14, 0.17)) -> Node3D:
+	var body := Node3D.new()
+	body.position = top
+	var skin := Color(0.50, 0.45, 0.41)
+	body.add_child(_corpse_capsule(0.018, hang_len * 0.42, Vector3(0, -hang_len * 0.21, 0), Vector3.ZERO, Color(0.10, 0.10, 0.12)))
+	var neck_y := -hang_len * 0.42
+	var head := MeshInstance3D.new()
+	var hs := SphereMesh.new()
+	hs.radius = 0.115
+	hs.height = 0.23
+	head.mesh = hs
+	head.position = Vector3(0, neck_y - 0.10, 0)
+	head.material_override = _corpse_mat(skin)
+	head.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	body.add_child(head)
+	body.add_child(_corpse_capsule(0.16, 0.66, Vector3(0, neck_y - 0.55, 0), Vector3.ZERO, suit))
+	body.add_child(_corpse_capsule(0.05, 0.62, Vector3(-0.18, neck_y - 0.60, 0.0), Vector3(0, 0, 6), suit))
+	body.add_child(_corpse_capsule(0.05, 0.62, Vector3(0.18, neck_y - 0.60, 0.0), Vector3(0, 0, -6), suit))
+	body.add_child(_corpse_capsule(0.07, 0.80, Vector3(-0.08, neck_y - 1.25, 0), Vector3(0, 0, 3), suit))
+	body.add_child(_corpse_capsule(0.07, 0.80, Vector3(0.08, neck_y - 1.25, 0), Vector3(0, 0, -3), suit))
+	body.rotation_degrees = Vector3(0, randf_range(0.0, 360.0), randf_range(-4.0, 4.0))
+	parent.add_child(body)
+	return body
+
+
+# A blood smear / handprint stuck flat to a wall. Double-sided so it always
+# reads from inside the room regardless of which way the wall faces.
+static func blood_wall(parent: Node3D, pos: Vector3, size: Vector2, face_y_deg: float, color: Color = Color(0.26, 0.04, 0.05, 0.85)) -> void:
+	var q := QuadMesh.new()
+	q.size = size
+	var mi := MeshInstance3D.new()
+	mi.mesh = q
+	mi.position = pos
+	mi.rotation_degrees = Vector3(0, face_y_deg, 0)
+	var m := StandardMaterial3D.new()
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	m.albedo_color = color
+	m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	m.cull_mode = BaseMaterial3D.CULL_DISABLED
+	m.roughness = 0.35
+	m.metallic = 0.15
+	mi.material_override = m
+	parent.add_child(mi)
+
+
+# A descending run of smears down a wall — something was dragged down it.
+static func bloody_smears(parent: Node3D, top: Vector3, face_y_deg: float, count: int = 4, color: Color = Color(0.24, 0.03, 0.04, 0.82)) -> void:
+	for i in count:
+		var p := top - Vector3(0, i * 0.42, 0)
+		var s := lerpf(0.34, 0.18, float(i) / float(maxi(count - 1, 1)))
+		blood_wall(parent, p, Vector2(s, s * 1.35), face_y_deg, color)
+
+
+# Alien "signal growth" — a cluster of dark, self-lit crystalline shards
+# erupting from a surface. The signal taking root in the station.
+static func signal_growth(parent: Node3D, pos: Vector3, scale_f: float = 1.0, color: Color = Color(0.55, 0.06, 0.16)) -> Node3D:
+	var node := Node3D.new()
+	node.position = pos
+	for i in 11:
+		var sh := MeshInstance3D.new()
+		var bm := BoxMesh.new()
+		var ln := randf_range(0.20, 0.62) * scale_f
+		bm.size = Vector3(randf_range(0.02, 0.06), ln, randf_range(0.02, 0.06))
+		sh.mesh = bm
+		sh.position = Vector3(randf_range(-0.22, 0.22) * scale_f, ln * 0.4, randf_range(-0.22, 0.22) * scale_f)
+		sh.rotation_degrees = Vector3(randf_range(-55.0, 55.0), randf_range(0.0, 360.0), randf_range(-55.0, 55.0))
+		var m := StandardMaterial3D.new()
+		m.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+		m.albedo_color = color.darkened(0.45)
+		m.emission_enabled = true
+		m.emission = color
+		m.emission_energy_multiplier = randf_range(0.6, 1.7)
+		m.roughness = 0.4
+		sh.material_override = m
+		node.add_child(sh)
+	parent.add_child(node)
+	return node
+
+
+# A small pile of viscera + a blood pool. Grim floor dressing.
+static func viscera(parent: Node3D, pos: Vector3) -> void:
+	blood_decal(parent, Vector3(pos.x, 0.02, pos.z), Vector2(1.1, 0.9), "up")
+	for i in 5:
+		var lump := MeshInstance3D.new()
+		var sm := SphereMesh.new()
+		var r := randf_range(0.06, 0.16)
+		sm.radius = r
+		sm.height = r * 1.6
+		lump.mesh = sm
+		lump.position = pos + Vector3(randf_range(-0.30, 0.30), r * 0.6, randf_range(-0.30, 0.30))
+		lump.scale = Vector3(1.0, randf_range(0.5, 0.8), 1.0)
+		var m := StandardMaterial3D.new()
+		m.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+		m.albedo_color = Color(0.30, 0.05, 0.06)
+		m.roughness = 0.25
+		m.metallic = 0.1
+		lump.material_override = m
+		parent.add_child(lump)
+
+
+# A figure that appears at a spot, turns to face the player, and is gone a
+# moment later — "was someone just standing there?". One-shot.
+static func apparition(parent: Node3D, pos: Vector3, kind: String = HorrorShape.KIND_HARGROVE, life: float = 0.9) -> void:
+	var s := HorrorShape.create(kind, pos, 0.0)
+	parent.add_child(s)
+	var pl: Node3D = GameState.player
+	if pl:
+		var look := Vector3(pl.global_position.x, pos.y, pl.global_position.z)
+		if look.distance_to(pos) > 0.1:
+			s.look_at(look, Vector3.UP)
+	AudioManager.shape_sting()
+	parent.get_tree().create_timer(life).timeout.connect(func():
+		if is_instance_valid(s):
+			s.queue_free())
+
+
+# Drop a stationary "peeker" that stands, stares, and is gone the moment the
+# player looks straight at it.
+static func add_peeker(act: Node3D, pos: Vector3, kind: String = HorrorShape.KIND_HARGROVE, rot: float = 0.0) -> void:
+	var s := HorrorShape.create(kind, pos, rot)
+	s.set_peek()
+	act.add_child(s)
+	ShapeTracker.register(s)
 
 
 # Red scrawl on a wall — billboard-free so it stays stuck to the wall.

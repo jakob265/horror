@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b1act_obs_deck"]
+
+[ext_resource type="Script" path="res://scripts/acts/act_obs.gd" id="1"]
+
+[node name="act_obs" type="Node3D"]
+script = ExtResource("1")

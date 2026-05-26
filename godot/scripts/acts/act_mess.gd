@@ -15,7 +15,7 @@ func _ready() -> void:
 	Chamber.add_wall(self, "x", W/2, -D/2, D/2, H, wall)
 	Chamber.add_wall(self, "z", -D/2, -W/2, W/2, H, wall, 0.0)
 	Chamber.add_wall(self, "z", D/2, -W/2, W/2, H, wall, 0.0)
-	Chamber.add_door(self, "z", -D/2 + 0.05, 0, "LOUNGE", Color(0.28, 0.27, 0.23), Callable(), "", true)
+	Chamber.add_door(self, "z", -D/2 + 0.05, 0, "OBSERVATION", Color(0.28, 0.27, 0.23), Callable(), "", true)
 	Chamber.add_door(self, "z", D/2 - 0.05, 0, "LAB", Color(0.28, 0.27, 0.23),
 		func(): GameState.mess_door_open = true, "Open LAB")
 
@@ -157,6 +157,13 @@ func _ready() -> void:
 	ActUtil.wall_label(self, "TONIGHT\nHargrove's chili\n( extra spice )\nYuna's bread\n( fresh )",
 		Vector3(-W/2 + 0.06, 1.50, -D/2 + 3.0), 14, Color(0.94, 0.92, 0.78))
 
+	# The mess where they ate together. One of them is still here, and worse.
+	ActUtil.corpse(self, Vector3(-5.5, 0, 0.0), 90)
+	ActUtil.viscera(self, Vector3(4.5, 0, 3.5))
+	ActUtil.signal_growth(self, Vector3(7.6, 0.9, -3.0), 1.2)
+	ActUtil.bloody_smears(self, Vector3(-7.9, 2.2, 4.0), 90, 4)
+	ActUtil.wall_scrawl(self, "STILL\nHUNGRY", Vector3(7.9, 2.0, 1.0), -90, 40)
+	ActUtil.add_peeker(self, Vector3(6.5, 0, -5.5), HorrorShape.KIND_YUNA, -20)
 	ActUtil.haunt(self, {
 		"intensity": 0.40,
 		"lurkers": [{"kind": "yuna", "points": [

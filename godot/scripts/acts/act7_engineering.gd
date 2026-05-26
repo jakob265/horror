@@ -22,8 +22,8 @@ func _ready() -> void:
 	Chamber.add_wall(self, "z", D/2, -W/2, W/2, H, wall, 0.0)
 
 	Chamber.add_door(self, "z", -D/2 + 0.05, 0, "HYDRO", Color(0.28, 0.27, 0.23), Callable(), "", true)
-	Chamber.add_door(self, "z", D/2 - 0.05, 0, "STORAGE", Color(0.28, 0.27, 0.23),
-		func(): GameState.engineering_door_open = true, "Open STORAGE")
+	Chamber.add_door(self, "z", D/2 - 0.05, 0, "AIRLOCK", Color(0.28, 0.27, 0.23),
+		func(): GameState.engineering_door_open = true, "Open AIRLOCK")
 
 	# Central reactor housing — segmented industrial cylinder with bolts and panels
 	var housing := MeshInstance3D.new()
@@ -380,7 +380,7 @@ func _ready() -> void:
 	# Signage above the doors
 	ActUtil.wall_label(self, "<-  HYDROPONICS",
 		Vector3(0, Chamber.DOOR_H + 0.12, -D/2 + 0.18), 16, Color(0.55, 0.95, 0.65))
-	ActUtil.wall_label(self, "STORAGE  ->",
+	ActUtil.wall_label(self, "AIRLOCK  ->",
 		Vector3(0, Chamber.DOOR_H + 0.12, D/2 - 0.18), 16, Color(0.62, 0.78, 0.94))
 
 	# Power cable thicket leading from reactor base to east wall
@@ -392,6 +392,14 @@ func _ready() -> void:
 	# A workbench-mounted vise on the tool bench
 	Chamber.make_prop_box(self, Vector3(0.18, 0.16, 0.14), Vector3(-W/2 + 1.0, 0.93, 5.5), Color(0.55, 0.55, 0.59), false)
 
+	# Engineering, where Hargrove confessed. A body hangs by the reactor housing.
+	ActUtil.hanging_corpse(self, Vector3(-6.5, 4.4, -4.0), 2.0)
+	ActUtil.corpse(self, Vector3(7.0, 0, 6.0), -25)
+	ActUtil.viscera(self, Vector3(-7.0, 0, 4.0))
+	ActUtil.signal_growth(self, Vector3(8.5, 0.2, -6.0), 1.6)
+	ActUtil.bloody_smears(self, Vector3(8.9, 2.6, 2.0), -90, 5)
+	ActUtil.wall_scrawl(self, "I MADE IT\nI MADE IT", Vector3(-8.9, 2.4, 0.0), 90, 38)
+	ActUtil.add_peeker(self, Vector3(8.0, 0, -7.0), HorrorShape.KIND_HARGROVE, -110)
 	ActUtil.haunt(self, {
 		"intensity": 0.58,
 		"lurkers": [{"kind": "hargrove", "points": [
@@ -470,4 +478,4 @@ func _process(dt: float) -> void:
 		mat.emission_energy_multiplier = 0.4 + 0.6 * v
 
 	if GameState.engineering_door_open and GameState.player and GameState.player.global_position.z > D/2 + 0.1:
-		SceneRouter.transition_to("act_storage")
+		SceneRouter.transition_to("act_eva")

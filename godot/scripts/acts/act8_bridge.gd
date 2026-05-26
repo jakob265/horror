@@ -262,6 +262,14 @@ func _ready() -> void:
 	ActUtil.wall_vent(self, "x", -W/2 + 0.05, -4.0, 2.8, Vector2(0.5, 0.4))
 	ActUtil.wall_vent(self, "x", W/2 - 0.05, -4.0, 2.8, Vector2(0.5, 0.4))
 
+	# The bridge crew never got up from their stations.
+	ActUtil.corpse(self, Vector3(-6.5, 0, 2.0), 70)
+	ActUtil.corpse(self, Vector3(6.5, 0, 2.5), -70)
+	ActUtil.signal_growth(self, Vector3(5.0, 0.2, 7.4), 1.5)
+	ActUtil.viscera(self, Vector3(-7.5, 0, -3.0))
+	ActUtil.wall_scrawl(self, "WE STILL\nHAVE THE CONN", Vector3(8.9, 2.2, 0.0), -90, 32)
+	ActUtil.add_peeker(self, Vector3(7.5, 0, -6.0), HorrorShape.KIND_HARGROVE, -140)
+
 	# No lurker here — the Hargrove-Shape above is a scripted beat. Just dread.
 	ActUtil.haunt(self, {"intensity": 0.66, "flicker_rate": 1.2})
 

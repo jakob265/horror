@@ -19,8 +19,8 @@ func _ready() -> void:
 	Chamber.add_wall(self, "z", -D/2, -W/2, W/2, H, wall, 0.0)
 	Chamber.add_wall(self, "z", D/2, -W/2, W/2, H, wall, 0.0)
 	Chamber.add_door(self, "z", -D/2 + 0.05, 0, "MAINT", Color(0.43, 0.35, 0.27), Callable(), "", true)
-	Chamber.add_door(self, "z", D/2 - 0.05, 0, "MESS", Color(0.50, 0.40, 0.30),
-		func(): exit_open = true, "Open MESS")
+	Chamber.add_door(self, "z", D/2 - 0.05, 0, "OBSERVATION", Color(0.50, 0.40, 0.30),
+		func(): exit_open = true, "Open OBSERVATION")
 
 	# Porthole on the EAST wall - off the door axis, flat circular window
 	_make_porthole(Vector3(W/2 - 0.12, 1.95, 0), "east")
@@ -153,6 +153,13 @@ func _ready() -> void:
 	ActUtil.add_dust_motes(self, Vector3(0, 1.6, 0), Vector3(7, 1.8, 6), 80,
 		Color(0.85, 0.86, 0.92, 0.15))
 
+	# The lounge where they used to gather — now a body hangs over it.
+	ActUtil.hanging_corpse(self, Vector3(-4.5, 3.5, 2.0), 1.8)
+	ActUtil.viscera(self, Vector3(5.2, 0, -3.0))
+	ActUtil.signal_growth(self, Vector3(6.6, 1.0, 3.0), 1.0)
+	ActUtil.blood_trail(self, Vector3(2.0, 0, 4.5), Vector3(5.0, 0, -2.6), 7)
+	ActUtil.wall_scrawl(self, "SIT WITH\nUS", Vector3(6.9, 1.95, 0.0), -90, 40)
+	ActUtil.add_peeker(self, Vector3(-6.0, 0, -4.5), HorrorShape.KIND_FELIX, 30)
 	ActUtil.haunt(self, {
 		"intensity": 0.34,
 		"lurkers": [{"kind": "yuna", "points": [
@@ -266,4 +273,4 @@ func _make_porthole(center: Vector3, wall: String = "north") -> void:
 
 func _process(_dt: float) -> void:
 	if exit_open and GameState.player and GameState.player.global_position.z > D/2 + 0.1:
-		SceneRouter.transition_to("act_mess")
+		SceneRouter.transition_to("act_obs")

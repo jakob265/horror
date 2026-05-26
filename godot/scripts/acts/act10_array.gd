@@ -281,6 +281,18 @@ func _ready() -> void:
 
 	# Lurkers out in the dark fringes of the huge room; slow creep so they
 	# don't crowd the terminal. Intensity backs off a touch for the climax.
+	# The array chamber — the crew taken root around the source they became.
+	ActUtil.hanging_corpse(self, Vector3(-5.0, 4.5, -2.0), 1.8)
+	ActUtil.corpse(self, Vector3(12.0, 0, 12.0), -35)
+	ActUtil.corpse(self, Vector3(-12.0, 0, 11.0), 40)
+	ActUtil.signal_growth(self, Vector3(6.5, 0.1, 4.0), 2.0)
+	ActUtil.signal_growth(self, Vector3(-6.5, 0.1, 4.5), 1.8)
+	ActUtil.signal_growth(self, Vector3(0.0, 0.1, 8.5), 2.4)
+	ActUtil.viscera(self, Vector3(9.0, 0, -6.0))
+	ActUtil.bloody_smears(self, Vector3(14.9, 3.0, 5.0), -90, 6)
+	ActUtil.wall_scrawl(self, "YOU ARE\nTHE DOOR", Vector3(14.85, 3.0, -3.0), -90, 70)
+	ActUtil.wall_scrawl(self, "IT WAS\nALWAYS YOU", Vector3(-14.85, 3.0, 0.0), 90, 64)
+	ActUtil.add_peeker(self, Vector3(13.0, 0, -10.0), HorrorShape.KIND_FELIX, -150)
 	ActUtil.haunt(self, {
 		"intensity": 0.62,
 		"flicker_rate": 1.0,

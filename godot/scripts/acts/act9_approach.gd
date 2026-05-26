@@ -256,6 +256,16 @@ func _ready() -> void:
 	for bz in range(0, 9):
 		ActUtil.blood_decal(self, Vector3(0.4 - bz * 0.1, 0.02, -6.0 + bz * 1.6), Vector2(0.6, 1.0))
 
+	# The dead are propped along the approach and the walls are taking root.
+	ActUtil.corpse(self, Vector3(-1.8, 0, -6.0), 15)
+	ActUtil.corpse(self, Vector3(1.9, 0, 4.0), -15)
+	ActUtil.signal_growth(self, Vector3(2.2, 0.2, -2.0), 1.0)
+	ActUtil.signal_growth(self, Vector3(-2.2, 0.2, 8.0), 1.2)
+	ActUtil.bloody_smears(self, Vector3(-2.45, 2.2, 1.0), 90, 5)
+	ActUtil.viscera(self, Vector3(1.4, 0, 11.0))
+	ActUtil.wall_scrawl(self, "HOME IS NOT\nIN THERE", Vector3(-2.45, 2.0, 12.0), 90, 30)
+	ActUtil.add_peeker(self, Vector3(-1.6, 0, -13.0), HorrorShape.KIND_FELIX, 10)
+
 	# The long dark walk to the array — peak dread, it stalks the whole length.
 	ActUtil.haunt(self, {
 		"intensity": 0.90,

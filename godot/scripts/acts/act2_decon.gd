@@ -132,6 +132,13 @@ func _ready() -> void:
 		"Pre-flight crew photo.  Five people, all smiling.  You stand on the left.  Felix has his arm around your shoulder.  Yuna is laughing at something Hargrove just said.  Felix told a joke at the scanner that morning.  You can't remember the joke.",
 		8.0, Color(0.86, 0.84, 0.76))
 
+	# Decon never cleaned what came in: a body, a drag-trail, the first growth.
+	ActUtil.corpse(self, Vector3(-3.4, 0, 4.2), 20)
+	ActUtil.blood_trail(self, Vector3(-1.0, 0, 1.5), Vector3(-3.0, 0, 3.8), 6)
+	ActUtil.signal_growth(self, Vector3(3.7, 0.05, -3.5), 1.1)
+	ActUtil.bloody_smears(self, Vector3(4.45, 2.0, 2.0), -90, 4)
+	ActUtil.wall_scrawl(self, "IT CAME IN\nWITH US", Vector3(-4.42, 1.95, -1.0), 90, 34)
+	ActUtil.add_peeker(self, Vector3(-3.6, 0, -5.0), HorrorShape.KIND_YUNA, 0)
 	ActUtil.haunt(self, {"intensity": 0.20, "flicker_rate": 0.9})
 
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)
