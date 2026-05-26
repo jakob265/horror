@@ -135,6 +135,16 @@ func _ready() -> void:
 	ActUtil.wall_vent(self, "x", -W/2 + 0.05, -3.0, 2.6, Vector2(0.6, 0.4))
 	ActUtil.wall_vent(self, "x", W/2 - 0.05, 3.0, 2.6, Vector2(0.6, 0.4))
 
+	# The crew didn't all make it into the pods. One never got up — slumped in
+	# the north-east corner, a drag-trail behind it and a dropped badge beside.
+	ActUtil.corpse(self, Vector3(5.9, 0, 9.0), -6)
+	ActUtil.blood_trail(self, Vector3(3.4, 0, 7.2), Vector3(5.5, 0, 8.5), 6)
+	ActUtil.wall_scrawl(self, "IT WEARS\nOUR FACES", Vector3(6.9, 1.95, 5.0), -90, 36)
+	Interactable.make_examine(self, Vector3(5.1, 0.06, 8.4), Vector3(0.13, 0.02, 0.18),
+		"Look at the ID badge",
+		"A crew badge in a cracked holder.  The photo is a young man you don't recognise.  The name strip reads K. SATO.  You are holding the proof he was real and you still feel nothing where the memory of him should be.",
+		7.0, Color(0.70, 0.74, 0.80))
+
 	ActUtil.haunt(self, {
 		"intensity": 0.62,
 		"lurkers": [{"kind": "hargrove", "points": [

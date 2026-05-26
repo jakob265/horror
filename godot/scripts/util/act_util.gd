@@ -420,6 +420,74 @@ static func blood_decal(parent: Node3D, pos: Vector3, size: Vector2, facing: Str
 	parent.add_child(mi)
 
 
+# A crumpled crew body — set dressing for "the others didn't make it". Built
+# from primitives, lying on the floor, optionally in a pool of blood. Purely
+# visual (no collider) so it never blocks a path or trips a shape's sightline.
+static func corpse(parent: Node3D, pos: Vector3, rot_y_deg: float = 0.0, blood: bool = true, suit: Color = Color(0.13, 0.14, 0.17)) -> Node3D:
+	var body := Node3D.new()
+	body.position = pos
+	body.rotation_degrees = Vector3(0, rot_y_deg, 0)
+	var skin := Color(0.50, 0.45, 0.41)
+	# Torso + pelvis (length runs along local Z).
+	body.add_child(_corpse_capsule(0.16, 0.62, Vector3(0, 0.16, 0.0), Vector3(90, 0, 0), suit))
+	body.add_child(_corpse_capsule(0.15, 0.20, Vector3(0, 0.15, 0.42), Vector3(90, 0, 0), suit))
+	# Head, lolled to one side.
+	var head := MeshInstance3D.new()
+	var hs := SphereMesh.new()
+	hs.radius = 0.115
+	hs.height = 0.23
+	head.mesh = hs
+	head.position = Vector3(0.06, 0.12, -0.46)
+	head.material_override = _corpse_mat(skin)
+	head.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	body.add_child(head)
+	# Arms splayed out.
+	body.add_child(_corpse_capsule(0.055, 0.50, Vector3(-0.28, 0.11, -0.06), Vector3(80, 0, 32), suit))
+	body.add_child(_corpse_capsule(0.055, 0.50, Vector3(0.27, 0.10, 0.04), Vector3(70, 0, -52), suit))
+	# Legs, one bent.
+	body.add_child(_corpse_capsule(0.075, 0.60, Vector3(-0.10, 0.12, 0.80), Vector3(94, 0, 9), suit))
+	body.add_child(_corpse_capsule(0.075, 0.54, Vector3(0.15, 0.11, 0.74), Vector3(78, 0, -20), suit))
+	parent.add_child(body)
+	if blood:
+		blood_decal(parent, pos + Vector3(0, 0.02, -0.30), Vector2(1.4, 1.05), "up")
+		blood_decal(parent, pos + Vector3(0.42, 0.02, 0.25), Vector2(0.7, 0.55), "up")
+	return body
+
+
+static func _corpse_mat(c: Color) -> StandardMaterial3D:
+	var m := StandardMaterial3D.new()
+	m.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	m.albedo_color = c
+	m.roughness = 0.9
+	m.metallic = 0.0
+	return m
+
+
+static func _corpse_capsule(radius: float, height: float, pos: Vector3, rot: Vector3, color: Color) -> MeshInstance3D:
+	var mi := MeshInstance3D.new()
+	var cap := CapsuleMesh.new()
+	cap.radius = radius
+	cap.height = maxf(height, radius * 2.0)
+	cap.radial_segments = 12
+	cap.rings = 6
+	mi.mesh = cap
+	mi.position = pos
+	mi.rotation_degrees = rot
+	mi.material_override = _corpse_mat(color)
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	return mi
+
+
+# A trail of blood smears on the floor from one point to another — drag marks.
+static func blood_trail(parent: Node3D, from: Vector3, to: Vector3, count: int = 6) -> void:
+	for i in count:
+		var f := float(i) / float(maxi(count - 1, 1))
+		var p: Vector3 = from.lerp(to, f)
+		var sz := lerpf(0.95, 0.35, f)
+		blood_decal(parent, Vector3(p.x, 0.02, p.z), Vector2(sz, sz * randf_range(0.7, 1.15)),
+			"up", Color(0.20, 0.03, 0.04, lerpf(0.85, 0.5, f)))
+
+
 # Red scrawl on a wall — billboard-free so it stays stuck to the wall.
 static func wall_scrawl(parent: Node3D, text: String, pos: Vector3, face_y_deg: float, font_size: int = 40, color: Color = Color(0.55, 0.05, 0.06)) -> Label3D:
 	var lbl := Label3D.new()

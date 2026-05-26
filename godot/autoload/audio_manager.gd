@@ -77,6 +77,20 @@ func _bake_all() -> void:
 	_streams["heartbeat"] = _bake(_gen_heartbeat())
 	_streams["power_down"] = _bake(_apply_fade(_gen_square(70.0, 0.45, 0.28), 0.005, 0.35))
 	_streams["whisper_long"] = _bake(_apply_fade(_mix(_gen_noise(3.0, 0.13), _gen_warble(70.0, 3.0, 3.5, 22.0, 0.09)), 0.6, 1.0))
+	# Low structural hull groan — the station flexing, or something large shifting.
+	_streams["groan"] = _bake(_apply_fade(_mix(
+		_gen_warble(46.0, 2.8, 0.4, 5.0, 0.50),
+		_gen_noise(2.8, 0.04)), 0.5, 1.2))
+	# A thin, far-off human cry bent through the hull — never quite a person.
+	_streams["distant_scream"] = _bake(_apply_fade(_mix(
+		_gen_warble(360.0, 1.7, 4.5, 80.0, 0.12),
+		_gen_noise(1.7, 0.04)), 0.45, 0.95))
+	# Radio / signal static burst.
+	_streams["static_burst"] = _bake(_apply_fade(_gen_noise(0.45, 0.45), 0.01, 0.25))
+	# A single dull footstep thud (volume scaled by caller for approach sequences).
+	_streams["footstep"] = _bake(_apply_fade(_mix(
+		_gen_sine(56.0, 0.10, 0.70),
+		_gen_noise(0.05, 0.32)), 0.002, 0.07))
 	# --- Dynamic-dread music beds (seamless loops; freqs are N/8 so 8 s loops
 	#     cleanly, LFO periods divide the loop length) ---
 	_streams["drone_bed"] = _bake_loop(_make_drone())
@@ -100,6 +114,10 @@ func boom()           -> void: _one_shot("boom",           -7.0)
 func knock()          -> void: _one_shot("knock",          -9.0)
 func heartbeat()      -> void: _one_shot("heartbeat",      -12.0)
 func power_down()     -> void: _one_shot("power_down",     -10.0)
+func groan()          -> void: _one_shot("groan",          -10.0)
+func distant_scream() -> void: _one_shot("distant_scream", -13.0)
+func static_burst()   -> void: _one_shot("static_burst",   -15.0)
+func footstep(db: float = -15.0) -> void: _one_shot("footstep", db)
 
 
 # A one-shot at a chosen volume (lets the ScareDirector scale by intensity).

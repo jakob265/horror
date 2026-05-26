@@ -8,6 +8,7 @@ signal flicker_pulse(strength: float)
 signal blackout(duration: float)
 
 const JumpscareOverlay := preload("res://scripts/ui/jumpscare.gd")
+const ShadowPassOverlay := preload("res://scripts/ui/shadow_pass.gd")
 
 var intensity := 0.0          # 0..1
 var enabled := false
@@ -66,26 +67,79 @@ func _process(dt: float) -> void:
 
 func _emit_scare() -> void:
 	var r := randf()
-	if r < 0.28:
+	if r < 0.15:
 		AudioManager.whisper()
 		flicker_pulse.emit(0.35)
-	elif r < 0.46:
+	elif r < 0.26:
 		AudioManager.breath()
-	elif r < 0.60:
+	elif r < 0.37:
 		AudioManager.knock()
 		flicker_pulse.emit(0.3)
-	elif r < 0.74:
+	elif r < 0.47:
 		AudioManager.scrape()
-	elif r < 0.86:
+	elif r < 0.56:
 		AudioManager.heartbeat()
+	elif r < 0.66:
+		# The hull flexing — or something large shifting in the dark.
+		AudioManager.groan()
+	elif r < 0.74:
+		# A burst of signal static with a light glitch.
+		AudioManager.static_burst()
+		flicker_pulse.emit(0.4)
+	elif r < 0.82:
+		# Phantom footsteps closing in from behind, harder the more haunted.
+		if intensity > 0.30:
+			footsteps_approach()
+		else:
+			AudioManager.scrape()
+	elif r < 0.90:
+		# A far-off cry through the hull — weighted toward the scarier acts.
+		if intensity > 0.40:
+			AudioManager.distant_scream()
+			flicker_pulse.emit(0.5)
+		else:
+			AudioManager.whisper()
 	else:
 		AudioManager.boom()
 		if intensity > 0.70 and randf() < 0.22:
 			jump_scare()
+		elif intensity > 0.55 and randf() < 0.5:
+			shadow_pass()
+			blackout.emit(randf_range(0.3, 0.7))
 		elif intensity > 0.45 and randf() < intensity:
 			blackout.emit(randf_range(0.4, 1.0))
 		else:
 			flicker_pulse.emit(0.85)
+
+
+# A dark figure sweeps across the player's vision (2D overlay) + a whisper.
+func shadow_pass() -> void:
+	var ui := _ui_layer()
+	if ui:
+		ui.add_child(ShadowPassOverlay.new())
+	AudioManager.whisper()
+
+
+# Footsteps that approach from behind — getting louder and quicker — then stop
+# right at the player's back with a breath and a light stutter. Sometimes a
+# shape sweeps past at the end.
+func footsteps_approach() -> void:
+	_footstep_seq(0, 7)
+
+
+func _footstep_seq(i: int, total: int) -> void:
+	if GameState.player == null:
+		return
+	if i >= total:
+		AudioManager.breath()
+		flicker_pulse.emit(0.5)
+		if intensity > 0.6 and randf() < 0.4:
+			shadow_pass()
+		return
+	var f := float(i) / float(total - 1)
+	AudioManager.footstep(lerpf(-22.0, -7.0, f))
+	var gap := lerpf(0.5, 0.17, f)
+	get_tree().create_timer(gap).timeout.connect(func(): _footstep_seq(i + 1, total))
 
 
 # Scripted jump-scare cue (acts call this on key beats).

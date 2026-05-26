@@ -113,6 +113,9 @@ func _ready() -> void:
 	for bz in range(0, 7):
 		ActUtil.blood_decal(self, Vector3(-0.6 + bz * 0.15, 0.02, 2.0 + bz * 1.1), Vector2(0.5, 0.8))
 	ActUtil.wall_scrawl(self, "WE NEVER\nLEFT", Vector3(-2.92, 1.9, 7.0), 90, 44)
+	# A crew body slumped in the north-east corner, with a fresh drag-trail to it.
+	ActUtil.corpse(self, Vector3(2.45, 0, 16.2), 8)
+	ActUtil.blood_trail(self, Vector3(0.2, 0, 11.8), Vector3(2.05, 0, 15.6), 7)
 
 	# Something paces the length of the corridor, glimpsed at the far end.
 	ActUtil.haunt(self, {

@@ -144,6 +144,8 @@ func _ready() -> void:
 
 	# Scrawl on the west wall, in the same hand as the other writing.
 	ActUtil.wall_scrawl(self, "WHERE\nIS SATO", Vector3(-6.9, 1.9, -2.0), 90, 40)
+	# A body that never made it out, crumpled against the locker bank.
+	ActUtil.corpse(self, Vector3(5.6, 0, 4.6), -8)
 
 	# A stalker drifts among the equipment racks here.
 	ActUtil.haunt(self, {
