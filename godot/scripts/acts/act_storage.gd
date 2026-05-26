@@ -146,9 +146,9 @@ func _ready() -> void:
 		7.0, Color(0.70, 0.74, 0.80))
 
 	ActUtil.haunt(self, {
-		"intensity": 0.62,
+		"intensity": 0.72,
 		"lurkers": [{"kind": "hargrove", "points": [
-			Vector3(0, 0, 8), Vector3(-5, 0, 2), Vector3(5, 0, -2), Vector3(0, 0, 6)], "creep": 0.75}],
+			Vector3(0, 0, 8), Vector3(-5, 0, 2), Vector3(5, 0, -2), Vector3(0, 0, 6)], "creep": 0.9}],
 	})
 
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)

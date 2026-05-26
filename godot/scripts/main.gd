@@ -13,6 +13,7 @@ var main_menu: Control = null
 var pause_menu: Control = null
 var hud: Control = null
 var ending_overlay: Control = null
+var debug_warp: Control = null
 var is_paused := false
 var in_ending := false
 
@@ -91,6 +92,14 @@ func _process(_dt: float) -> void:
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
+		# Debug act-warp (F9), available during gameplay only.
+		if event.keycode == KEY_F9 and player and not in_ending and main_menu == null:
+			_toggle_debug_warp()
+			return
+		if debug_warp and is_instance_valid(debug_warp):
+			if event.keycode == KEY_ESCAPE:
+				_close_debug_warp()
+			return
 		if event.keycode == KEY_ESCAPE:
 			if NotesManager.is_open:
 				NotesManager.close()
@@ -120,6 +129,37 @@ func _unhandled_input(event: InputEvent) -> void:
 	# Endings handle their own skip + continue keys
 	if in_ending and ending_overlay and ending_overlay.has_method("handle_input"):
 		ending_overlay.handle_input(event)
+
+
+func _toggle_debug_warp() -> void:
+	if debug_warp and is_instance_valid(debug_warp):
+		_close_debug_warp()
+	else:
+		_open_debug_warp()
+
+
+func _open_debug_warp() -> void:
+	if debug_warp and is_instance_valid(debug_warp):
+		return
+	debug_warp = preload("res://scripts/ui/debug_warp.gd").new()
+	debug_warp.warp_requested.connect(_on_warp_requested)
+	ui_layer.add_child(debug_warp)
+	GameState.push_modal()
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+
+func _close_debug_warp() -> void:
+	if debug_warp and is_instance_valid(debug_warp):
+		debug_warp.queue_free()
+	debug_warp = null
+	GameState.pop_modal()
+	if not is_paused and player and main_menu == null and not in_ending:
+		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+
+
+func _on_warp_requested(act_name: String) -> void:
+	_close_debug_warp()
+	SceneRouter.transition_to(act_name)
 
 
 func _open_pause() -> void:

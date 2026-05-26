@@ -101,8 +101,12 @@ func _emit_scare() -> void:
 			AudioManager.whisper()
 	else:
 		AudioManager.boom()
-		if intensity > 0.70 and randf() < 0.22:
+		# Jump-scare odds climb steeply as a room gets more haunted.
+		var js_chance := lerpf(0.18, 0.52, clampf((intensity - 0.70) / 0.30, 0.0, 1.0))
+		if intensity > 0.70 and randf() < js_chance:
 			jump_scare()
+		elif intensity > 0.60 and randf() < 0.40:
+			creeping_dark()
 		elif intensity > 0.55 and randf() < 0.5:
 			shadow_pass()
 			blackout.emit(randf_range(0.3, 0.7))
@@ -110,6 +114,18 @@ func _emit_scare() -> void:
 			blackout.emit(randf_range(0.4, 1.0))
 		else:
 			flicker_pulse.emit(0.85)
+
+
+# The lights stutter down, a beat of full black, then a breath right at your
+# ear — and sometimes a shape sweeps past as they come back.
+func creeping_dark() -> void:
+	flicker_pulse.emit(0.5)
+	get_tree().create_timer(0.45).timeout.connect(func(): flicker_pulse.emit(0.85))
+	get_tree().create_timer(0.95).timeout.connect(func(): blackout.emit(randf_range(0.8, 1.6)))
+	get_tree().create_timer(1.35).timeout.connect(func():
+		AudioManager.breath()
+		if intensity > 0.70 and randf() < 0.5:
+			shadow_pass())
 
 
 # A dark figure sweeps across the player's vision (2D overlay) + a whisper.

@@ -16,8 +16,8 @@ func _ready() -> void:
 	Chamber.add_wall(self, "z", -D/2, -W/2, W/2, H, wall, 0.0)
 	Chamber.add_wall(self, "z", D/2, -W/2, W/2, H, wall, 0.0)
 	Chamber.add_door(self, "z", -D/2 + 0.05, 0, "OBSERVATION", Color(0.28, 0.27, 0.23), Callable(), "", true)
-	Chamber.add_door(self, "z", D/2 - 0.05, 0, "LAB", Color(0.28, 0.27, 0.23),
-		func(): GameState.mess_door_open = true, "Open LAB")
+	Chamber.add_door(self, "z", D/2 - 0.05, 0, "COMMS", Color(0.28, 0.27, 0.23),
+		func(): GameState.mess_door_open = true, "Open COMMS")
 
 	# Communal table down the middle — wider + longer than before
 	var table_y := 0.82
@@ -223,4 +223,4 @@ func _place_setting(x: float, z: float, table_y: float, plate_color: Color, food
 
 func _process(_dt: float) -> void:
 	if GameState.mess_door_open and GameState.player and GameState.player.global_position.z > D/2 + 0.1:
-		SceneRouter.transition_to("act5")
+		SceneRouter.transition_to("act_comms")

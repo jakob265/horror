@@ -230,10 +230,10 @@ func _ready() -> void:
 
 	# Tight, dark service crawl — the stalker is right on top of you here.
 	ActUtil.haunt(self, {
-		"intensity": 0.78,
+		"intensity": 0.86,
 		"flicker_rate": 1.4,
 		"lurkers": [{"kind": "hargrove", "points": [
-			Vector3(0, 0, 8), Vector3(0, 0, 2), Vector3(1.2, 0, -3), Vector3(-1.2, 0, 5)], "creep": 0.85}],
+			Vector3(0, 0, 8), Vector3(0, 0, 2), Vector3(1.2, 0, -3), Vector3(-1.2, 0, 5)], "creep": 1.0}],
 	})
 
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)

@@ -390,7 +390,7 @@ REC: full alert.  Convene crew.
 	ActUtil.wall_scrawl(self, "WE OPENED\nIT", Vector3(7.9, 2.0, -1.5), -90, 38)
 	ActUtil.add_peeker(self, Vector3(6.8, 0, 4.5), HorrorShape.KIND_HARGROVE, -130)
 	ActUtil.haunt(self, {
-		"intensity": 0.46,
+		"intensity": 0.52,
 		"lurkers": [{"kind": "hargrove", "points": [
 			Vector3(0, 0, -8), Vector3(-5, 0, 2), Vector3(5, 0, 3), Vector3(0, 0, 5)]}],
 	})

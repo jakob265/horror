@@ -18,8 +18,8 @@ func _ready() -> void:
 	Chamber.add_wall(self, "z", D/2, -W/2, W/2, H, wall, 0.0)
 
 	Chamber.add_door(self, "z", -D/2 + 0.05, 0, "LAB", Color(0.28, 0.27, 0.23), Callable(), "", true)
-	Chamber.add_door(self, "z", D/2 - 0.05, 0, "ENGINEERING", Color(0.28, 0.27, 0.23),
-		func(): GameState.hydro_door_open = true, "Open ENGINEERING")
+	Chamber.add_door(self, "z", D/2 - 0.05, 0, "CARGO", Color(0.28, 0.27, 0.23),
+		func(): GameState.hydro_door_open = true, "Open CARGO")
 
 	# Five planter rows
 	var row_labels := [
@@ -165,7 +165,7 @@ func _ready() -> void:
 	# Sign over each door
 	ActUtil.wall_label(self, "<-  RESEARCH LAB",
 		Vector3(0, Chamber.DOOR_H + 0.12, -D/2 + 0.18), 16, Color(0.55, 0.95, 0.65))
-	ActUtil.wall_label(self, "ENGINEERING  ->",
+	ActUtil.wall_label(self, "CARGO  ->",
 		Vector3(0, Chamber.DOOR_H + 0.12, D/2 - 0.18), 16, Color(0.86, 0.70, 0.42))
 	# Wall vents
 	ActUtil.wall_vent(self, "x", -W/2 + 0.05, 0, 2.8, Vector2(0.6, 0.4))
@@ -183,9 +183,9 @@ func _ready() -> void:
 
 	# It weaves between the planter rows — you keep catching it in the gaps.
 	ActUtil.haunt(self, {
-		"intensity": 0.50,
+		"intensity": 0.58,
 		"lurkers": [{"kind": "yuna", "points": [
-			Vector3(-6, 0, 4), Vector3(6, 0, 4), Vector3(-6, 0, -4), Vector3(6, 0, -4)], "creep": 0.7}],
+			Vector3(-6, 0, 4), Vector3(6, 0, 4), Vector3(-6, 0, -4), Vector3(6, 0, -4)], "creep": 0.85}],
 	})
 
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)
@@ -266,4 +266,4 @@ func _build_grow_rack(x: float, z: float) -> void:
 
 func _process(_dt: float) -> void:
 	if GameState.hydro_door_open and GameState.player and GameState.player.global_position.z > D/2 + 0.1:
-		SceneRouter.transition_to("act7")
+		SceneRouter.transition_to("act_cargo")

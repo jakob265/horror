@@ -271,7 +271,7 @@ func _ready() -> void:
 	ActUtil.add_peeker(self, Vector3(7.5, 0, -6.0), HorrorShape.KIND_HARGROVE, -140)
 
 	# No lurker here — the Hargrove-Shape above is a scripted beat. Just dread.
-	ActUtil.haunt(self, {"intensity": 0.66, "flicker_rate": 1.2})
+	ActUtil.haunt(self, {"intensity": 0.76, "flicker_rate": 1.3})
 
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)
 

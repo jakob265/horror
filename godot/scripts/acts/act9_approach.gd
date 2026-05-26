@@ -268,10 +268,10 @@ func _ready() -> void:
 
 	# The long dark walk to the array — peak dread, it stalks the whole length.
 	ActUtil.haunt(self, {
-		"intensity": 0.90,
+		"intensity": 0.95,
 		"flicker_rate": 1.5,
 		"lurkers": [{"kind": "hargrove", "points": [
-			Vector3(0, 0, 14), Vector3(0, 0, 6), Vector3(-1.5, 0, -2), Vector3(1.5, 0, -8)], "creep": 0.9}],
+			Vector3(0, 0, 14), Vector3(0, 0, 6), Vector3(-1.5, 0, -2), Vector3(1.5, 0, -8)], "creep": 1.05}],
 	})
 
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)

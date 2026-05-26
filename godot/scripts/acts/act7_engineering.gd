@@ -21,7 +21,7 @@ func _ready() -> void:
 	Chamber.add_wall(self, "z", -D/2, -W/2, W/2, H, wall, 0.0)
 	Chamber.add_wall(self, "z", D/2, -W/2, W/2, H, wall, 0.0)
 
-	Chamber.add_door(self, "z", -D/2 + 0.05, 0, "HYDRO", Color(0.28, 0.27, 0.23), Callable(), "", true)
+	Chamber.add_door(self, "z", -D/2 + 0.05, 0, "CARGO", Color(0.28, 0.27, 0.23), Callable(), "", true)
 	Chamber.add_door(self, "z", D/2 - 0.05, 0, "AIRLOCK", Color(0.28, 0.27, 0.23),
 		func(): GameState.engineering_door_open = true, "Open AIRLOCK")
 
@@ -378,7 +378,7 @@ func _ready() -> void:
 	ActUtil.wall_vent(self, "x", -W/2 + 0.05, 8.0, 3.0, Vector2(0.7, 0.5))
 
 	# Signage above the doors
-	ActUtil.wall_label(self, "<-  HYDROPONICS",
+	ActUtil.wall_label(self, "<-  CARGO",
 		Vector3(0, Chamber.DOOR_H + 0.12, -D/2 + 0.18), 16, Color(0.55, 0.95, 0.65))
 	ActUtil.wall_label(self, "AIRLOCK  ->",
 		Vector3(0, Chamber.DOOR_H + 0.12, D/2 - 0.18), 16, Color(0.62, 0.78, 0.94))
@@ -401,9 +401,9 @@ func _ready() -> void:
 	ActUtil.wall_scrawl(self, "I MADE IT\nI MADE IT", Vector3(-8.9, 2.4, 0.0), 90, 38)
 	ActUtil.add_peeker(self, Vector3(8.0, 0, -7.0), HorrorShape.KIND_HARGROVE, -110)
 	ActUtil.haunt(self, {
-		"intensity": 0.58,
+		"intensity": 0.66,
 		"lurkers": [{"kind": "hargrove", "points": [
-			Vector3(-7, 0, 6), Vector3(7, 0, 6), Vector3(-7, 0, -6), Vector3(7, 0, -6)], "creep": 0.7}],
+			Vector3(-7, 0, 6), Vector3(7, 0, 6), Vector3(-7, 0, -6), Vector3(7, 0, -6)], "creep": 0.85}],
 	})
 
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)

@@ -92,9 +92,9 @@ func _ready() -> void:
 	ActUtil.add_peeker(self, Vector3(-4.8, 0, -5.2), HorrorShape.KIND_HARGROVE, 30)
 
 	ActUtil.haunt(self, {
-		"intensity": 0.55,
+		"intensity": 0.64,
 		"lurkers": [{"kind": "hargrove", "points": [
-			Vector3(-4, 0, 4), Vector3(4, 0, -4), Vector3(-4, 0, -4), Vector3(0, 0, 5)], "creep": 0.7}],
+			Vector3(-4, 0, 4), Vector3(4, 0, -4), Vector3(-4, 0, -4), Vector3(0, 0, 5)], "creep": 0.85}],
 	})
 
 	ActUtil.spawn_player(Vector3(0, 0.5, -D/2 + 0.8), 0)

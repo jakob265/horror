@@ -17,6 +17,7 @@ var hargrove_started := false
 var entry_sting_done := false
 var t := 0.0
 var shake_t := 0.0
+var finale_started := false
 
 
 func _ready() -> void:
@@ -294,10 +295,10 @@ func _ready() -> void:
 	ActUtil.wall_scrawl(self, "IT WAS\nALWAYS YOU", Vector3(-14.85, 3.0, 0.0), 90, 64)
 	ActUtil.add_peeker(self, Vector3(13.0, 0, -10.0), HorrorShape.KIND_FELIX, -150)
 	ActUtil.haunt(self, {
-		"intensity": 0.62,
-		"flicker_rate": 1.0,
+		"intensity": 0.74,
+		"flicker_rate": 1.2,
 		"lurkers": [{"kind": "hargrove", "points": [
-			Vector3(-11, 0, 9), Vector3(11, 0, 9), Vector3(0, 0, 12), Vector3(-11, 0, -4)], "creep": 0.5}],
+			Vector3(-11, 0, 9), Vector3(11, 0, 9), Vector3(0, 0, 12), Vector3(-11, 0, -4)], "creep": 0.7}],
 	})
 
 	# Player spawn
@@ -364,6 +365,29 @@ func _process(dt: float) -> void:
 		var dx := 0.004 * sin(shake_t * 2.7)
 		var dz := 0.004 * cos(shake_t * 3.1)
 		InteractionManager.camera.position = Vector3(dx, 0, dz)
+
+	# Finale: the moment you reach the central tower, the whole crew converges
+	# out of the dark — a closing ring of apparitions and rising dread.
+	if not finale_started and GameState.player:
+		var p := GameState.player.global_position as Vector3
+		if Vector2(p.x, p.z).length() < 6.0:
+			finale_started = true
+			_begin_finale()
+
+
+func _begin_finale() -> void:
+	AudioManager.set_dread(1.0)
+	ScareDirector.set_intensity(0.97)
+	var pts := [Vector3(8, 0, 8), Vector3(-8, 0, 8), Vector3(9, 0, -7),
+		Vector3(-9, 0, -7), Vector3(0, 0, 10), Vector3(10, 0, 1)]
+	var kinds := [HorrorShape.KIND_FELIX, HorrorShape.KIND_YUNA, HorrorShape.KIND_HARGROVE]
+	for i in pts.size():
+		var pt: Vector3 = pts[i]
+		var k: String = kinds[i % 3]
+		get_tree().create_timer(0.6 + i * 0.7).timeout.connect(func():
+			ActUtil.apparition(self, pt, k, 1.2)
+			AudioManager.heartbeat())
+	get_tree().create_timer(4.8).timeout.connect(func(): ScareDirector.shadow_pass())
 
 	# Initial sting on entry
 	if not entry_sting_done and t > 0.4:
