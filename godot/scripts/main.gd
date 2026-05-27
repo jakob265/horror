@@ -16,6 +16,7 @@ var ending_overlay: Control = null
 var debug_warp: Control = null
 var is_paused := false
 var in_ending := false
+var _dying := false
 
 
 func _ready() -> void:
@@ -24,6 +25,8 @@ func _ready() -> void:
 	InventoryManager.setup(ui_layer)
 	OlenManager.setup(ui_layer)
 	SceneRouter.setup(world_root, fader)
+	GameState.player_caught.connect(_on_player_caught)
+	SceneRouter.scene_changed.connect(_on_scene_checkpoint)
 	_setup_postfx()
 	# Show main menu
 	_show_main_menu()
@@ -85,6 +88,42 @@ func _begin_new_game() -> void:
 
 func _quit_app() -> void:
 	get_tree().quit()
+
+
+# --- Stalker death / respawn ---------------------------------------------
+
+func _on_scene_checkpoint(_act_name: String) -> void:
+	# Default checkpoint = wherever the act dropped the player. Acts may set
+	# finer checkpoints later via GameState.set_checkpoint().
+	if player:
+		GameState.set_checkpoint(player.global_position)
+
+
+func _on_player_caught() -> void:
+	if _dying or in_ending or player == null:
+		return
+	_dying = true
+	player.freeze()
+	var t := create_tween()
+	t.tween_property(fader, "color", Color(0, 0, 0, 1.0), 0.45)
+	t.tween_interval(0.7)
+	t.tween_callback(_respawn_player)
+	t.tween_property(fader, "color", Color(0, 0, 0, 0.0), 1.1)
+	t.tween_callback(func() -> void:
+		if player:
+			player.unfreeze()
+		_dying = false
+	)
+
+
+func _respawn_player() -> void:
+	if player == null:
+		return
+	if GameState.has_checkpoint:
+		player.global_position = GameState.checkpoint_position
+	player.velocity = Vector3.ZERO
+	GameState.player_hidden = false
+	ShapeTracker.reset_stalkers(player.global_position)
 
 
 func _process(_dt: float) -> void:

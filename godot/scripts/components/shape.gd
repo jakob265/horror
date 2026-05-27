@@ -28,6 +28,22 @@ var _hidden := false
 var _respawn_at := -1.0
 var _creep_speed := 0.55
 
+# --- Stalker behaviour (the hunter) ---
+enum StalkState { PATROL, INVESTIGATE, CHASE, SEARCH }
+var stalking := false
+var stalk_points: Array = []
+var patrol_speed := 1.15
+var chase_speed := 4.7        # faster than a walk (4.5), slower than a sprint
+var sight_range := 14.0
+var hear_range := 9.0
+var _stalk_state: StalkState = StalkState.PATROL
+var _stalk_target := Vector3.ZERO
+var _last_known := Vector3.ZERO
+var _patrol_idx := 0
+var _state_t := 0.0
+var _lost_t := 0.0
+var _stung := false
+
 
 static func reset_session() -> void:
 	felix_amara_fired = false
@@ -187,6 +203,9 @@ func set_peek() -> void:
 
 
 func update_behavior(player_pos: Vector3, camera: Camera3D, dt: float) -> void:
+	if stalking:
+		_update_stalk(player_pos, dt)
+		return
 	if peeking:
 		if camera == null:
 			return
@@ -293,6 +312,215 @@ func _reappear(camera: Camera3D) -> void:
 		if look_pos.distance_to(global_position) > 0.1:
 			look_at(look_pos, Vector3.UP)
 	AudioManager.breath()
+
+
+# --- Stalker: the hunter --------------------------------------------------
+# Patrols a route, investigates noise, chases on sight, and searches your last
+# known spot when it loses you. Catching you triggers a death/respawn.
+
+func set_stalk(points: Array, p_patrol_speed: float = 1.15, p_chase_speed: float = 4.7) -> void:
+	stalking = true
+	lurking = false
+	peeking = false
+	stalk_points = points.duplicate()
+	patrol_speed = p_patrol_speed
+	chase_speed = p_chase_speed
+	_stalk_state = StalkState.PATROL
+	_patrol_idx = 0
+	if not stalk_points.is_empty():
+		_stalk_target = stalk_points[0]
+
+
+func reset_stalk(player_pos: Vector3) -> void:
+	# Called on respawn: send it back to patrol, as far from the player as we can.
+	if not stalking:
+		return
+	_stalk_state = StalkState.PATROL
+	_state_t = 0.0
+	_lost_t = 0.0
+	_stung = false
+	visible = true
+	if not stalk_points.is_empty():
+		var best: Vector3 = stalk_points[0]
+		var best_d := -1.0
+		for p in stalk_points:
+			var d: float = _flat(p).distance_to(player_pos)
+			if d > best_d:
+				best_d = d
+				best = p
+		global_position = best
+		_patrol_idx = stalk_points.find(best)
+		_stalk_target = best
+
+
+func _update_stalk(player_pos: Vector3, dt: float) -> void:
+	_state_t += dt
+	var can_see := _can_see_player(player_pos)
+	match _stalk_state:
+		StalkState.PATROL:
+			if not stalk_points.is_empty():
+				_move_toward(_stalk_target, patrol_speed, dt)
+				if global_position.distance_to(_flat(_stalk_target)) < 0.7:
+					_next_patrol()
+			if can_see:
+				_enter_chase(player_pos)
+			elif _can_hear_player(player_pos):
+				_enter_investigate(player_pos)
+		StalkState.INVESTIGATE:
+			_move_toward(_stalk_target, (patrol_speed + chase_speed) * 0.5, dt)
+			if can_see:
+				_enter_chase(player_pos)
+			elif _can_hear_player(player_pos):
+				_stalk_target = player_pos
+				_state_t = 0.0
+			elif global_position.distance_to(_flat(_stalk_target)) < 0.9 and _state_t > 3.0:
+				_enter_patrol()
+		StalkState.CHASE:
+			if can_see:
+				_last_known = player_pos
+				_lost_t = 0.0
+			else:
+				_lost_t += dt
+			_move_toward(_last_known, chase_speed, dt)
+			if _flat(player_pos).distance_to(global_position) <= 1.35 and can_see:
+				_catch_player()
+				return
+			if _lost_t > 1.6:
+				_enter_search()
+		StalkState.SEARCH:
+			_move_toward(_last_known, chase_speed * 0.7, dt)
+			if can_see:
+				_enter_chase(player_pos)
+			elif global_position.distance_to(_flat(_last_known)) < 0.9 or _state_t > 6.0:
+				_enter_patrol()
+
+
+func _enter_patrol() -> void:
+	_stalk_state = StalkState.PATROL
+	_state_t = 0.0
+	_pick_nearest_patrol()
+
+
+func _enter_investigate(pos: Vector3) -> void:
+	_stalk_state = StalkState.INVESTIGATE
+	_state_t = 0.0
+	_stalk_target = pos
+	AudioManager.breath()
+
+
+func _enter_chase(pos: Vector3) -> void:
+	_stalk_state = StalkState.CHASE
+	_state_t = 0.0
+	_lost_t = 0.0
+	_last_known = pos
+	if not _stung:
+		_stung = true
+		AudioManager.shape_sting()
+
+
+func _enter_search() -> void:
+	_stalk_state = StalkState.SEARCH
+	_state_t = 0.0
+	_stung = false
+
+
+func _next_patrol() -> void:
+	if stalk_points.is_empty():
+		return
+	_patrol_idx = (_patrol_idx + 1) % stalk_points.size()
+	_stalk_target = stalk_points[_patrol_idx]
+
+
+func _pick_nearest_patrol() -> void:
+	if stalk_points.is_empty():
+		return
+	var best := 0
+	var best_d := INF
+	for i in stalk_points.size():
+		var d: float = _flat(stalk_points[i]).distance_to(global_position)
+		if d < best_d:
+			best_d = d
+			best = i
+	_patrol_idx = best
+	_stalk_target = stalk_points[best]
+
+
+func _move_toward(target: Vector3, speed: float, dt: float) -> void:
+	var t := _flat(target)
+	var to := t - global_position
+	to.y = 0.0
+	var dist := to.length()
+	if dist < 0.05:
+		return
+	global_position += to.normalized() * minf(speed * dt, dist)
+	_face(target)
+
+
+func _face(target: Vector3) -> void:
+	var lp := Vector3(target.x, global_position.y, target.z)
+	if lp.distance_to(global_position) > 0.1:
+		look_at(lp, Vector3.UP)
+
+
+func _flat(v: Vector3) -> Vector3:
+	return Vector3(v.x, global_position.y, v.z)
+
+
+func _can_see_player(player_pos: Vector3) -> bool:
+	if GameState.player_hidden:
+		return false
+	var pl: Node = GameState.player
+	if pl == null:
+		return false
+	var eye := global_position + Vector3(0, 1.7, 0)
+	var target := player_pos + Vector3(0, 1.0, 0)
+	var to := target - eye
+	var dist := to.length()
+	var rng := sight_range
+	if pl and pl.get("flashlight_on"):
+		rng *= 1.6                     # the beam gives you away
+	if dist > rng:
+		return false
+	# Forward cone, but it can still sense you point-blank behind it.
+	var fwd := -global_transform.basis.z
+	if dist > 2.2 and fwd.dot(to / dist) < 0.30:
+		return false
+	# Line of sight: a wall between us blocks it.
+	var space := get_world_3d().direct_space_state
+	var params := PhysicsRayQueryParameters3D.create(eye, target)
+	params.collide_with_bodies = true
+	params.collide_with_areas = false
+	var hit := space.intersect_ray(params)
+	if hit.is_empty():
+		return true
+	var n: Node = hit["collider"]
+	while n and n != pl:
+		n = n.get_parent()
+	return n == pl
+
+
+func _can_hear_player(player_pos: Vector3) -> bool:
+	var pl: Node = GameState.player
+	if pl == null:
+		return false
+	var d := _flat(player_pos).distance_to(global_position)
+	var r := hear_range
+	var loud := false
+	if pl.get("flashlight_on"):
+		loud = true
+	var vel: Variant = pl.get("velocity")
+	if vel is Vector3 and Vector2(vel.x, vel.z).length() > 5.5:
+		loud = true
+		r = hear_range * 1.4
+	return loud and d <= r
+
+
+func _catch_player() -> void:
+	ScareDirector.scare_flash()
+	AudioManager.shape_sting()
+	_stalk_state = StalkState.PATROL
+	_state_t = 0.0
+	GameState.catch_player()
 
 
 # --- Stare detection (Felix only) ----------------------------------------

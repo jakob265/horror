@@ -3,6 +3,12 @@ extends Node
 
 signal modal_count_changed(count: int)
 signal first_move_seen
+signal player_caught
+
+# Stalker / survival state
+var player_hidden := false
+var checkpoint_position := Vector3.ZERO
+var has_checkpoint := false
 
 # Per-run flags
 var cryo_keycard := false
@@ -57,6 +63,9 @@ func reset_for_new_game() -> void:
 	modal_count = 0
 	first_move_seen_b = false
 	current_act = ""
+	player_hidden = false
+	has_checkpoint = false
+	checkpoint_position = Vector3.ZERO
 
 
 func push_modal() -> void:
@@ -77,3 +86,12 @@ func mark_first_move() -> void:
 	if not first_move_seen_b:
 		first_move_seen_b = true
 		emit_signal("first_move_seen")
+
+
+func set_checkpoint(pos: Vector3) -> void:
+	checkpoint_position = pos
+	has_checkpoint = true
+
+
+func catch_player() -> void:
+	emit_signal("player_caught")
