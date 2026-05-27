@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://b1act_med"]
-
-[ext_resource type="Script" path="res://scripts/acts/act_med.gd" id="1"]
-
-[node name="act_med" type="Node3D"]
-script = ExtResource("1")
