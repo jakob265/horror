@@ -34,8 +34,8 @@ var stalking := false
 var stalk_points: Array = []
 var patrol_speed := 1.15
 var chase_speed := 3.9        # below a walk (4.5): you can back off, dash past, or hide
-var sight_range := 10.0
-var hear_range := 9.0
+var sight_range := 8.0
+var hear_range := 8.0
 var _stalk_state: StalkState = StalkState.PATROL
 var _stalk_target := Vector3.ZERO
 var _last_known := Vector3.ZERO
@@ -398,14 +398,14 @@ func _update_stalk(player_pos: Vector3, dt: float) -> void:
 			_move_toward(_last_known, chase_speed, dt)
 			# Catch requires holding you close for a beat - so you can dash past
 			# or juke instead of dying the instant it brushes you.
-			if can_see and _flat(player_pos).distance_to(global_position) <= 1.5:
+			if can_see and _flat(player_pos).distance_to(global_position) <= 1.4:
 				_catch_t += dt
-				if _catch_t >= 0.6:
+				if _catch_t >= 0.8:
 					_catch_player()
 					return
 			else:
 				_catch_t = maxf(0.0, _catch_t - dt * 2.0)
-			if _lost_t > 2.0:
+			if _lost_t > 1.5:
 				_enter_search()
 		StalkState.SEARCH:
 			_move_toward(_last_known, chase_speed * 0.7, dt)
@@ -507,14 +507,14 @@ func _can_see_player(player_pos: Vector3) -> bool:
 	var target := player_pos + Vector3(0, 1.0, 0)
 	var to := target - eye
 	var dist := to.length()
-	var rng := 5.0                     # in the dark it only senses you up close
+	var rng := 4.0                     # in the dark it only senses you very close
 	if pl.get("flashlight_on"):
 		rng = sight_range * 1.4        # the beam gives you away from across the room
 	if dist > rng:
 		return false
-	# Forward cone, but it can still sense you point-blank behind it.
+	# Forward cone - it has to actually be facing your way (no eyes in the back).
 	var fwd := -global_transform.basis.z
-	if dist > 2.2 and fwd.dot(to / dist) < 0.30:
+	if dist > 1.4 and fwd.dot(to / dist) < 0.30:
 		return false
 	# Line of sight: a wall between us blocks it.
 	var space := get_world_3d().direct_space_state
@@ -537,8 +537,8 @@ func _can_hear_player(player_pos: Vector3) -> bool:
 	var d := _flat(player_pos).distance_to(global_position)
 	var r := hear_range
 	var loud := false
-	if pl.get("flashlight_on"):
-		loud = true
+	# Only sprinting gives you away by sound - walking, even with the lamp on,
+	# is quiet (the lamp gives you away by sight, not noise).
 	var vel: Variant = pl.get("velocity")
 	if vel is Vector3 and Vector2(vel.x, vel.z).length() > 5.5:
 		loud = true
