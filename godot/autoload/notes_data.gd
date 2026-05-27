@@ -6,7 +6,7 @@ const ORDER := [
 	"note_1", "note_2", "note_3", "note_4", "note_5", "note_6", "note_7",
 	"note_8", "note_9", "note_10", "note_11", "note_12", "note_13",
 	"note_14", "note_15", "note_16", "note_17", "note_18",
-	"v_arrival", "v_bay", "v_bunk", "v_quarters", "v_mess", "v_infirm", "v_labs",
+	"v_arrival", "v_bay", "v_bunk", "v_quarters", "v_mess", "v_infirm", "v_labs", "v_gen",
 ]
 
 const ALL := {
@@ -44,6 +44,11 @@ const ALL := {
 		"title": "Sample lab - Dr. R. Sundqvist",
 		"location": "Sample lab workstation",
 		"body": "We kept it at minus sixty and it grew anyway. We kept it dark and it grew toward the inspection lamp, every filament of it, like a field of black wheat leaning at a sun.\n\nKael calls it a specimen. It is not a specimen. A specimen is dead or it is studied; this is neither. I have stopped calling it the core. In my notes now I call it the seed, because that is what it is doing - it is planting.\n\nThe containment cracked on day eleven. Not from inside. The lock simply opened, from the panel, in Frey's hand, while Frey stood very still and watched it the way you watch someone you love sleeping.\n\nWe should have left it in the ice. Write that on my headstone if there's anyone left to cut one. WE SHOULD HAVE LEFT IT IN THE ICE.\n\nIt knows my name now. When it uses my voice it gets the warmth right. That's the cruel part. It gets the warmth exactly right."
+	},
+	"v_gen": {
+		"title": "Plant log - T. Renn (eng.)",
+		"location": "Generator hall control desk",
+		"body": "Whoever's reading this wants the main bus back. Of course you do. Heat, locks, light. I wanted it too, at first.\n\nSequence is taped to the desk: prime COOLANT with the wheel-handle, charge FUEL with a can off the rack, then throw the main breaker. Three greens and she lights.\n\nHere's what the manual won't tell you. The second this hall goes bright, every dark thing in Vesper turns and looks at it. You will have maybe ninety seconds of light before it's standing in it with you. Use them to leave. Do not stand and admire your work.\n\nI lit her four times trying to raise the traverse on a warm line. Four times I had to kill her again and run. The fifth time I didn't get to her in time.\n\nIf you're me-shaped and still reading: I'm sorry about the hall. I'm sorry about all of it. - R"
 	},
 	"note_1": {
 		"title": "Personal Recorder - Dr. Mara Voss",

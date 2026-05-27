@@ -12,7 +12,7 @@ const ACT_SCENES := {
 	"act_obs":      "res://scenes/acts/act_obs.tscn",
 	"act_mess":     "res://scenes/acts/act_mess.tscn",
 	"act_comms":    "res://scenes/acts/act_comms.tscn",
-	"act5":         "res://scenes/acts/act5_lab.tscn",
+	"act5":         "res://scenes/acts/act5_generator.tscn",
 	"act6":         "res://scenes/acts/act6_hydro.tscn",
 	"act_cargo":    "res://scenes/acts/act_cargo.tscn",
 	"act7":         "res://scenes/acts/act7_engineering.tscn",
