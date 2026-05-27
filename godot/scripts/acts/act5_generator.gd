@@ -96,6 +96,21 @@ func _build_hall() -> void:
 	ActUtil.wall_scrawl(self, "NINETY SECONDS", Vector3(4.0, 2.2, 8.85), 180.0, 30, Color(0.5, 0.05, 0.06))
 	ActUtil.wall_label(self, "GENERATOR HALL", Vector3(0, 3.4, 8.8), 24, Color(0.7, 0.84, 0.9))
 
+	# Fill the hall out: transformers, breaker cabinets, conduit, drums, debris.
+	for tx in [6.0, 7.8]:
+		Chamber.make_prop_box(self, Vector3(1.3, 2.4, 1.3), Vector3(tx, 1.2, -6.5), Color(0.30, 0.31, 0.34))
+		Chamber.make_prop_box(self, Vector3(0.12, 0.6, 0.12), Vector3(tx, 2.7, -6.5), Color(0.42, 0.42, 0.46), false)
+	for cz in [-2.0, 0.0, 2.0, 4.0]:
+		Chamber.make_prop_box(self, Vector3(0.6, 2.0, 1.0), Vector3(9.3, 1.0, cz), Color(0.26, 0.28, 0.32))
+	Chamber.make_prop_box(self, Vector3(0.2, 0.2, 18.0), Vector3(-9.7, 3.4, 0), Color(0.30, 0.32, 0.35), false)
+	Chamber.make_prop_box(self, Vector3(0.2, 0.2, 18.0), Vector3(9.7, 3.4, 0), Color(0.30, 0.32, 0.35), false)
+	for dz in [6.0, 7.0, 8.0]:
+		Chamber.make_prop_box(self, Vector3(0.6, 0.9, 0.6), Vector3(-8.5, 0.45, dz), Color(0.30, 0.34, 0.22))
+	Chamber.make_prop_box(self, Vector3(1.6, 0.8, 1.0), Vector3(-7.0, 0.4, 7.5), Color(0.34, 0.30, 0.20))
+	ActUtil.add_floor_decals(self, 20, 18, Vector3.ZERO, Color(0.86, 0.66, 0.12, 0.55))
+	for db in [Vector3(2, 0, 3), Vector3(-3, 0, -4), Vector3(5, 0, 6)]:
+		Chamber.make_prop_box(self, Vector3(0.5, 0.2, 0.4), db + Vector3(0, 0.1, 0), Color(0.24, 0.24, 0.26), false)
+
 
 func _ind(pos: Vector3, label: String) -> MeshInstance3D:
 	var m := _emissive(Vector3(0.16, 0.16, 0.06), pos, Color(0.9, 0.12, 0.10), 1.2)

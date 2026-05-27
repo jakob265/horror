@@ -73,4 +73,18 @@ func _build_cavern() -> void:
 	Interactable.make_note(self, Vector3(-1.0, 0.04, -7.4), "v_caves", "Read the frozen log")
 	ActUtil.wall_scrawl(self, "IT IS ONE", Vector3(0, 2.4, -9.85), 0.0, 40, Color(0.45, 0.06, 0.07))
 	ActUtil.wall_label(self, "THE CAVITY - 1114 m", Vector3(0, 3.4, 9.8), 18, Color(0.6, 0.78, 0.9))
+
+	# Fill the cavern: ice rubble, the dangling drill string + cables, more nest.
+	for rp in [Vector3(-2, 0, 8), Vector3(4, 0, 9), Vector3(-8, 0, -2), Vector3(8, 0, 2), Vector3(0, 0, -8)]:
+		var rk := Chamber.make_prop_box(self, Vector3(randf_range(0.8, 1.6), randf_range(0.6, 1.4), randf_range(0.8, 1.6)), rp + Vector3(0, 0.4, 0), ICE, true, "ice")
+		rk.rotation_degrees = Vector3(randf_range(-12, 12), randf_range(0, 360), randf_range(-12, 12))
+	Chamber.make_prop_box(self, Vector3(0.18, 6.0, 0.18), Vector3(1.5, 4.0, -2), Color(0.30, 0.28, 0.22), false)
+	for cc in [Vector3(-2, 4.5, 3), Vector3(3, 4.5, -5), Vector3(-5, 4.5, -2)]:
+		Chamber.make_prop_box(self, Vector3(0.05, randf_range(1.5, 3.0), 0.05), cc, Color(0.12, 0.12, 0.14), false)
+	for gp in [Vector3(-9, 0, 6), Vector3(9, 0, 8), Vector3(-3, 0, -9)]:
+		ActUtil.signal_growth(self, gp, randf_range(1.2, 2.0), Color(0.07, 0.13, 0.12))
+	ActUtil.hanging_corpse(self, Vector3(0, 4.4, 6), 2.0, Color(0.30, 0.36, 0.34))
+	ActUtil.viscera(self, Vector3(6, 0.02, 5))
+	ActUtil.viscera(self, Vector3(-5, 0.02, 8))
+
 	ActUtil.add_dust_motes(self, Vector3(0, 2.0, 0), Vector3(11, 3, 10), 90, Color(0.7, 0.82, 0.95, 0.16))
