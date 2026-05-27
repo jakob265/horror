@@ -7,7 +7,7 @@ const ACT_SCENES := {
 	"act1":         "res://scenes/acts/act1_surface.tscn",
 	"act2":         "res://scenes/acts/act2_dormitory.tscn",
 	"act_med":      "res://scenes/acts/act_med.tscn",
-	"act3":         "res://scenes/acts/act3_corridor.tscn",
+	"act3":         "res://scenes/acts/act3_mess.tscn",
 	"act4":         "res://scenes/acts/act4_lounge.tscn",
 	"act_obs":      "res://scenes/acts/act_obs.tscn",
 	"act_mess":     "res://scenes/acts/act_mess.tscn",

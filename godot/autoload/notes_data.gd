@@ -6,7 +6,7 @@ const ORDER := [
 	"note_1", "note_2", "note_3", "note_4", "note_5", "note_6", "note_7",
 	"note_8", "note_9", "note_10", "note_11", "note_12", "note_13",
 	"note_14", "note_15", "note_16", "note_17", "note_18",
-	"v_arrival", "v_bay", "v_bunk", "v_quarters",
+	"v_arrival", "v_bay", "v_bunk", "v_quarters", "v_mess", "v_infirm",
 ]
 
 const ALL := {
@@ -29,6 +29,16 @@ const ALL := {
 		"title": "Wing lockdown - Dr. I. Kael",
 		"location": "Crew quarters desk",
 		"body": "I'm logging this in case logging still means anything.\n\nThe dormitory wing is sealed. The key is on my desk and I am leaving it there on purpose, because I am not going to need it again and someone might.\n\nRules, for whoever you are: kill your lamp when you hear it. Don't run in a straight line where it can see the length of you. Get small, get dark, get behind a door. It is fast and it is patient and it used to be Aldous Frey, which is the part I can't write about yet.\n\nThe door north opens on the mess, and past that the labs, and past that the shaft we should never have drilled. Don't go down. You'll go down. Everyone goes down.\n\n- Iris"
+	},
+	"v_mess": {
+		"title": "Mess roster, scrawled over",
+		"location": "Mess hall counter",
+		"body": "Someone's crossed out three weeks of duty names and written across the whole sheet in grease pencil:\n\nWE DON'T EAT TOGETHER ANYMORE. we don't do anything together. Frey just watches.\n\nlower, smaller: meds cabinet still locked, code's Pak's birthday 0317, if your hands shake bad enough to need it you've earned it.\n\nand at the very bottom, pressed so hard it tore the paper: IT IS WEARING SUNDQVIST NOW. DO NOT ANSWER IF HE CALLS YOU BY YOUR FIRST NAME."
+	},
+	"v_infirm": {
+		"title": "Infirmary log - Dr. S. Pak",
+		"location": "Infirmary, clipboard",
+		"body": "Patients: all of them. Symptoms: none I can name.\n\nNo fever, no lesions, no neurological deficit on any test I can still run. They are, by every instrument I own, perfectly healthy. They have simply stopped being afraid of the dark, and started being afraid of each other.\n\nI took a tissue sample from the core in the lab. Under the scope it isn't cells. It's the same dark filament, branching, and when I leave the slide in the warm it grows toward the lamp. Toward the light. Always the light.\n\nI think we are all slides now. I think it left us in the warm and it is growing us toward something.\n\nWhoever finds this: the labs key is on the breaker side. Restore the line, take the door, and please - turn the lights back off behind you."
 	},
 	"note_1": {
 		"title": "Personal Recorder - Dr. Mara Voss",

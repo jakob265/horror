@@ -30,6 +30,12 @@ func _ready() -> void:
 	_setup_postfx()
 	# Show main menu
 	_show_main_menu()
+	# Dev: VESPER_AUTOSTART=actN boots straight into an act (used for testing).
+	if OS.has_environment("VESPER_AUTOSTART"):
+		_begin_new_game()
+		var tgt := OS.get_environment("VESPER_AUTOSTART")
+		if tgt != "1" and tgt != "":
+			SceneRouter.transition_to(tgt)
 
 
 # Cinematic overlay over the 3D view (vignette + grain). Sits on a CanvasLayer
