@@ -270,10 +270,13 @@ func start_ending(which: String) -> void:
 	ending_overlay = preload("res://ui/endings.tscn").instantiate()
 	ending_overlay.finished.connect(_on_ending_done)
 	ui_layer.add_child(ending_overlay)
-	if which == "A":
-		ending_overlay.play_ending_a()
-	else:
-		ending_overlay.play_ending_b()
+	match which:
+		"burn":
+			ending_overlay.play_ending_burn()
+		"succumb":
+			ending_overlay.play_ending_succumb()
+		_:
+			ending_overlay.play_ending_seal()
 
 
 func _on_ending_done() -> void:

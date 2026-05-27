@@ -1,93 +1,89 @@
 extends Control
-# Endings A (DESTROY) and B (LISTEN). Mirrors systems/endings.py.
+# VESPER endings: SEAL (leave it to dream), BURN (destroy it), SUCCUMB (join it).
 
 signal finished
 
-const ENDING_A := [
-	"The array is silent.",
+const ENDING_SEAL := [
+	"The charges go down the shaft in a string of dull red lights.",
 	"",
-	"OLEN's voice stops mid-sentence.",
-	"You don't hear the rest of it.",
+	"You climb.",
+	"Hand over hand up the cage cable, while the ice screams below you.",
 	"",
-	"You stand in the dark for a long time.",
+	"The cavity folds in on itself - a thousand metres of glacier",
+	"sitting back down over a wound, the way it sat before,",
+	"for longer than there have been names for anything.",
 	"",
-	"You find the emergency beacon in the supply cabinet.",
-	"You activate it.",
-	"In 72 hours, a rescue vessel will arrive.",
+	"You break the surface into a grey and enormous dawn.",
+	"The first light in twenty-one days.",
+	"It does not warm you. Nothing will, for a while.",
 	"",
-	"You sit down in the corridor outside Felix's cabin.",
-	"You don't go inside.",
-	"You look at the drawing on the floor through the open door.",
-	"You don't move it.",
+	"The traverse finds you two days later, half-frozen,",
+	"unable to stop watching the ice. They ask you nothing.",
 	"",
-	"You think about Eli.",
-	"You think about all of it.",
-	"You let yourself think about all of it.",
+	"Your report says: total loss. No survivors. Cause undetermined.",
+	"All of it true.",
 	"",
-	"You realize you haven't done that before. Not all the way.",
-	"You let yourself.",
-	"",
-	"When the rescue ship comes, there is a message waiting.",
-	"It is from Amara Okafor, age seven.",
-	"She wants to know if you knew her dad.",
-	"She wants to know if he was happy.",
-	"",
-	"You write back.",
-	"You tell her he was.",
-	"You tell her he talked about her every day.",
-	"You tell her that he called her his favorite thing in the universe",
-	"and that you know for certain he meant it.",
-	"",
-	"She writes back three words.",
-	"'Thank you, Mara.'",
-	"",
-	"You didn't know she knew your name.",
-	"",
-	"You realize Felix must have told her.",
-	"Some Sunday, on some call, he must have talked about you.",
-	"",
-	"You let that be real.",
-	"You let it matter.",
+	"You do not write that it is still down there.",
+	"That you closed a door, not an ending.",
+	"That something under the oldest ice on earth is dreaming,",
+	"and it knows your name now,",
+	"and it is patient.",
 ]
 
-const ENDING_B := [
-	"You understand now.",
+const ENDING_BURN := [
+	"You open every fuel line in the plant",
+	"and walk the flare back to the lip of the shaft.",
 	"",
-	"It was never malicious.",
-	"It was just a pattern looking for a shape to take.",
-	"It found yours.",
+	"The warm dark breathes up at you. It speaks -",
+	"in Kael's voice, in Renn's, in a voice almost your own -",
+	"and it asks you, kindly, to stay.",
 	"",
-	"The grief.",
-	"The guilt.",
-	"The door you never closed.",
+	"You drop the flare.",
 	"",
-	"It walked in.",
+	"The nest takes light like something that has wanted",
+	"to burn for ten thousand years.",
+	"The screaming is the worst sound you will ever hear,",
+	"because it is six people you came to save,",
+	"and it is grateful.",
 	"",
-	"You are still here.",
-	"You are still - you.",
-	"But the edges of you are softer now.",
-	"Less separate.",
+	"You run up through a station turning to fire behind you.",
+	"You do not look back. There is nothing back there",
+	"you could survive seeing.",
 	"",
-	"You think about Eli.",
-	"For the first time, it doesn't hurt.",
-	"You don't ask yourself if that is mercy or erasure.",
-	"You have stopped being able to tell the difference.",
+	"Dawn, when you reach it, is the colour of the flare.",
+	"Vesper burns on the ice for three days.",
 	"",
-	"You stand very still.",
-	"You face the wall.",
+	"You killed it. You are almost sure you killed it.",
+	"You will spend the rest of your life being almost sure.",
+]
+
+const ENDING_SUCCUMB := [
+	"You stop running.",
 	"",
-	"Somewhere in the station, something wakes up.",
-	"It finds its way to you.",
-	"It stands beside you.",
+	"It is such a small thing, stopping.",
+	"You wonder why it took the whole way down to learn how.",
 	"",
-	"In the frequency, something that was Felix says your name.",
-	"You know it isn't Felix.",
-	"You answer anyway.",
+	"The warmth comes up out of the dark to meet you,",
+	"and it gets the warmth exactly right.",
 	"",
-	"The station broadcasts.",
-	"Into the dark.",
-	"Calling.",
-	"Waiting for someone to hear.",
+	"Everyone you ever lost to the plain cold work of living",
+	"is in there, waiting, and not gone after all.",
+	"You go to them. You have been going to them",
+	"since the cage first dropped.",
+	"",
+	"The cold was never the enemy.",
+	"The cold was the invitation.",
+	"",
+	"Far above, a traverse reaches an empty station and turns back.",
+	"They log seven lost instead of six.",
+	"They never find the seventh.",
+	"",
+	"Under the ice, in the warm dark, something partly you",
+	"settles in to wait for the next light to come drilling down.",
+	"",
+	"You are not afraid anymore.",
+	"You are not alone anymore.",
+	"You are not.",
 ]
 
 @onready var bg: ColorRect = $BG
@@ -101,8 +97,6 @@ var button_armed := false
 var streaming := false
 var _pending_lines: Array = []
 var _pending_sub: String = ""
-var _line_timer: Timer = null
-var _finish_timer: Timer = null
 
 
 func _ready() -> void:
@@ -112,33 +106,37 @@ func _ready() -> void:
 	if skip_hint:
 		skip_hint.visible = false
 	button.pressed.connect(_on_continue)
-	# Skip-hint fades in shortly after the ending begins
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
-func play_ending_a() -> void:
+func play_ending_seal() -> void:
 	AudioManager.ramp_ending_hum(0.50, 2.0)
 	get_tree().create_timer(2.1).timeout.connect(AudioManager.cut_hum)
 	bg.color = Color(0, 0, 0, 1)
-	_stream(ENDING_A, 2.0, 0.6, 0.65, "You came back.")
+	_stream(ENDING_SEAL, 2.0, 0.6, 0.62, "You sealed it.")
 
 
-func play_ending_b() -> void:
-	AudioManager.ramp_ending_hum(0.35, 6.0)
-	bg.color = Color(1.0, 0.86, 0.71, 0)
+func play_ending_burn() -> void:
+	AudioManager.ramp_ending_hum(0.45, 3.0)
+	bg.color = Color(0.5, 0.12, 0.05, 0)
 	var tween := create_tween()
-	tween.tween_property(bg, "color", Color(1.0, 0.86, 0.71, 1), 3.0).set_delay(1.5)
-	tween.tween_property(bg, "color", Color(0, 0, 0, 1), 1.8).set_delay(0.4)
-	_stream(ENDING_B, 4.0, 0.6, 0.6, "Something answered.")
+	tween.tween_property(bg, "color", Color(0.6, 0.18, 0.06, 1), 2.5).set_delay(1.0)
+	tween.tween_property(bg, "color", Color(0, 0, 0, 1), 2.2).set_delay(0.6)
+	_stream(ENDING_BURN, 2.0, 0.6, 0.62, "You burned it out.")
 
 
-# Stream lines into the lines_box one at a time, then reveal title + button.
-# All timing is driven by a single Timer so the whole thing can be cancelled
-# (skip key) without leaving stray timers behind.
+func play_ending_succumb() -> void:
+	AudioManager.ramp_ending_hum(0.35, 6.0)
+	bg.color = Color(0.7, 0.78, 0.9, 0)
+	var tween := create_tween()
+	tween.tween_property(bg, "color", Color(0.7, 0.78, 0.9, 1), 3.5).set_delay(1.5)
+	tween.tween_property(bg, "color", Color(0, 0, 0, 1), 2.0).set_delay(0.4)
+	_stream(ENDING_SUCCUMB, 4.0, 0.6, 0.6, "You stayed.")
+
+
 func _stream(lines: Array, start_delay: float, gap_blank: float, gap_line: float, sub: String) -> void:
 	streaming = true
 	_pending_sub = sub
-	# Build a schedule: (delay_from_start, line). Blanks insert a gap but no entry.
 	_pending_lines.clear()
 	var delay := start_delay
 	for raw in lines:
@@ -148,11 +146,8 @@ func _stream(lines: Array, start_delay: float, gap_blank: float, gap_line: float
 			continue
 		_pending_lines.append({"at": delay, "text": line})
 		delay += gap_line
-	# Skip hint fades in after a short pause
 	get_tree().create_timer(1.5).timeout.connect(_show_skip_hint)
-	# Drive the stream off a single timer that ticks once per line
 	_tick_lines(0)
-	# Reveal title + button after the last line + a beat
 	_schedule_finish(delay + 1.4)
 
 
@@ -207,21 +202,15 @@ func _add_line(line: String) -> void:
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.add_theme_font_size_override("font_size", 16)
 	lbl.add_theme_color_override("font_color", Color(0.90, 0.90, 0.92, 1.0))
-	# Start fully transparent (modulate) and fade in. NOTE: the alpha must live
-	# on modulate, not font_color — the old code put alpha 0 on font_color AND
-	# tweened modulate (already 1.0), so every line rendered invisibly = the
-	# "black screen, no text" bug.
 	lbl.modulate.a = 0.0
 	lines_box.add_child(lbl)
 	var tween := create_tween()
 	tween.tween_property(lbl, "modulate:a", 1.0, 0.5)
 
 
-# Called from main._unhandled_input via the existing input plumbing.
 func handle_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if streaming and event.keycode in [KEY_ENTER, KEY_E, KEY_SPACE, KEY_ESCAPE]:
-			# Skip the streaming, jump straight to the title + button.
 			streaming = false
 			_show_finish()
 			return

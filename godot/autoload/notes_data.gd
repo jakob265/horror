@@ -6,7 +6,7 @@ const ORDER := [
 	"note_1", "note_2", "note_3", "note_4", "note_5", "note_6", "note_7",
 	"note_8", "note_9", "note_10", "note_11", "note_12", "note_13",
 	"note_14", "note_15", "note_16", "note_17", "note_18",
-	"v_arrival", "v_bay", "v_bunk", "v_quarters", "v_mess", "v_infirm", "v_labs", "v_gen", "v_morgue", "v_shaft", "v_caves",
+	"v_arrival", "v_bay", "v_bunk", "v_quarters", "v_mess", "v_infirm", "v_labs", "v_gen", "v_morgue", "v_shaft", "v_caves", "v_chamber",
 ]
 
 const ALL := {
@@ -64,6 +64,11 @@ const ALL := {
 		"title": "Last entry - Dr. I. Kael",
 		"location": "The cavity",
 		"body": "It isn't many. I have to write this down while I still know it.\n\nI keep counting six shapes in the dark and there are not six of anything down here. There is one. The cavity is one body, and the ice grew around it the way skin grows, and we drilled through the skin and were surprised that it flinched.\n\nThe crew aren't dead. They aren't alive. They're it now, wearing them - the way your hand is you. When Frey speaks to me in the dark it is not Frey and it is also, exactly and unbearably, Frey.\n\nI came down here to end it. I understand now there is nothing to end that isn't also us. You can seal it back under the ice and leave it to dream. You can burn the nest and lose yourself to the cold trying. Or you can stop running and let it make you part of something that is never, ever alone again - and God help me, that last one is the one it whispers, and it is starting to sound like rest.\n\nGo to the chamber. See the rest of it. Then decide what mercy means.\n\n- Iris"
+	},
+	"v_chamber": {
+		"title": "Your recorder",
+		"location": "The sealed chamber",
+		"body": "I've stopped pretending I'm going to file a report.\n\nThey're all here. The whole crew. They turn to look when my lamp passes over them and they have the kindest faces - that's the thing nobody warned me about, that it would be kind.\n\nKael's note said: decide what mercy means. I'm standing in the place where I have to.\n\nThere are three ways out of this chamber and only one of them is a door.\n\nI can bring the shaft down and leave it sleeping under the ice, and live the rest of my life knowing it's there.\n\nI can open the fuel lines and burn the whole nest, and them with it, and call that a rescue.\n\nOr I can put the lamp down. It's so cold down here. It's so cold, and the warm is right there, and it knows my name, and it is saying it the way someone says it who is glad you came home.\n\nWhoever finds this: I'm sorry. I think I've known which one I'd choose since the surface."
 	},
 	"note_1": {
 		"title": "Personal Recorder - Dr. Mara Voss",

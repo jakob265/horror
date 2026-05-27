@@ -20,8 +20,8 @@ const ACT_SCENES := {
 	"act_storage":  "res://scenes/acts/act_storage.tscn",
 	"act8":         "res://scenes/acts/act8_caves.tscn",
 	"act_maint":    "res://scenes/acts/act_maint.tscn",
-	"act9":         "res://scenes/acts/act9_approach.tscn",
-	"act10":        "res://scenes/acts/act10_array.tscn",
+	"act9":         "res://scenes/acts/act9_chamber.tscn",
+	"act10":        "res://scenes/acts/act10_choice.tscn",
 }
 
 var world_root: Node3D = null
