@@ -432,11 +432,14 @@ static func blood_decal(parent: Node3D, pos: Vector3, size: Vector2, facing: Str
 static func corpse(parent: Node3D, pos: Vector3, rot_y_deg: float = 0.0, blood: bool = true, suit: Color = Color(0.13, 0.14, 0.17)) -> Node3D:
 	var body := Node3D.new()
 	body.position = pos
-	body.rotation_degrees = Vector3(0, rot_y_deg, 0)
+	# Per-instance variation so no two bodies read as clones.
+	body.rotation_degrees = Vector3(0, rot_y_deg + randf_range(-6.0, 6.0), 0)
+	var j := randf_range(-0.04, 0.04)
+	var s := Color(clampf(suit.r + j, 0.0, 1.0), clampf(suit.g + j, 0.0, 1.0), clampf(suit.b + j, 0.0, 1.0))
 	var skin := Color(0.50, 0.45, 0.41)
 	# Torso + pelvis (length runs along local Z).
-	body.add_child(_corpse_capsule(0.16, 0.62, Vector3(0, 0.16, 0.0), Vector3(90, 0, 0), suit))
-	body.add_child(_corpse_capsule(0.15, 0.20, Vector3(0, 0.15, 0.42), Vector3(90, 0, 0), suit))
+	body.add_child(_corpse_capsule(0.16, 0.62, Vector3(0, 0.16, 0.0), Vector3(90, 0, 0), s))
+	body.add_child(_corpse_capsule(0.15, 0.20, Vector3(0, 0.15, 0.42), Vector3(90, 0, 0), s))
 	# Head, lolled to one side.
 	var head := MeshInstance3D.new()
 	var hs := SphereMesh.new()
@@ -444,19 +447,37 @@ static func corpse(parent: Node3D, pos: Vector3, rot_y_deg: float = 0.0, blood: 
 	hs.height = 0.23
 	head.mesh = hs
 	head.position = Vector3(0.06, 0.12, -0.46)
+	head.rotation_degrees = Vector3(0, 0, randf_range(-25.0, 25.0))
 	head.material_override = _corpse_mat(skin)
 	head.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	body.add_child(head)
-	# Arms splayed out.
-	body.add_child(_corpse_capsule(0.055, 0.50, Vector3(-0.28, 0.11, -0.06), Vector3(80, 0, 32), suit))
-	body.add_child(_corpse_capsule(0.055, 0.50, Vector3(0.27, 0.10, 0.04), Vector3(70, 0, -52), suit))
-	# Legs, one bent.
-	body.add_child(_corpse_capsule(0.075, 0.60, Vector3(-0.10, 0.12, 0.80), Vector3(94, 0, 9), suit))
-	body.add_child(_corpse_capsule(0.075, 0.54, Vector3(0.15, 0.11, 0.74), Vector3(78, 0, -20), suit))
+	# Arms splayed out (jittered).
+	body.add_child(_corpse_capsule(0.055, 0.50, Vector3(-0.28, 0.11, -0.06), Vector3(80, 0, 32 + randf_range(-16.0, 16.0)), s))
+	body.add_child(_corpse_capsule(0.055, 0.50, Vector3(0.27, 0.10, 0.04), Vector3(70, 0, -52 + randf_range(-16.0, 16.0)), s))
+	# Legs, one bent (jittered).
+	body.add_child(_corpse_capsule(0.075, 0.60, Vector3(-0.10, 0.12, 0.80), Vector3(94, 0, 9 + randf_range(-12.0, 12.0)), s))
+	body.add_child(_corpse_capsule(0.075, 0.54, Vector3(0.15, 0.11, 0.74), Vector3(78, 0, -20 + randf_range(-12.0, 12.0)), s))
+	# A wet wound torn open across the torso.
+	var wound := MeshInstance3D.new()
+	var wb := BoxMesh.new()
+	wb.size = Vector3(0.17, 0.11, 0.12)
+	wound.mesh = wb
+	wound.position = Vector3(randf_range(-0.06, 0.06), 0.24, randf_range(-0.18, 0.18))
+	var wm := StandardMaterial3D.new()
+	wm.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	wm.albedo_color = Color(0.28, 0.03, 0.04)
+	wm.emission_enabled = true
+	wm.emission = Color(0.34, 0.02, 0.03)
+	wm.emission_energy_multiplier = 0.25
+	wm.roughness = 0.18
+	wm.metallic = 0.30
+	wound.material_override = wm
+	body.add_child(wound)
 	parent.add_child(body)
 	if blood:
-		blood_decal(parent, pos + Vector3(0, 0.02, -0.30), Vector2(1.4, 1.05), "up")
-		blood_decal(parent, pos + Vector3(0.42, 0.02, 0.25), Vector2(0.7, 0.55), "up")
+		blood_decal(parent, pos + Vector3(0, 0.02, -0.30), Vector2(1.5, 1.15), "up")
+		blood_decal(parent, pos + Vector3(0.42, 0.02, 0.25), Vector2(0.8, 0.6), "up")
+		blood_decal(parent, pos + Vector3(-0.32, 0.02, 0.55), Vector2(0.6, 0.7), "up", Color(0.16, 0.02, 0.03, 0.8))
 	return body
 
 
@@ -518,6 +539,12 @@ static func hanging_corpse(parent: Node3D, top: Vector3, hang_len: float = 1.7, 
 	body.add_child(_corpse_capsule(0.07, 0.80, Vector3(0.08, neck_y - 1.25, 0), Vector3(0, 0, -3), suit))
 	body.rotation_degrees = Vector3(0, randf_range(0.0, 360.0), randf_range(-4.0, 4.0))
 	parent.add_child(body)
+	# Slow pendulum sway, like it only just stopped moving.
+	var base_z := body.rotation_degrees.z
+	var per := randf_range(2.2, 3.4)
+	var sway := body.create_tween().set_loops()
+	sway.tween_property(body, "rotation_degrees:z", base_z + 3.5, per).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	sway.tween_property(body, "rotation_degrees:z", base_z - 3.5, per).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	return body
 
 
@@ -572,6 +599,11 @@ static func signal_growth(parent: Node3D, pos: Vector3, scale_f: float = 1.0, co
 		sh.material_override = m
 		node.add_child(sh)
 	parent.add_child(node)
+	# Subtle organic breathing so the growth feels alive.
+	var per := randf_range(1.6, 2.6)
+	var pulse := node.create_tween().set_loops()
+	pulse.tween_property(node, "scale", Vector3.ONE * 1.07, per).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	pulse.tween_property(node, "scale", Vector3.ONE * 0.95, per).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	return node
 
 

@@ -56,6 +56,7 @@ func _show_main_menu() -> void:
 	main_menu.quit_pressed.connect(_quit_app)
 	ui_layer.add_child(main_menu)
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	DiscordRPC.set_menu_state()
 
 
 func _begin_new_game() -> void:

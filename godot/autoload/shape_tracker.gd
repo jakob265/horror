@@ -16,6 +16,10 @@ func clear() -> void:
 
 
 func update(player_pos: Vector3, dt: float) -> void:
+	# Prune freed shapes (e.g. peekers that vanished for good).
+	for i in range(shapes.size() - 1, -1, -1):
+		if not is_instance_valid(shapes[i]):
+			shapes.remove_at(i)
 	var target: float = 0.0
 	var camera: Camera3D = InteractionManager.camera
 	for s in shapes:
