@@ -80,9 +80,9 @@ func _build_hall() -> void:
 	})
 
 	# The two items, far apart, out in the dark.
-	_make_pickup(Vector3(7.5, 0.95, -6.0), Vector3(0.5, 0.12, 0.16), Color(0.6, 0.55, 0.2), "valve_handle", "Take the valve handle")
+	_make_pickup(Vector3(5.0, 0.35, -3.5), Vector3(0.5, 0.16, 0.18), Color(0.7, 0.62, 0.2), "valve_handle", "Take the valve handle")
 	Chamber.make_prop_box(self, Vector3(1.6, 0.9, 0.7), Vector3(7.6, 0.45, -6.0), Color(0.30, 0.32, 0.36))
-	_make_pickup(Vector3(7.8, 0.32, 5.5), Vector3(0.34, 0.5, 0.26), Color(0.74, 0.16, 0.12), "diesel_can", "Take the diesel can")
+	_make_pickup(Vector3(5.0, 0.35, 3.5), Vector3(0.36, 0.55, 0.28), Color(0.8, 0.2, 0.14), "diesel_can", "Take the diesel can")
 	for rz in [4.5, 5.5, 6.5]:
 		Chamber.make_prop_box(self, Vector3(0.5, 0.5, 0.5), Vector3(8.8, 0.25, rz), Color(0.30, 0.30, 0.22))
 
@@ -136,8 +136,7 @@ func _emissive(size: Vector3, pos: Vector3, color: Color, energy: float) -> Mesh
 
 
 func _make_pickup(pos: Vector3, size: Vector3, color: Color, item_id: String, prompt: String) -> void:
-	var body := Chamber.make_prop_box(self, size, pos, color, true, "pickup")
-	Interactable.attach(body, prompt, "collect_item", {"item_id": item_id})
+	ActUtil.pickup(self, pos, size, color, item_id, prompt)
 
 
 func _green(m: MeshInstance3D) -> void:

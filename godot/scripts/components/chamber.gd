@@ -136,6 +136,8 @@ static func add_wall(parent: Node3D, axis: String, fixed: float, span_min: float
 			hpos = Vector3(gap_center, DOOR_H + header_h / 2, fixed)
 			hsize = Vector3(DOOR_W + 0.2, header_h, 0.2)
 		parent.add_child(_make_box(hsize, hpos, color, "header"))
+	# Frame every opening so it reads as a doorway, not a bare hole.
+	_add_doorframe(parent, axis, fixed, gap_center)
 
 
 static func add_door(parent: Node3D, axis: String, fixed: float, gap_center: float, label: String, color: Color, on_open: Callable = Callable(), interact_label: String = "", sealed: bool = false) -> Node3D:
@@ -148,8 +150,6 @@ static func add_door(parent: Node3D, axis: String, fixed: float, gap_center: flo
 		size = Vector3(DOOR_W, DOOR_H, 0.10)
 		pos = Vector3(gap_center, DOOR_H / 2, fixed)
 	var door := _make_box(size, pos, color, "door_" + label, true, SurfaceFactory.CAT_WALL_METAL)
-	# Doorframe trim — thin emissive surround for instant readability
-	_add_doorframe(parent, axis, fixed, gap_center)
 	parent.add_child(door)
 	if not sealed:
 		var lbl := interact_label if interact_label != "" else ("Open " + label)
@@ -207,7 +207,7 @@ static func _add_doorframe(parent: Node3D, axis: String, fixed: float, gap_cente
 		mat.albedo_color = trim_col
 		mat.emission_enabled = true
 		mat.emission = trim_emit
-		mat.emission_energy_multiplier = 1.4
+		mat.emission_energy_multiplier = 0.9
 		mat.metallic = 0.6
 		mat.roughness = 0.4
 		bm.material_override = mat

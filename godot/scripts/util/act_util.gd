@@ -413,6 +413,39 @@ static func hide_locker(parent: Node3D, pos: Vector3, face_yaw: float = 0.0, col
 	return locker
 
 
+# A collectible that glows and casts a faint light so it's findable in the dark.
+static func pickup(parent: Node3D, pos: Vector3, size: Vector3, color: Color, item_id: String, prompt: String) -> StaticBody3D:
+	var body := StaticBody3D.new()
+	body.position = pos
+	var mesh := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = size
+	mesh.mesh = bm
+	var mat := StandardMaterial3D.new()
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	mat.albedo_color = color
+	mat.emission_enabled = true
+	mat.emission = color.lightened(0.35)
+	mat.emission_energy_multiplier = 0.7
+	mesh.material_override = mat
+	body.add_child(mesh)
+	var shape := CollisionShape3D.new()
+	var col := BoxShape3D.new()
+	col.size = size
+	shape.shape = col
+	body.add_child(shape)
+	var lamp := OmniLight3D.new()
+	lamp.light_color = color.lightened(0.4)
+	lamp.light_energy = 1.1
+	lamp.omni_range = 3.2
+	lamp.shadow_enabled = false
+	lamp.position = Vector3(0, maxf(size.y, 0.1), 0)
+	body.add_child(lamp)
+	parent.add_child(body)
+	Interactable.attach(body, prompt, "collect_item", {"item_id": item_id})
+	return body
+
+
 # Bake a navmesh over an act's static collision so the hunter can path around
 # walls and props instead of clipping through them. Call after geometry exists.
 static func bake_navmesh(act: Node3D) -> void:

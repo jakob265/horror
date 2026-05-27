@@ -111,8 +111,7 @@ func _build_storage() -> void:
 
 
 func _make_pickup(pos: Vector3, size: Vector3, color: Color, item_id: String, prompt: String) -> void:
-	var body := Chamber.make_prop_box(self, size, pos, color, true, "pickup")
-	Interactable.attach(body, prompt, "collect_item", {"item_id": item_id})
+	ActUtil.pickup(self, pos, size, color, item_id, prompt)
 
 
 func _cut_chain() -> void:
