@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b6act6_morgue"]
+
+[ext_resource type="Script" path="res://scripts/acts/act6_morgue.gd" id="1"]
+
+[node name="act6_morgue" type="Node3D"]
+script = ExtResource("1")

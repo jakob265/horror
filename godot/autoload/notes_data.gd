@@ -6,7 +6,7 @@ const ORDER := [
 	"note_1", "note_2", "note_3", "note_4", "note_5", "note_6", "note_7",
 	"note_8", "note_9", "note_10", "note_11", "note_12", "note_13",
 	"note_14", "note_15", "note_16", "note_17", "note_18",
-	"v_arrival", "v_bay", "v_bunk", "v_quarters", "v_mess", "v_infirm", "v_labs", "v_gen",
+	"v_arrival", "v_bay", "v_bunk", "v_quarters", "v_mess", "v_infirm", "v_labs", "v_gen", "v_morgue",
 ]
 
 const ALL := {
@@ -49,6 +49,11 @@ const ALL := {
 		"title": "Plant log - T. Renn (eng.)",
 		"location": "Generator hall control desk",
 		"body": "Whoever's reading this wants the main bus back. Of course you do. Heat, locks, light. I wanted it too, at first.\n\nSequence is taped to the desk: prime COOLANT with the wheel-handle, charge FUEL with a can off the rack, then throw the main breaker. Three greens and she lights.\n\nHere's what the manual won't tell you. The second this hall goes bright, every dark thing in Vesper turns and looks at it. You will have maybe ninety seconds of light before it's standing in it with you. Use them to leave. Do not stand and admire your work.\n\nI lit her four times trying to raise the traverse on a warm line. Four times I had to kill her again and run. The fifth time I didn't get to her in time.\n\nIf you're me-shaped and still reading: I'm sorry about the hall. I'm sorry about all of it. - R"
+	},
+	"v_morgue": {
+		"title": "Cold store tally",
+		"location": "Cold storage",
+		"body": "We brought them here because it was the coldest room and that felt like the decent thing. Six drawers. We labelled them. We are scientists; we labelled them.\n\nThey did not stay in the drawers.\n\nNot walking - nothing so simple you could shoot it. Just: you'd seal a drawer at the start of a shift and find it open at the end, and the body a little nearer the lamp, and no one would admit to having moved it.\n\nSo we locked the cold store. From the outside. As if the cold were the thing we needed to keep in.\n\nIt isn't slowed by cold. I should have understood that from the first core sample. Cold is not its weakness. Cold is its country. We drilled a hole into its country and we are standing in the doorway with the light on, surprised that something came to look.\n\nDon't trust a face you find down here. Especially not a kind one."
 	},
 	"note_1": {
 		"title": "Personal Recorder - Dr. Mara Voss",
