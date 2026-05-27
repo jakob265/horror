@@ -124,6 +124,17 @@ func _trigger_current() -> void:
 		"collect_item":
 			InventoryManager.add(data.get("item_id", ""))
 			ent.queue_free()
+		"use_item":
+			var req: String = data.get("required_item", "")
+			if req == "" or InventoryManager.has(req):
+				if data.get("consume", false) and req != "":
+					InventoryManager.remove(req, 1)
+				var ucb: Callable = data.get("on_use", Callable())
+				if ucb.is_valid():
+					ucb.call()
+				ent.set_meta("interact_used", true)
+			else:
+				_examine(data.get("locked_text", "You can't do that with your bare hands."), 2.5)
 		"read_terminal":
 			_open_terminal(data.get("title", "TERMINAL"), data.get("text", ""))
 		"keypad":
