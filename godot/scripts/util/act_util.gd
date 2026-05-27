@@ -95,6 +95,19 @@ static func light_rig_act4(parent: Node3D) -> void:
 		Color(0.95, 0.78, 0.55), 2.8, 11.0)
 
 
+# VESPER: power is dead. Near-black, cold, flashlight-dependent. The faint
+# fixture glow is just enough to find a wall, not enough to feel safe.
+static func light_rig_dark(parent: Node3D, ambient_energy: float = 0.13, fog_density: float = 0.020) -> void:
+	setup_lighting(parent, Color(0.40, 0.45, 0.55), Color(0.02, 0.03, 0.05), fog_density, ambient_energy,
+		Color(0.55, 0.62, 0.78), 0.6, 9.0)
+
+
+# VESPER: deep ice — pitch dark, glacial blue, heavy fog. Pure flashlight country.
+static func light_rig_ice(parent: Node3D) -> void:
+	setup_lighting(parent, Color(0.34, 0.46, 0.62), Color(0.02, 0.05, 0.09), 0.026, 0.10,
+		Color(0.40, 0.58, 0.82), 0.4, 8.0)
+
+
 # Place a dust-mote particle field above the player path. Cheap atmosphere.
 static func add_dust_motes(parent: Node3D, center: Vector3, extents: Vector3 = Vector3(8, 2.4, 8), amount: int = 80, tint: Color = Color(0.85, 0.87, 0.92, 0.18)) -> GPUParticles3D:
 	var ps := GPUParticles3D.new()
