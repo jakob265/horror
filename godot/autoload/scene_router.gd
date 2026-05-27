@@ -70,6 +70,9 @@ func _build(act_name: String) -> void:
 		return
 	current_scene = packed.instantiate()
 	world_root.add_child(current_scene)
+	# Bake the hunter's navmesh now that the act's geometry is in the tree.
+	if current_scene is Node3D:
+		ActUtil.bake_navmesh(current_scene)
 
 
 func _fade_to_black(duration: float, on_done: Callable) -> void:

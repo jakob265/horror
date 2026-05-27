@@ -20,7 +20,7 @@ func _ready() -> void:
 
 	# An aggressive hunter circuits the lab hall.
 	var stalker := HorrorShape.create(HorrorShape.KIND_FELIX, Vector3(0, 0, -4.0), 0.0)
-	stalker.set_stalk([Vector3(0, 0, -5.0), Vector3(6, 0, 0.0), Vector3(0, 0, 5.0), Vector3(-6, 0, 0.0)], 1.4, 4.8)
+	stalker.set_stalk([Vector3(0, 0, -5.0), Vector3(6, 0, 0.0), Vector3(0, 0, 5.0), Vector3(-6, 0, 0.0)], 1.2, 4.0)
 	add_child(stalker)
 	ShapeTracker.register(stalker)
 

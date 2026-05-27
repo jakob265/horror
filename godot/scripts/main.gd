@@ -133,7 +133,7 @@ func _respawn_player() -> void:
 
 
 func _process(_dt: float) -> void:
-	if player and not is_paused and GameState.modal_count == 0:
+	if player and not is_paused and not _dying and GameState.modal_count == 0:
 		OlenManager.update(player.global_position)
 		ShapeTracker.update(player.global_position, _dt)
 

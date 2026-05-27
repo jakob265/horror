@@ -18,7 +18,7 @@ func _ready() -> void:
 	_build_shaft()
 
 	var stalker := HorrorShape.create(HorrorShape.KIND_FELIX, Vector3(-3, 0, -2.0), 0.0)
-	stalker.set_stalk([Vector3(-3, 0, -3), Vector3(3, 0, -3), Vector3(0, 0, 2)], 1.3, 4.7)
+	stalker.set_stalk([Vector3(-3, 0, -3), Vector3(3, 0, -3), Vector3(0, 0, 2)], 1.1, 4.0)
 	add_child(stalker)
 	ShapeTracker.register(stalker)
 

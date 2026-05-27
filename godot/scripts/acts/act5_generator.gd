@@ -22,7 +22,7 @@ func _ready() -> void:
 	_build_hall()
 
 	var stalker := HorrorShape.create(HorrorShape.KIND_HARGROVE, Vector3(0, 0, -6.0), 0.0)
-	stalker.set_stalk([Vector3(-6, 0, 5), Vector3(6, 0, 5), Vector3(6, 0, -5), Vector3(-6, 0, -5)], 1.5, 4.8)
+	stalker.set_stalk([Vector3(-6, 0, 5), Vector3(6, 0, 5), Vector3(6, 0, -5), Vector3(-6, 0, -5)], 1.3, 4.2)
 	add_child(stalker)
 	ShapeTracker.register(stalker)
 

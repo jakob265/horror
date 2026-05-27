@@ -22,7 +22,7 @@ func _ready() -> void:
 
 	# The hunter patrols the corridor spine.
 	var stalker := HorrorShape.create(HorrorShape.KIND_HARGROVE, Vector3(0, 0, -9.0), 0.0)
-	stalker.set_stalk([Vector3(0, 0, -3.0), Vector3(0, 0, -13.0)], 1.2, 4.6)
+	stalker.set_stalk([Vector3(0, 0, -3.0), Vector3(0, 0, -13.0)], 1.0, 3.4)
 	add_child(stalker)
 	ShapeTracker.register(stalker)
 
@@ -118,6 +118,7 @@ func _build_corridor() -> void:
 		var t: float = i / 5.0
 		ActUtil.blood_decal(self, Vector3(lerpf(-0.5, 0.7, t), 0.02, lerpf(-7.0, -11.5, t)),
 			Vector2(0.5, 0.9), "up", Color(0.18, 0.03, 0.03, 0.7))
+	ActUtil.wall_scrawl(self, "LAMP OFF PAST HERE", Vector3(1.4, 1.9, 0.2), -90.0, 18, Color(0.5, 0.06, 0.07))
 	ActUtil.wall_label(self, "<- CABINS", Vector3(0, 2.6, 0.4), 16, Color(0.7, 0.84, 0.9))
 	ActUtil.wall_label(self, "QUARTERS ->", Vector3(0, 2.6, -14.4), 16, Color(0.7, 0.84, 0.9))
 

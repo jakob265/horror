@@ -33,8 +33,8 @@ enum StalkState { PATROL, INVESTIGATE, CHASE, SEARCH }
 var stalking := false
 var stalk_points: Array = []
 var patrol_speed := 1.15
-var chase_speed := 4.7        # faster than a walk (4.5), slower than a sprint
-var sight_range := 14.0
+var chase_speed := 3.9        # below a walk (4.5): you can back off, dash past, or hide
+var sight_range := 10.0
 var hear_range := 9.0
 var _stalk_state: StalkState = StalkState.PATROL
 var _stalk_target := Vector3.ZERO
@@ -43,6 +43,9 @@ var _patrol_idx := 0
 var _state_t := 0.0
 var _lost_t := 0.0
 var _stung := false
+var _agent: NavigationAgent3D = null
+var _catch_t := 0.0
+var _grace_t := 0.0
 
 
 static func reset_session() -> void:
@@ -318,7 +321,7 @@ func _reappear(camera: Camera3D) -> void:
 # Patrols a route, investigates noise, chases on sight, and searches your last
 # known spot when it loses you. Catching you triggers a death/respawn.
 
-func set_stalk(points: Array, p_patrol_speed: float = 1.15, p_chase_speed: float = 4.7) -> void:
+func set_stalk(points: Array, p_patrol_speed: float = 1.15, p_chase_speed: float = 3.9) -> void:
 	stalking = true
 	lurking = false
 	peeking = false
@@ -329,6 +332,13 @@ func set_stalk(points: Array, p_patrol_speed: float = 1.15, p_chase_speed: float
 	_patrol_idx = 0
 	if not stalk_points.is_empty():
 		_stalk_target = stalk_points[0]
+	_agent = NavigationAgent3D.new()
+	_agent.radius = 0.4
+	_agent.height = 1.8
+	_agent.path_desired_distance = 0.6
+	_agent.target_desired_distance = 0.6
+	_agent.avoidance_enabled = false
+	add_child(_agent)
 
 
 func reset_stalk(player_pos: Vector3) -> void:
@@ -338,6 +348,8 @@ func reset_stalk(player_pos: Vector3) -> void:
 	_stalk_state = StalkState.PATROL
 	_state_t = 0.0
 	_lost_t = 0.0
+	_catch_t = 0.0
+	_grace_t = 3.0       # a breath of safety after respawn so it can't re-lock you
 	_stung = false
 	visible = true
 	if not stalk_points.is_empty():
@@ -355,6 +367,8 @@ func reset_stalk(player_pos: Vector3) -> void:
 
 func _update_stalk(player_pos: Vector3, dt: float) -> void:
 	_state_t += dt
+	if _grace_t > 0.0:
+		_grace_t -= dt
 	var can_see := _can_see_player(player_pos)
 	match _stalk_state:
 		StalkState.PATROL:
@@ -382,10 +396,16 @@ func _update_stalk(player_pos: Vector3, dt: float) -> void:
 			else:
 				_lost_t += dt
 			_move_toward(_last_known, chase_speed, dt)
-			if _flat(player_pos).distance_to(global_position) <= 1.35 and can_see:
-				_catch_player()
-				return
-			if _lost_t > 1.6:
+			# Catch requires holding you close for a beat - so you can dash past
+			# or juke instead of dying the instant it brushes you.
+			if can_see and _flat(player_pos).distance_to(global_position) <= 1.5:
+				_catch_t += dt
+				if _catch_t >= 0.6:
+					_catch_player()
+					return
+			else:
+				_catch_t = maxf(0.0, _catch_t - dt * 2.0)
+			if _lost_t > 2.0:
 				_enter_search()
 		StalkState.SEARCH:
 			_move_toward(_last_known, chase_speed * 0.7, dt)
@@ -446,14 +466,23 @@ func _pick_nearest_patrol() -> void:
 
 
 func _move_toward(target: Vector3, speed: float, dt: float) -> void:
-	var t := _flat(target)
-	var to := t - global_position
+	# Path around obstacles via the navmesh when one's available; fall back to a
+	# straight line if not (so it never freezes).
+	var dest := _flat(target)
+	var step := dest
+	if _agent != null and _agent.is_inside_tree():
+		_agent.target_position = dest
+		var npp := _agent.get_next_path_position()
+		var flat_npp := Vector3(npp.x, global_position.y, npp.z)
+		if flat_npp.distance_to(global_position) > 0.15:
+			step = flat_npp
+	var to := step - global_position
 	to.y = 0.0
 	var dist := to.length()
 	if dist < 0.05:
 		return
 	global_position += to.normalized() * minf(speed * dt, dist)
-	_face(target)
+	_face(step)
 
 
 func _face(target: Vector3) -> void:
@@ -467,6 +496,8 @@ func _flat(v: Vector3) -> Vector3:
 
 
 func _can_see_player(player_pos: Vector3) -> bool:
+	if _grace_t > 0.0:
+		return false
 	if GameState.player_hidden:
 		return false
 	var pl: Node = GameState.player

@@ -413,6 +413,24 @@ static func hide_locker(parent: Node3D, pos: Vector3, face_yaw: float = 0.0, col
 	return locker
 
 
+# Bake a navmesh over an act's static collision so the hunter can path around
+# walls and props instead of clipping through them. Call after geometry exists.
+static func bake_navmesh(act: Node3D) -> void:
+	var nm := NavigationMesh.new()
+	nm.cell_size = 0.25
+	nm.cell_height = 0.25
+	nm.agent_radius = 0.5
+	nm.agent_height = 2.0
+	nm.agent_max_climb = 0.5
+	nm.geometry_parsed_geometry_type = NavigationMesh.PARSED_GEOMETRY_STATIC_COLLIDERS
+	var src := NavigationMeshSourceGeometryData3D.new()
+	NavigationServer3D.parse_source_geometry_data(nm, src, act)
+	NavigationServer3D.bake_from_source_geometry_data(nm, src)
+	var region := NavigationRegion3D.new()
+	region.navigation_mesh = nm
+	act.add_child(region)
+
+
 static func haunt(act: Node3D, opts: Dictionary = {}) -> void:
 	ScareDirector.set_intensity(opts.get("intensity", 0.3))
 	if opts.get("flicker", true):

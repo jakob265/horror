@@ -19,7 +19,7 @@ func _ready() -> void:
 		{"pos": Vector3(4, 0, 4), "kind": HorrorShape.KIND_FELIX, "pts": [Vector3(4, 0, 5), Vector3(-5, 0, -3), Vector3(5, 0, -4)]},
 	]:
 		var s := HorrorShape.create(cfg["kind"], cfg["pos"], 0.0)
-		s.set_stalk(cfg["pts"], 1.4, 4.7)
+		s.set_stalk(cfg["pts"], 1.2, 4.2)
 		add_child(s)
 		ShapeTracker.register(s)
 

@@ -20,7 +20,7 @@ func _ready() -> void:
 
 	# A hunter prowls the open north strip in front of the exit.
 	var stalker := HorrorShape.create(HorrorShape.KIND_HARGROVE, Vector3(0, 0, -6.0), 0.0)
-	stalker.set_stalk([Vector3(-4, 0, -6), Vector3(4, 0, -6), Vector3(4, 0, -3.5), Vector3(-4, 0, -3.5)], 1.3, 4.6)
+	stalker.set_stalk([Vector3(-4, 0, -6), Vector3(4, 0, -6), Vector3(4, 0, -3.5), Vector3(-4, 0, -3.5)], 1.1, 4.0)
 	add_child(stalker)
 	ShapeTracker.register(stalker)
 
