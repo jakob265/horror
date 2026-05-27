@@ -31,6 +31,7 @@ func _ready() -> void:
 
 	_build_generator()
 	_build_clutter()
+	_build_detail()
 
 	# Pickups.
 	_make_pickup(Vector3(6.6, 0.32, 3.2), Vector3(0.34, 0.5, 0.26), Color(0.74, 0.16, 0.12),
@@ -76,7 +77,7 @@ func _build_generator() -> void:
 	Chamber.make_prop_box(self, Vector3(0.18, 0.18, 0.9), Vector3(-7.0, 2.25, -3.0), dark, false)
 	Chamber.make_prop_box(self, Vector3(0.12, 0.7, 0.9), Vector3(-5.12, 1.0, -3.0), Color(0.20, 0.21, 0.24), false)
 	# Status light (red = dead).
-	status_light = _emissive_box(Vector3(0.12, 0.12, 0.05), Vector3(-5.05, 1.32, -3.35), Color(0.90, 0.12, 0.10), 1.2)
+	status_light = _emissive_box(self, Vector3(0.12, 0.12, 0.05), Vector3(-5.05, 1.32, -3.35), Color(0.90, 0.12, 0.10), 1.2)
 	# Fuel port (needs the diesel can).
 	var port := Chamber.make_prop_box(self, Vector3(0.34, 0.34, 0.40), Vector3(-5.0, 0.6, -3.5), Color(0.32, 0.30, 0.22))
 	Interactable.attach(port, "Pour in the diesel", "use_item", {
@@ -115,7 +116,7 @@ func _make_pickup(pos: Vector3, size: Vector3, color: Color, item_id: String, pr
 	Interactable.attach(body, prompt, "collect_item", {"item_id": item_id})
 
 
-func _emissive_box(size: Vector3, pos: Vector3, color: Color, energy: float) -> MeshInstance3D:
+func _emissive_box(parent: Node, size: Vector3, pos: Vector3, color: Color, energy: float) -> MeshInstance3D:
 	var m := MeshInstance3D.new()
 	var b := BoxMesh.new()
 	b.size = size
@@ -128,7 +129,7 @@ func _emissive_box(size: Vector3, pos: Vector3, color: Color, energy: float) -> 
 	mat.emission = color
 	mat.emission_energy_multiplier = energy
 	m.material_override = mat
-	add_child(m)
+	parent.add_child(m)
 	return m
 
 
@@ -176,3 +177,197 @@ func _power_on() -> void:
 					c.disabled = true
 		)
 	InteractionManager.show_examine("The generator catches. Somewhere a lock thunks back. The inner door is open.", 4.5)
+
+
+# --- Set dressing: fill the bay so it reads as a real, abandoned space ----
+
+func _build_detail() -> void:
+	var pipe := Color(0.30, 0.33, 0.36)
+	var pipe2 := Color(0.40, 0.30, 0.18)
+	var steel := Color(0.30, 0.31, 0.34)
+	var crate := Color(0.30, 0.26, 0.18)
+
+	# Ceiling: duct runs, side cable trays, dead hanging lamps + chains.
+	Chamber.make_prop_box(self, Vector3(0.7, 0.6, 19.0), Vector3(5.0, 4.0, 0), steel, false)
+	Chamber.make_prop_box(self, Vector3(11.0, 0.5, 0.6), Vector3(0, 4.0, -6.5), steel, false)
+	for tx in [-8.4, 8.4]:
+		Chamber.make_prop_box(self, Vector3(0.4, 0.12, 18.0), Vector3(tx, 4.05, 0), Color(0.18, 0.18, 0.20), false)
+	for lp in [Vector3(-4, 3.6, -4), Vector3(4, 3.6, -4), Vector3(-4, 3.6, 4), Vector3(4, 3.6, 4)]:
+		Chamber.make_prop_box(self, Vector3(0.6, 0.25, 0.6), lp, Color(0.16, 0.16, 0.18), false)
+		Chamber.make_prop_box(self, Vector3(0.04, 0.6, 0.04), lp + Vector3(0, 0.45, 0), Color(0.10, 0.10, 0.12), false)
+	for cc in [Vector3(-1.5, 3.3, -7.5), Vector3(2.0, 3.0, -2.0), Vector3(-5.5, 3.4, 6.5), Vector3(6.5, 3.2, 1.0)]:
+		Chamber.make_prop_box(self, Vector3(0.05, randf_range(1.0, 1.9), 0.05), cc, Color(0.12, 0.12, 0.14), false)
+
+	# West wall: pipe runs, locker bank (foreshadows hiding), shelving rack.
+	for wz in [-8.0, -3.0, 3.0, 8.0]:
+		Chamber.make_prop_box(self, Vector3(0.16, 3.8, 0.16), Vector3(-8.78, 1.9, wz), pipe, false)
+	Chamber.make_prop_box(self, Vector3(0.18, 0.18, 18.0), Vector3(-8.7, 2.9, 0), pipe2, false)
+	Chamber.make_prop_box(self, Vector3(0.18, 0.18, 18.0), Vector3(-8.7, 0.7, 0), pipe, false)
+	for i in 4:
+		var lz: float = 2.2 + i * 0.86
+		Chamber.make_prop_box(self, Vector3(0.55, 1.9, 0.82), Vector3(-8.4, 0.95, lz), Color(0.22, 0.30, 0.34))
+		Chamber.make_prop_box(self, Vector3(0.02, 0.5, 0.5), Vector3(-8.10, 1.45, lz), Color(0.05, 0.07, 0.08), false)
+	_shelf_rack(Vector3(-8.0, 0, -6.5), 0.0)
+
+	# East wall: pipes, fire point, faint first-aid cross.
+	for wz2 in [-7.0, -2.0, 5.0]:
+		Chamber.make_prop_box(self, Vector3(0.16, 3.8, 0.16), Vector3(8.78, 1.9, wz2), pipe, false)
+	Chamber.make_prop_box(self, Vector3(0.18, 0.18, 18.0), Vector3(8.7, 3.0, 0), pipe, false)
+	Chamber.make_prop_box(self, Vector3(0.2, 0.5, 0.2), Vector3(8.6, 1.2, 0.5), Color(0.70, 0.12, 0.10))
+	Chamber.make_prop_box(self, Vector3(0.1, 0.4, 0.4), Vector3(8.78, 1.6, -3.0), Color(0.86, 0.88, 0.90), false)
+	_emissive_box(self, Vector3(0.06, 0.18, 0.06), Vector3(8.70, 1.6, -3.0), Color(0.20, 0.85, 0.30), 0.5)
+	_emissive_box(self, Vector3(0.18, 0.06, 0.06), Vector3(8.70, 1.6, -3.0), Color(0.20, 0.85, 0.30), 0.5)
+
+	# North wall around the inner door: dim EXIT, dead panel, pipe.
+	_emissive_box(self, Vector3(0.7, 0.22, 0.05), Vector3(0, 2.7, -9.78), Color(0.50, 0.06, 0.04), 0.8)
+	ActUtil.wall_label(self, "EXIT", Vector3(0, 2.7, -9.6), 16, Color(0.90, 0.40, 0.35))
+	Chamber.make_prop_box(self, Vector3(0.7, 0.9, 0.08), Vector3(-2.0, 1.4, -9.85), Color(0.16, 0.18, 0.22), false)
+	Chamber.make_prop_box(self, Vector3(0.16, 3.6, 0.16), Vector3(1.6, 1.8, -9.78), pipe, false)
+
+	# South wall (the way you came in): roller door, coats, dispatch desk.
+	for i2 in 8:
+		Chamber.make_prop_box(self, Vector3(5.2, 0.34, 0.12), Vector3(0, 0.35 + i2 * 0.36, 9.85), Color(0.33, 0.34, 0.37), false)
+	Chamber.make_prop_box(self, Vector3(2.6, 0.06, 0.06), Vector3(-6.0, 1.95, 9.4), Color(0.20, 0.20, 0.22), false)
+	var parkas := [Color(0.50, 0.20, 0.15), Color(0.20, 0.30, 0.45), Color(0.35, 0.36, 0.20), Color(0.15, 0.15, 0.18)]
+	for pi in parkas.size():
+		Chamber.make_prop_box(self, Vector3(0.5, 1.05, 0.26), Vector3(-7.0 + pi * 0.62, 1.4, 9.45), parkas[pi], false)
+	Chamber.make_prop_box(self, Vector3(1.8, 0.10, 0.9), Vector3(4.6, 0.92, 9.1), Color(0.30, 0.27, 0.22))
+	for dlx in [3.85, 5.35]:
+		for dlz in [8.75, 9.45]:
+			Chamber.make_prop_box(self, Vector3(0.08, 0.9, 0.08), Vector3(dlx, 0.45, dlz), Color(0.20, 0.18, 0.15), false)
+	for k in 3:
+		Chamber.make_prop_box(self, Vector3(0.28, 0.01, 0.36), Vector3(4.2 + k * 0.25, 0.98, 9.1), Color(0.85, 0.85, 0.82), false)
+
+	# Centre floor: snowcat, structural column, pallet, spools, tools, chair.
+	_snowcat(Vector3(-1.5, 0, 3.4), 24.0)
+	_column(2.6, -0.5)
+	Chamber.make_prop_box(self, Vector3(1.2, 0.12, 1.0), Vector3(-2.8, 0.06, -0.5), pipe2, false)
+	for sx in [-3.1, -2.5]:
+		Chamber.make_prop_box(self, Vector3(0.5, 0.4, 0.8), Vector3(sx, 0.32, -0.5), Color(0.40, 0.38, 0.30))
+	_spool(Vector3(2.0, 0.55, 1.6), Color(0.30, 0.22, 0.12))
+	_spool(Vector3(2.9, 0.55, 1.9), Color(0.30, 0.22, 0.12))
+	Chamber.make_prop_box(self, Vector3(0.6, 0.35, 0.32), Vector3(0.8, 0.18, 5.2), Color(0.70, 0.18, 0.12))
+	for tl in [Vector3(1.3, 0.04, 5.0), Vector3(0.4, 0.04, 5.6), Vector3(1.0, 0.04, 4.6)]:
+		Chamber.make_prop_box(self, Vector3(0.28, 0.05, 0.06), tl, Color(0.50, 0.50, 0.55), false)
+	var ch := Chamber.make_chair(self, Vector3(-3.4, 0.45, 6.4), Color(0.30, 0.31, 0.34), 20.0)
+	ch.rotation_degrees = Vector3(86, 20, 0)
+
+	# NE quadrant: pallet/crates, drum row, pallet jack, tarp-covered body.
+	Chamber.make_prop_box(self, Vector3(1.2, 0.12, 1.0), Vector3(5.0, 0.06, -6.0), pipe2, false)
+	Chamber.make_prop_box(self, Vector3(1.0, 0.9, 0.9), Vector3(5.0, 0.5, -6.0), crate)
+	Chamber.make_prop_box(self, Vector3(0.9, 0.7, 0.9), Vector3(4.6, 1.35, -6.0), crate)
+	for dz in [-5.5, -6.4, -7.3]:
+		_drum(Vector3(8.0, 0.45, dz), Color(0.30, 0.34, 0.22))
+	_drum(Vector3(3.6, 0.28, -7.6), Color(0.50, 0.28, 0.10), true)
+	Chamber.make_prop_box(self, Vector3(0.5, 0.18, 1.4), Vector3(4.4, 0.10, -4.6), Color(0.70, 0.50, 0.10))
+	Chamber.make_prop_box(self, Vector3(0.12, 0.9, 0.12), Vector3(4.4, 0.55, -4.0), Color(0.20, 0.20, 0.22), false)
+	ActUtil.corpse(self, Vector3(6.2, 0, -4.2), 150.0, true, Color(0.15, 0.16, 0.20))
+	Chamber.make_prop_box(self, Vector3(1.0, 0.2, 2.0), Vector3(6.2, 0.2, -4.2), Color(0.18, 0.20, 0.24), false)
+
+	# NW quadrant near the generator: drums + crate stack.
+	for dz2 in [-8.0, -8.7]:
+		_drum(Vector3(-4.6, 0.45, dz2), Color(0.30, 0.34, 0.22))
+	Chamber.make_prop_box(self, Vector3(0.9, 0.8, 0.9), Vector3(-7.5, 0.4, -7.5), crate)
+	Chamber.make_prop_box(self, Vector3(0.8, 0.6, 0.8), Vector3(-7.7, 1.1, -7.5), crate)
+
+	# Storytelling: a drag-mark of blood from the centre into the NE dark.
+	for i3 in 7:
+		var t: float = i3 / 6.0
+		var p := Vector3(lerpf(0.5, 6.8, t), 0.02, lerpf(-1.0, -7.8, t))
+		ActUtil.blood_decal(self, p, Vector2(0.5, 0.9), "up", Color(0.18, 0.03, 0.03, 0.7))
+	for fp in [Vector3(-7, 0.02, -9), Vector3(7.5, 0.02, 8), Vector3(-8, 0.02, 7)]:
+		ActUtil.blood_decal(self, fp, Vector2(1.6, 1.4), "up", Color(0.70, 0.78, 0.90, 0.18))
+
+	# Signage (billboards toward the player).
+	ActUtil.wall_label(self, "BAY 02", Vector3(-8.5, 3.2, 5.0), 26, Color(0.86, 0.88, 0.60))
+	ActUtil.wall_label(self, "MUSTER POINT", Vector3(8.5, 3.0, -4.5), 18, Color(0.70, 0.86, 0.90))
+	ActUtil.wall_label(self, "NO OPEN FLAME", Vector3(-5.0, 2.4, -3.0), 16, Color(0.90, 0.55, 0.30))
+
+
+func _shelf_rack(base: Vector3, facing: float) -> void:
+	var root := Node3D.new()
+	root.position = base
+	root.rotation_degrees = Vector3(0, facing, 0)
+	add_child(root)
+	var frame := Color(0.28, 0.24, 0.16)
+	for sy in [0.5, 1.2, 1.9, 2.5]:
+		Chamber.make_prop_box(root, Vector3(1.6, 0.06, 0.8), Vector3(0, sy, 0), frame, false)
+	for ux in [-0.74, 0.74]:
+		for uz in [-0.36, 0.36]:
+			Chamber.make_prop_box(root, Vector3(0.08, 2.6, 0.08), Vector3(ux, 1.3, uz), frame, false)
+	Chamber.make_prop_box(root, Vector3(0.4, 0.4, 0.5), Vector3(-0.4, 0.78, 0), Color(0.40, 0.36, 0.28), false)
+	Chamber.make_prop_box(root, Vector3(0.3, 0.5, 0.4), Vector3(0.4, 1.52, 0), Color(0.30, 0.40, 0.45), false)
+	Chamber.make_prop_box(root, Vector3(0.5, 0.3, 0.5), Vector3(0.1, 2.2, 0), Color(0.45, 0.30, 0.20), false)
+
+
+func _drum(pos: Vector3, color: Color, tipped: bool = false) -> void:
+	var b := StaticBody3D.new()
+	b.position = pos
+	if tipped:
+		b.rotation_degrees = Vector3(90, randf_range(0, 360), 0)
+	var mi := MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius = 0.28
+	cm.bottom_radius = 0.28
+	cm.height = 0.9
+	cm.radial_segments = 14
+	mi.mesh = cm
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = color
+	mat.metallic = 0.4
+	mat.roughness = 0.55
+	mi.material_override = mat
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	b.add_child(mi)
+	var cs := CollisionShape3D.new()
+	var sh := BoxShape3D.new()
+	sh.size = Vector3(0.56, 0.9, 0.56)
+	cs.shape = sh
+	b.add_child(cs)
+	add_child(b)
+
+
+func _spool(pos: Vector3, color: Color) -> void:
+	var mi := MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius = 0.55
+	cm.bottom_radius = 0.55
+	cm.height = 0.5
+	cm.radial_segments = 18
+	mi.mesh = cm
+	mi.rotation_degrees = Vector3(0, 0, 90)
+	mi.position = pos
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = color
+	mat.roughness = 0.8
+	mi.material_override = mat
+	add_child(mi)
+
+
+func _column(x: float, z: float) -> void:
+	Chamber.make_prop_box(self, Vector3(0.35, 4.5, 0.35), Vector3(x, 2.25, z), Color(0.30, 0.31, 0.34))
+	Chamber.make_prop_box(self, Vector3(0.5, 4.5, 0.12), Vector3(x, 2.25, z - 0.18), Color(0.26, 0.27, 0.30), false)
+	Chamber.make_prop_box(self, Vector3(0.5, 4.5, 0.12), Vector3(x, 2.25, z + 0.18), Color(0.26, 0.27, 0.30), false)
+
+
+func _snowcat(base: Vector3, facing: float) -> void:
+	var root := Node3D.new()
+	root.position = base
+	root.rotation_degrees = Vector3(0, facing, 0)
+	add_child(root)
+	var body := Color(0.60, 0.45, 0.10)
+	var dark := Color(0.12, 0.12, 0.14)
+	var glass := Color(0.05, 0.07, 0.10)
+	for sx in [-0.95, 0.95]:
+		Chamber.make_prop_box(root, Vector3(0.55, 0.5, 3.1), Vector3(sx, 0.28, 0), dark, false, "tread")
+	Chamber.make_prop_box(root, Vector3(2.2, 0.7, 2.7), Vector3(0, 0.85, 0.1), body, true, "chassis")
+	Chamber.make_prop_box(root, Vector3(1.7, 1.05, 1.5), Vector3(0, 1.65, -0.45), body, true, "cab")
+	Chamber.make_prop_box(root, Vector3(1.5, 0.7, 0.05), Vector3(0, 1.75, -1.18), glass, false)
+	for gx in [-0.86, 0.86]:
+		Chamber.make_prop_box(root, Vector3(0.05, 0.7, 1.2), Vector3(gx, 1.75, -0.45), glass, false)
+	Chamber.make_prop_box(root, Vector3(0.08, 0.9, 0.08), Vector3(-0.8, 2.2, 0.3), dark, false)
+	Chamber.make_prop_box(root, Vector3(0.08, 0.9, 0.08), Vector3(0.8, 2.2, 0.3), dark, false)
+	Chamber.make_prop_box(root, Vector3(1.7, 0.08, 0.08), Vector3(0, 2.6, 0.3), dark, false)
+	Chamber.make_prop_box(root, Vector3(2.4, 0.6, 0.18), Vector3(0, 0.45, -1.7), Color(0.40, 0.32, 0.10), true, "plow")
+	for hx in [-0.6, 0.6]:
+		_emissive_box(root, Vector3(0.18, 0.14, 0.05), Vector3(hx, 0.95, -1.42), Color(0.50, 0.45, 0.30), 0.15)
