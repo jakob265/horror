@@ -22,7 +22,7 @@ ShapeTracker="*res://autoload/shape_tracker.gd"
 AudioManager="*res://autoload/audio_manager.gd"
 ScareDirector="*res://autoload/scare_director.gd"
 SceneRouter="*res://autoload/scene_router.gd"
-DiscordRPC="*res://autoload/discord_rpc.gd"
+RichPresence="*res://autoload/rich_presence.gd"
 
 [display]
 
