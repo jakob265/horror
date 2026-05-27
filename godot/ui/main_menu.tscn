@@ -67,7 +67,7 @@ anchor_bottom = 1.0
 mouse_filter = 2
 
 [node name="HeaderTag" type="Label" parent="."]
-text = "//  TRANSMISSION INTERCEPT  //  CRESTFALL-9  //  KEPLER-442"
+text = "//  RELIEF CONTRACT 4471-K  //  STATION VESPER  //  21 DAYS DARK"
 anchor_left = 0.5
 anchor_top = 0.20
 offset_left = -360
@@ -77,7 +77,7 @@ theme_override_font_sizes/font_size = 12
 theme_override_colors/font_color = Color(0.42, 0.58, 0.72, 0.7)
 
 [node name="Title" type="Label" parent="."]
-text = "VOID FREQUENCY"
+text = "VESPER"
 horizontal_alignment = 1
 anchor_left = 0.5
 anchor_top = 0.27
@@ -100,7 +100,7 @@ offset_top = 0
 offset_bottom = 1
 
 [node name="Subtitle" type="Label" parent="."]
-text = "SIGNAL LOG ARCHIVE  //  ALL TRANSMISSIONS STORED  //  AUTH: VOSS-M.04"
+text = "HALSUND DEEP-ICE SURVEY  //  STATION LOG RECOVERED  //  AUTH: RELIEF-TECH"
 horizontal_alignment = 1
 anchor_left = 0.5
 anchor_top = 0.42
@@ -110,7 +110,7 @@ theme_override_font_sizes/font_size = 13
 theme_override_colors/font_color = Color(0.55, 0.65, 0.78, 0.85)
 
 [node name="Tagline" type="Label" parent="."]
-text = "the signal is calling.  you came back."
+text = "the cold is where it's from.  you came down anyway."
 horizontal_alignment = 1
 anchor_left = 0.5
 anchor_top = 0.49
@@ -128,7 +128,7 @@ offset_bottom = 240
 theme_override_constants/separation = 14
 
 [node name="NewGame" type="Button" parent="VBox"]
-text = "ACCEPT TRANSMISSION"
+text = "DESCEND"
 custom_minimum_size = Vector2(0, 48)
 theme_override_styles/normal = SubResource("ButtonNormal")
 theme_override_styles/hover = SubResource("ButtonHover")
@@ -139,7 +139,7 @@ theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 16
 
 [node name="Quit" type="Button" parent="VBox"]
-text = "REFUSE  /  QUIT"
+text = "TURN BACK  /  QUIT"
 custom_minimum_size = Vector2(0, 48)
 theme_override_styles/normal = SubResource("ButtonNormal")
 theme_override_styles/hover = SubResource("ButtonHover")
@@ -157,7 +157,7 @@ theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.35, 0.40, 0.48, 0.7)
 
 [node name="FooterRight" type="Label" parent="."]
-text = "WARNING: UNRESOLVED SIGNAL DETECTED"
+text = "WARNING: WINTER LOCKOUT - NO TRAVERSE FOR 21 DAYS"
 anchor_left = 0.78
 anchor_top = 0.965
 anchor_right = 0.98
