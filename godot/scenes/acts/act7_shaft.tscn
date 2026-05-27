@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b7act7_shaft"]
+
+[ext_resource type="Script" path="res://scripts/acts/act7_shaft.gd" id="1"]
+
+[node name="act7_shaft" type="Node3D"]
+script = ExtResource("1")

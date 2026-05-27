@@ -6,7 +6,7 @@ const ORDER := [
 	"note_1", "note_2", "note_3", "note_4", "note_5", "note_6", "note_7",
 	"note_8", "note_9", "note_10", "note_11", "note_12", "note_13",
 	"note_14", "note_15", "note_16", "note_17", "note_18",
-	"v_arrival", "v_bay", "v_bunk", "v_quarters", "v_mess", "v_infirm", "v_labs", "v_gen", "v_morgue",
+	"v_arrival", "v_bay", "v_bunk", "v_quarters", "v_mess", "v_infirm", "v_labs", "v_gen", "v_morgue", "v_shaft",
 ]
 
 const ALL := {
@@ -54,6 +54,11 @@ const ALL := {
 		"title": "Cold store tally",
 		"location": "Cold storage",
 		"body": "We brought them here because it was the coldest room and that felt like the decent thing. Six drawers. We labelled them. We are scientists; we labelled them.\n\nThey did not stay in the drawers.\n\nNot walking - nothing so simple you could shoot it. Just: you'd seal a drawer at the start of a shift and find it open at the end, and the body a little nearer the lamp, and no one would admit to having moved it.\n\nSo we locked the cold store. From the outside. As if the cold were the thing we needed to keep in.\n\nIt isn't slowed by cold. I should have understood that from the first core sample. Cold is not its weakness. Cold is its country. We drilled a hole into its country and we are standing in the doorway with the light on, surprised that something came to look.\n\nDon't trust a face you find down here. Especially not a kind one."
+	},
+	"v_shaft": {
+		"title": "Drill log - A. Frey",
+		"location": "Shaft head, clipboard",
+		"body": "Final depth 1,114 m. We stopped because we broke through into a void - an open cavity in the ice that has no business existing at this depth, this temperature, this pressure. The drill string just dropped, free, for two full seconds.\n\nThere is a space down there. A big one. Older than the ice around it by every dating method we've got, which is impossible, because the ice IS the oldest thing here. Something is down there that the glacier formed around the way a pearl forms around grit.\n\nThe cage only goes down. Kael keeps saying that like it's reassuring. It only goes down.\n\nI have been having the thought, lately, that we did not find the cavity. That the cavity has been waiting, and it let us drill, the way you'd hold still and let a mosquito land.\n\nI'm going down again tomorrow. I want to. That's the part I can't explain to the others. I want to go down.\n\n- Frey"
 	},
 	"note_1": {
 		"title": "Personal Recorder - Dr. Mara Voss",
