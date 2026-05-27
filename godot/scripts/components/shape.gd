@@ -476,9 +476,9 @@ func _can_see_player(player_pos: Vector3) -> bool:
 	var target := player_pos + Vector3(0, 1.0, 0)
 	var to := target - eye
 	var dist := to.length()
-	var rng := sight_range
-	if pl and pl.get("flashlight_on"):
-		rng *= 1.6                     # the beam gives you away
+	var rng := 5.0                     # in the dark it only senses you up close
+	if pl.get("flashlight_on"):
+		rng = sight_range * 1.4        # the beam gives you away from across the room
 	if dist > rng:
 		return false
 	# Forward cone, but it can still sense you point-blank behind it.

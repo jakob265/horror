@@ -6,7 +6,7 @@ const ORDER := [
 	"note_1", "note_2", "note_3", "note_4", "note_5", "note_6", "note_7",
 	"note_8", "note_9", "note_10", "note_11", "note_12", "note_13",
 	"note_14", "note_15", "note_16", "note_17", "note_18",
-	"v_arrival", "v_bay",
+	"v_arrival", "v_bay", "v_bunk", "v_quarters",
 ]
 
 const ALL := {
@@ -19,6 +19,16 @@ const ALL := {
 		"title": "Scratched into the generator housing",
 		"location": "Loading bay",
 		"body": "WE CUT THE POWER OURSELVES. don't undo it. it follows the light - the bright rooms are where they went.\n\nif you lit the gen to read this then turn it off and go back up the ice while you still cast a shadow worth keeping.\n\n- too late for Bell"
+	},
+	"v_bunk": {
+		"title": "Bunk diary - T. Renn",
+		"location": "Dormitory, lower bunk",
+		"body": "Day 9 since the drill broke through. We pulled up a core that wasn't core - dark, soft, warm to the touch at minus forty. Kael sealed it in the sample lab and we all pretended that was the end of it.\n\nIt wasn't. Frey stopped sleeping first. Then Pak. They'd just stand in the dark rooms with the lights off and their eyes open. When I asked Pak what she was looking at she said 'it's easier to see when you stop trying to.'\n\nWe cut the breakers wing by wing. Kael swears it can't find you in the dark - that it tracks the light, the warm, the moving. So we take shifts in the lockers now, breathing slow, waiting for the thing in the corridor to pass.\n\nIf that sounds like madness, good. Madness I could fix. This I can't."
+	},
+	"v_quarters": {
+		"title": "Wing lockdown - Dr. I. Kael",
+		"location": "Crew quarters desk",
+		"body": "I'm logging this in case logging still means anything.\n\nThe dormitory wing is sealed. The key is on my desk and I am leaving it there on purpose, because I am not going to need it again and someone might.\n\nRules, for whoever you are: kill your lamp when you hear it. Don't run in a straight line where it can see the length of you. Get small, get dark, get behind a door. It is fast and it is patient and it used to be Aldous Frey, which is the part I can't write about yet.\n\nThe door north opens on the mess, and past that the labs, and past that the shaft we should never have drilled. Don't go down. You'll go down. Everyone goes down.\n\n- Iris"
 	},
 	"note_1": {
 		"title": "Personal Recorder - Dr. Mara Voss",
