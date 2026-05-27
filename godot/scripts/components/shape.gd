@@ -62,78 +62,145 @@ static func create(p_kind: String, position: Vector3, rotation_y: float, crouche
 	return s
 
 
-func _build() -> void:
-	# A gaunt, too-tall wraith built from smooth capsules with a sculpted head:
-	# deep-set glowing eyes under a heavy brow, sunken cheeks, an open maw.
-	# Dark skin with a faint cold self-glow so the silhouette reads in the dark.
-	var skin := Color(0.06, 0.06, 0.075)
-	var dark := Color(0.015, 0.015, 0.02)
-	var glow := Color(0.13, 0.16, 0.22)
-	var glow_e := 0.26
-	var sc := 0.72 if crouched else 1.0      # crouched = shorter, hunched
+func _ready() -> void:
+	_start_idle()
 
-	# Legs
-	add_child(_capsule(0.072, 0.95, Vector3(-0.13, 0.50 * sc, 0), skin, glow, glow_e))
-	add_child(_capsule(0.072, 0.95, Vector3(0.13, 0.50 * sc, 0), skin, glow, glow_e))
-	# Pelvis + tapered torso + shoulders + neck
-	add_child(_capsule(0.15, 0.34, Vector3(0, 1.02 * sc, 0), skin, glow, glow_e))
-	torso = _capsule(0.165, 0.72, Vector3(0, 1.42 * sc, 0), skin, glow, glow_e)
+
+func _start_idle() -> void:
+	# Subtle breathing so it's never quite still.
+	if torso == null or not is_instance_valid(torso):
+		return
+	var t := create_tween().set_loops()
+	t.tween_property(torso, "scale", Vector3(1.05, 0.97, 1.05), randf_range(1.7, 2.5)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	t.tween_property(torso, "scale", Vector3(0.96, 1.04, 0.96), randf_range(1.7, 2.5)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func _build() -> void:
+	# A tall, hunched thing wearing a person. Near-black so it reads as one
+	# silhouette in the dark; the nest glows sickly through cracks in it and
+	# ice-shards erupt from its back. Bright eyes are the only clear feature.
+	var skin := Color(0.035, 0.04, 0.05)
+	var dark := Color(0.01, 0.01, 0.015)
+	var glow := Color(0.10, 0.16, 0.20)
+	var glow_e := 0.10
+	var nest := Color(0.16, 0.55, 0.42)        # sickly inner glow (the growth)
+	var sc := 0.70 if crouched else 1.0
+	var eye_col := Color(0.98, 0.13, 0.07)
+	if kind == KIND_YUNA:
+		eye_col = Color(0.96, 0.46, 0.10)
+	elif kind == KIND_FELIX:
+		eye_col = Color(0.86, 0.08, 0.18)
+
+	# Legs - long and thin.
+	add_child(_capsule(0.06, 1.05, Vector3(-0.13, 0.52 * sc, 0.0), skin, glow, glow_e))
+	add_child(_capsule(0.06, 1.05, Vector3(0.13, 0.52 * sc, 0.0), skin, glow, glow_e))
+	# Pelvis + a torso leaning forward (predatory). Overlapped so it blends.
+	add_child(_capsule(0.13, 0.36, Vector3(0, 1.06 * sc, 0.0), skin, glow, glow_e))
+	torso = _capsule(0.15, 0.80, Vector3(0, 1.46 * sc, -0.05), skin, glow, glow_e)
 	add_child(torso)
-	var shoulders := _capsule(0.07, 0.46, Vector3(0, 1.74 * sc, 0), skin, glow, glow_e)
+	# Exposed ribcage: a glowing cavity with rib slats across it.
+	add_child(_box(Vector3(0.22, 0.46, 0.16), Vector3(0, 1.46 * sc, -0.10), Color(0.02, 0.04, 0.03), nest, 1.0))
+	for ri in range(6):
+		add_child(_box(Vector3(0.26 - ri * 0.012, 0.028, 0.18), Vector3(0, 1.26 * sc + ri * 0.085, -0.07), skin))
+	# Shoulders pushed forward + a craning neck + spine knobs down the back.
+	var shoulders := _capsule(0.055, 0.50, Vector3(0, 1.82 * sc, -0.08), skin, glow, glow_e)
 	shoulders.rotation_degrees = Vector3(0, 0, 90)
 	add_child(shoulders)
-	add_child(_capsule(0.048, 0.20, Vector3(0, 1.88 * sc, 0.01), skin, glow, glow_e))
+	add_child(_capsule(0.04, 0.26, Vector3(0, 1.92 * sc, -0.12), skin, glow, glow_e))
+	for si in range(7):
+		add_child(_box(Vector3(0.05, 0.05, 0.05), Vector3(0, 1.18 * sc + si * 0.10, 0.10), dark))
 
-	# Head
+	# Ice-shards erupting from the back and shoulders - the silhouette.
+	_shard_at(self, Vector3(-0.16, 1.95 * sc, 0.06), 0.60, Vector3(-46, 0, -20))
+	_shard_at(self, Vector3(0.17, 1.92 * sc, 0.06), 0.50, Vector3(-50, 0, 18))
+	_shard_at(self, Vector3(0.0, 1.82 * sc, 0.12), 0.72, Vector3(-32, 0, 4))
+	_shard_at(self, Vector3(-0.10, 1.58 * sc, 0.14), 0.42, Vector3(-22, 0, -12))
+	if kind != KIND_YUNA:
+		_shard_at(self, Vector3(0.13, 1.62 * sc, 0.13), 0.46, Vector3(-26, 0, 14))
+
+	# Head: a narrow, forward-jutting skull.
 	head_pivot = Node3D.new()
-	head_pivot.position = Vector3(0, 2.00 * sc, 0.01)
+	head_pivot.position = Vector3(0, 2.04 * sc, -0.14)
 	add_child(head_pivot)
 	head = MeshInstance3D.new()
 	var hs := SphereMesh.new()
-	hs.radius = 0.135
-	hs.height = 0.30
-	hs.radial_segments = 32
-	hs.rings = 18
+	hs.radius = 0.125
+	hs.height = 0.32
+	hs.radial_segments = 28
+	hs.rings = 16
 	head.mesh = hs
-	head.scale = Vector3(0.92, 1.14, 1.0)    # elongated skull
-	head.material_override = _mat(skin, glow, glow_e, 0.65)
+	head.scale = Vector3(0.82, 1.22, 1.04)
+	head.material_override = _mat(skin, glow, glow_e, 0.55)
 	head_pivot.add_child(head)
-	# Heavy brow ridge shadowing the eyes
-	head_pivot.add_child(_box(Vector3(0.22, 0.05, 0.07), Vector3(0, 0.055, -0.095), dark))
-	# Deep eye sockets + glowing eyes recessed inside them
-	for ex in [-0.052, 0.052]:
-		var socket := _capsule(0.033, 0.075, Vector3(ex, -0.005, -0.075), dark)
+	# Heavy brow + a vertical face seam glowing with the nest.
+	head_pivot.add_child(_box(Vector3(0.24, 0.05, 0.09), Vector3(0, 0.07, -0.10), dark))
+	head_pivot.add_child(_box(Vector3(0.02, 0.20, 0.03), Vector3(0, -0.04, -0.135), Color(0.02, 0.04, 0.03), nest, 0.8))
+	# Eyes - bright, deep-set in dark sockets.
+	for ex in [-0.05, 0.05]:
+		var socket := _capsule(0.03, 0.07, Vector3(ex, 0.0, -0.085), dark)
 		socket.rotation_degrees = Vector3(90, 0, 0)
 		head_pivot.add_child(socket)
 		var eye := MeshInstance3D.new()
 		var es := SphereMesh.new()
-		es.radius = 0.021
-		es.height = 0.042
+		es.radius = 0.023
+		es.height = 0.046
 		eye.mesh = es
-		eye.position = Vector3(ex, -0.005, -0.10)
-		eye.material_override = _emit_mat(Color(0.97, 0.13, 0.08), 4.2)
+		eye.position = Vector3(ex, 0.0, -0.115)
+		eye.material_override = _emit_mat(eye_col, 6.0)
 		head_pivot.add_child(eye)
-	# Sunken cheeks
-	for cx in [-0.085, 0.085]:
-		head_pivot.add_child(_box(Vector3(0.05, 0.13, 0.05), Vector3(cx, -0.07, -0.06), dark))
-	# Open maw: dark jaw + faint inner glow
-	head_pivot.add_child(_capsule(0.055, 0.13, Vector3(0, -0.17, -0.03), skin, glow, glow_e))
-	head_pivot.add_child(_box(Vector3(0.10, 0.08, 0.04), Vector3(0, -0.13, -0.10), Color(0.05, 0.0, 0.0), Color(0.42, 0.03, 0.03), 1.3))
+	# Sunken cheeks + a long split maw with inner glow.
+	for cx in [-0.08, 0.08]:
+		head_pivot.add_child(_box(Vector3(0.05, 0.15, 0.05), Vector3(cx, -0.08, -0.05), dark))
+	head_pivot.add_child(_capsule(0.045, 0.15, Vector3(0, -0.19, -0.04), skin, glow, glow_e))
+	head_pivot.add_child(_box(Vector3(0.10, 0.12, 0.05), Vector3(0, -0.15, -0.11), Color(0.03, 0.0, 0.0), Color(0.55, 0.06, 0.05), 1.5))
+	# A small crown of shards.
+	_shard_at(head_pivot, Vector3(-0.06, 0.11, 0.02), 0.18, Vector3(-10, 0, -24))
+	_shard_at(head_pivot, Vector3(0.06, 0.11, 0.02), 0.18, Vector3(-10, 0, 24))
+	_shard_at(head_pivot, Vector3(0.0, 0.13, 0.04), 0.22, Vector3(-4, 0, 0))
 
-	# Long arms hanging past the knees, with claw-hands
-	add_child(_capsule(0.052, 0.95, Vector3(-0.27, 1.28 * sc, 0.02), skin, glow, glow_e))
+	# Long arms reaching near the floor, with splayed talons + a forearm shard.
+	add_child(_capsule(0.045, 1.08, Vector3(-0.27, 1.30 * sc, 0.0), skin, glow, glow_e))
 	right_arm_pivot = Node3D.new()
-	right_arm_pivot.position = Vector3(0.27, 1.66 * sc, 0.02)
+	right_arm_pivot.position = Vector3(0.27, 1.72 * sc, 0.0)
 	add_child(right_arm_pivot)
-	right_arm = _capsule(0.052, 0.95, Vector3(0, -0.45, 0), skin, glow, glow_e)
+	right_arm = _capsule(0.045, 1.08, Vector3(0, -0.52, 0), skin, glow, glow_e)
 	right_arm_pivot.add_child(right_arm)
+	_shard_at(self, Vector3(-0.30, 0.95 * sc, 0.03), 0.30, Vector3(8, 0, -34))
 	for hx in [-0.30, 0.30]:
-		for fi in 3:
-			add_child(_box(Vector3(0.018, 0.14, 0.018), Vector3(hx + (fi - 1) * 0.035, 0.80 * sc, 0.04), dark))
+		for fi in 4:
+			var tal := _box(Vector3(0.014, 0.22, 0.014), Vector3(hx + (fi - 1.5) * 0.038, 0.66 * sc, 0.04), dark)
+			tal.rotation_degrees = Vector3(20 + fi * 5, 0, (fi - 1.5) * 7)
+			add_child(tal)
+	# Faint filament veins down the torso.
+	for vp in [Vector3(-0.25, 1.4 * sc, -0.12), Vector3(0.25, 1.4 * sc, -0.12)]:
+		add_child(_box(Vector3(0.018, 0.55, 0.018), vp, Color(0.02, 0.04, 0.03), nest, 0.4))
 
+	head_pivot.rotation_degrees.x = 16.0 if crouched else 8.0
 	if crouched:
-		head_pivot.rotation_degrees.x = 18
-		right_arm_pivot.rotation_degrees.x = 32
+		right_arm_pivot.rotation_degrees.x = 30
+
+
+# A jagged ice/bone spike with a cold glowing edge. Tapers to a point.
+func _shard_at(parent: Node, pos: Vector3, length: float, rot: Vector3) -> void:
+	var m := MeshInstance3D.new()
+	var c := CylinderMesh.new()
+	c.top_radius = 0.003
+	c.bottom_radius = 0.05
+	c.height = length
+	c.radial_segments = 6
+	c.rings = 1
+	m.mesh = c
+	m.position = pos
+	m.rotation_degrees = rot
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.05, 0.08, 0.11)
+	mat.metallic = 0.25
+	mat.roughness = 0.35
+	mat.emission_enabled = true
+	mat.emission = Color(0.28, 0.50, 0.66)
+	mat.emission_energy_multiplier = 0.22
+	m.material_override = mat
+	parent.add_child(m)
 
 
 func _box(size: Vector3, pos: Vector3, color: Color, emit_color: Color = Color(0, 0, 0), emit_energy: float = 0.0) -> MeshInstance3D:
