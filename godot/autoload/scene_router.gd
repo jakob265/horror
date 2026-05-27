@@ -18,7 +18,7 @@ const ACT_SCENES := {
 	"act7":         "res://scenes/acts/act7_shaft.tscn",
 	"act_eva":      "res://scenes/acts/act_eva.tscn",
 	"act_storage":  "res://scenes/acts/act_storage.tscn",
-	"act8":         "res://scenes/acts/act8_bridge.tscn",
+	"act8":         "res://scenes/acts/act8_caves.tscn",
 	"act_maint":    "res://scenes/acts/act_maint.tscn",
 	"act9":         "res://scenes/acts/act9_approach.tscn",
 	"act10":        "res://scenes/acts/act10_array.tscn",

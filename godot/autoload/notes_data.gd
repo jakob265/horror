@@ -6,7 +6,7 @@ const ORDER := [
 	"note_1", "note_2", "note_3", "note_4", "note_5", "note_6", "note_7",
 	"note_8", "note_9", "note_10", "note_11", "note_12", "note_13",
 	"note_14", "note_15", "note_16", "note_17", "note_18",
-	"v_arrival", "v_bay", "v_bunk", "v_quarters", "v_mess", "v_infirm", "v_labs", "v_gen", "v_morgue", "v_shaft",
+	"v_arrival", "v_bay", "v_bunk", "v_quarters", "v_mess", "v_infirm", "v_labs", "v_gen", "v_morgue", "v_shaft", "v_caves",
 ]
 
 const ALL := {
@@ -59,6 +59,11 @@ const ALL := {
 		"title": "Drill log - A. Frey",
 		"location": "Shaft head, clipboard",
 		"body": "Final depth 1,114 m. We stopped because we broke through into a void - an open cavity in the ice that has no business existing at this depth, this temperature, this pressure. The drill string just dropped, free, for two full seconds.\n\nThere is a space down there. A big one. Older than the ice around it by every dating method we've got, which is impossible, because the ice IS the oldest thing here. Something is down there that the glacier formed around the way a pearl forms around grit.\n\nThe cage only goes down. Kael keeps saying that like it's reassuring. It only goes down.\n\nI have been having the thought, lately, that we did not find the cavity. That the cavity has been waiting, and it let us drill, the way you'd hold still and let a mosquito land.\n\nI'm going down again tomorrow. I want to. That's the part I can't explain to the others. I want to go down.\n\n- Frey"
+	},
+	"v_caves": {
+		"title": "Last entry - Dr. I. Kael",
+		"location": "The cavity",
+		"body": "It isn't many. I have to write this down while I still know it.\n\nI keep counting six shapes in the dark and there are not six of anything down here. There is one. The cavity is one body, and the ice grew around it the way skin grows, and we drilled through the skin and were surprised that it flinched.\n\nThe crew aren't dead. They aren't alive. They're it now, wearing them - the way your hand is you. When Frey speaks to me in the dark it is not Frey and it is also, exactly and unbearably, Frey.\n\nI came down here to end it. I understand now there is nothing to end that isn't also us. You can seal it back under the ice and leave it to dream. You can burn the nest and lose yourself to the cold trying. Or you can stop running and let it make you part of something that is never, ever alone again - and God help me, that last one is the one it whispers, and it is starting to sound like rest.\n\nGo to the chamber. See the rest of it. Then decide what mercy means.\n\n- Iris"
 	},
 	"note_1": {
 		"title": "Personal Recorder - Dr. Mara Voss",
