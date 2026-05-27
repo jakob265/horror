@@ -40,7 +40,7 @@ func setup(p_player: Node, p_camera: Camera3D, p_ui: CanvasLayer) -> void:
 func _physics_process(_dt: float) -> void:
 	if camera == null:
 		return
-	if modal_open or NotesManager.is_open:
+	if modal_open or NotesManager.is_open or InventoryManager.is_open:
 		prompt_label.text = ""
 		_current_target = null
 		return
@@ -75,6 +75,8 @@ func _physics_process(_dt: float) -> void:
 # --- Input dispatch ---------------------------------------------------------
 
 func handle_input(event: InputEvent) -> void:
+	if InventoryManager.is_open:
+		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_E:
 			if _examine_root != null:
@@ -118,6 +120,9 @@ func _trigger_current() -> void:
 			ent.set_meta("interact_used", true)
 		"collect_note":
 			NotesManager.collect(data["note_id"])
+			ent.queue_free()
+		"collect_item":
+			InventoryManager.add(data.get("item_id", ""))
 			ent.queue_free()
 		"read_terminal":
 			_open_terminal(data.get("title", "TERMINAL"), data.get("text", ""))

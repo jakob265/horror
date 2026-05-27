@@ -21,6 +21,7 @@ var in_ending := false
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	NotesManager.setup(ui_layer)
+	InventoryManager.setup(ui_layer)
 	OlenManager.setup(ui_layer)
 	SceneRouter.setup(world_root, fader)
 	_setup_postfx()
@@ -65,6 +66,7 @@ func _begin_new_game() -> void:
 		main_menu = null
 	HorrorShape.reset_session()
 	GameState.reset_for_new_game()
+	InventoryManager.reset()
 	ScareDirector.reset()
 	# Player
 	if player == null:
@@ -101,7 +103,13 @@ func _unhandled_input(event: InputEvent) -> void:
 			if event.keycode == KEY_ESCAPE:
 				_close_debug_warp()
 			return
+		if event.keycode == KEY_I and player and not in_ending and main_menu == null and not is_paused and not NotesManager.is_open and not InteractionManager.modal_open:
+			InventoryManager.toggle()
+			return
 		if event.keycode == KEY_ESCAPE:
+			if InventoryManager.is_open:
+				InventoryManager.close()
+				return
 			if NotesManager.is_open:
 				NotesManager.close()
 				return
@@ -122,6 +130,7 @@ func _unhandled_input(event: InputEvent) -> void:
 			return
 	# Route to subsystems
 	NotesManager.handle_input(event)
+	InventoryManager.handle_input(event)
 	InteractionManager.handle_input(event)
 	if player and player.has_method("handle_input"):
 		player.handle_input(event)
