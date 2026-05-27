@@ -6,7 +6,7 @@ const ORDER := [
 	"note_1", "note_2", "note_3", "note_4", "note_5", "note_6", "note_7",
 	"note_8", "note_9", "note_10", "note_11", "note_12", "note_13",
 	"note_14", "note_15", "note_16", "note_17", "note_18",
-	"v_arrival", "v_bay", "v_bunk", "v_quarters", "v_mess", "v_infirm",
+	"v_arrival", "v_bay", "v_bunk", "v_quarters", "v_mess", "v_infirm", "v_labs",
 ]
 
 const ALL := {
@@ -39,6 +39,11 @@ const ALL := {
 		"title": "Infirmary log - Dr. S. Pak",
 		"location": "Infirmary, clipboard",
 		"body": "Patients: all of them. Symptoms: none I can name.\n\nNo fever, no lesions, no neurological deficit on any test I can still run. They are, by every instrument I own, perfectly healthy. They have simply stopped being afraid of the dark, and started being afraid of each other.\n\nI took a tissue sample from the core in the lab. Under the scope it isn't cells. It's the same dark filament, branching, and when I leave the slide in the warm it grows toward the lamp. Toward the light. Always the light.\n\nI think we are all slides now. I think it left us in the warm and it is growing us toward something.\n\nWhoever finds this: the labs key is on the breaker side. Restore the line, take the door, and please - turn the lights back off behind you."
+	},
+	"v_labs": {
+		"title": "Sample lab - Dr. R. Sundqvist",
+		"location": "Sample lab workstation",
+		"body": "We kept it at minus sixty and it grew anyway. We kept it dark and it grew toward the inspection lamp, every filament of it, like a field of black wheat leaning at a sun.\n\nKael calls it a specimen. It is not a specimen. A specimen is dead or it is studied; this is neither. I have stopped calling it the core. In my notes now I call it the seed, because that is what it is doing - it is planting.\n\nThe containment cracked on day eleven. Not from inside. The lock simply opened, from the panel, in Frey's hand, while Frey stood very still and watched it the way you watch someone you love sleeping.\n\nWe should have left it in the ice. Write that on my headstone if there's anyone left to cut one. WE SHOULD HAVE LEFT IT IN THE ICE.\n\nIt knows my name now. When it uses my voice it gets the warmth right. That's the cruel part. It gets the warmth exactly right."
 	},
 	"note_1": {
 		"title": "Personal Recorder - Dr. Mara Voss",

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b4act4_labs"]
+
+[ext_resource type="Script" path="res://scripts/acts/act4_labs.gd" id="1"]
+
+[node name="act4_labs" type="Node3D"]
+script = ExtResource("1")
