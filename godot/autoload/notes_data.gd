@@ -6,9 +6,20 @@ const ORDER := [
 	"note_1", "note_2", "note_3", "note_4", "note_5", "note_6", "note_7",
 	"note_8", "note_9", "note_10", "note_11", "note_12", "note_13",
 	"note_14", "note_15", "note_16", "note_17", "note_18",
+	"v_arrival", "v_bay",
 ]
 
 const ALL := {
+	"v_arrival": {
+		"title": "RELIEF DISPATCH - Vesper Station",
+		"location": "Clipboard, loading bay",
+		"body": "CONTRACT 4471-K. You're the relief tech. You already know the shape of it: Vesper went quiet twenty-one days ago, mid-storm, and the company would rather pay you than write off the hardware.\n\nLast packet we logged was four seconds of carrier and one word, repeated, that the decoder won't print. Probably ice on the dish. Probably.\n\nJob's simple. Get the aux generator lit so the locks and the heat come back. Find the six of them - Kael, Renn, Pak, Bell, Frey, Sundqvist - and sit tight. The traverse comes for all of you when the weather breaks. Not before.\n\nYour lamp is the only light that works down here until you fix that. [F] switches it. [R] drops in a fresh cell when one dies - and they die fast, so don't burn light you don't need."
+	},
+	"v_bay": {
+		"title": "Scratched into the generator housing",
+		"location": "Loading bay",
+		"body": "WE CUT THE POWER OURSELVES. don't undo it. it follows the light - the bright rooms are where they went.\n\nif you lit the gen to read this then turn it off and go back up the ice while you still cast a shadow worth keeping.\n\n- too late for Bell"
+	},
 	"note_1": {
 		"title": "Personal Recorder - Dr. Mara Voss",
 		"location": "Cryo Bay floor",
