@@ -385,6 +385,34 @@ static func spawn_player(pos: Vector3, rotation_y: float = 0.0) -> void:
 #     flicker: bool (default true), flicker_rate: float,
 #     lurkers: [ {kind: String, points: [Vector3,...], creep: float}, ... ],
 #   }
+# A tall locker you can duck into ([E] to hide, again to step out). Hiding
+# breaks the hunter's line of sight. face_yaw = the way the door faces (deg).
+static func hide_locker(parent: Node3D, pos: Vector3, face_yaw: float = 0.0, color: Color = Color(0.24, 0.31, 0.35)) -> StaticBody3D:
+	var locker := Chamber.make_prop_box(parent, Vector3(0.74, 2.0, 0.74), pos + Vector3(0, 1.0, 0), color, true, "locker")
+	locker.rotation_degrees = Vector3(0, face_yaw, 0)
+	var dark := StandardMaterial3D.new()
+	dark.albedo_color = Color(0.02, 0.03, 0.04)
+	# Door seam / ajar gap.
+	var inner := MeshInstance3D.new()
+	var ib := BoxMesh.new()
+	ib.size = Vector3(0.52, 1.7, 0.05)
+	inner.mesh = ib
+	inner.position = Vector3(0, 0.0, 0.375)
+	inner.material_override = dark
+	locker.add_child(inner)
+	# Vent slits.
+	for sy in [0.45, 0.60, 0.75]:
+		var slit := MeshInstance3D.new()
+		var sb := BoxMesh.new()
+		sb.size = Vector3(0.4, 0.025, 0.02)
+		slit.mesh = sb
+		slit.position = Vector3(0, sy, 0.39)
+		slit.material_override = dark
+		locker.add_child(slit)
+	Interactable.attach(locker, "Hide", "hide_spot", {})
+	return locker
+
+
 static func haunt(act: Node3D, opts: Dictionary = {}) -> void:
 	ScareDirector.set_intensity(opts.get("intensity", 0.3))
 	if opts.get("flicker", true):

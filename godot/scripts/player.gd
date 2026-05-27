@@ -25,6 +25,8 @@ var flashlight_on := false
 var flashlight_battery := 1.0
 var mouse_sens := MOUSE_SENS_DEFAULT
 var hud: Control = null
+var hidden := false
+var _hide_overlay: Control = null
 
 
 func _ready() -> void:
@@ -45,6 +47,18 @@ func _unhandled_input(event: InputEvent) -> void:
 func _physics_process(delta: float) -> void:
 	if frozen:
 		velocity = Vector3.ZERO
+		move_and_slide()
+		_update_flashlight(delta)
+		return
+
+	if hidden:
+		# Pinned in place while hiding; look is still free so you can watch.
+		velocity.x = 0.0
+		velocity.z = 0.0
+		if not is_on_floor():
+			velocity.y -= GRAVITY * delta
+		else:
+			velocity.y = -0.1
 		move_and_slide()
 		_update_flashlight(delta)
 		return
@@ -114,6 +128,10 @@ func handle_input(event: InputEvent) -> void:
 	if frozen:
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
+		if hidden:
+			if event.keycode == KEY_E:
+				exit_hide()
+			return
 		if event.keycode == KEY_F:
 			toggle_flashlight()
 		elif event.keycode == KEY_R:
@@ -151,3 +169,60 @@ func set_mouse_sensitivity(v: float) -> void:
 
 func get_collider_rid() -> RID:
 	return get_rid()
+
+
+# --- Hiding ---------------------------------------------------------------
+
+func enter_hide(_data: Dictionary = {}) -> void:
+	if hidden:
+		return
+	hidden = true
+	GameState.player_hidden = true
+	if flashlight_on:
+		toggle_flashlight()
+	velocity = Vector3.ZERO
+	AudioManager.breath()
+	_show_hide_overlay()
+
+
+func exit_hide() -> void:
+	if not hidden:
+		return
+	hidden = false
+	GameState.player_hidden = false
+	if _hide_overlay and is_instance_valid(_hide_overlay):
+		_hide_overlay.queue_free()
+	_hide_overlay = null
+
+
+func _show_hide_overlay() -> void:
+	if hud == null or not is_instance_valid(hud):
+		return
+	_hide_overlay = Control.new()
+	_hide_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_hide_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_add_hide_bar(0.0, 0.0, 1.0, 0.22)
+	_add_hide_bar(0.0, 0.78, 1.0, 1.0)
+	_add_hide_bar(0.0, 0.22, 0.19, 0.78)
+	_add_hide_bar(0.81, 0.22, 1.0, 0.78)
+	_add_hide_bar(0.47, 0.22, 0.50, 0.78)
+	var hint := Label.new()
+	hint.text = "Hidden    [E] step out"
+	hint.add_theme_font_size_override("font_size", 15)
+	hint.add_theme_color_override("font_color", Color(0.78, 0.80, 0.85))
+	hint.anchor_left = 0.5
+	hint.anchor_top = 0.84
+	hint.position = Vector2(-72, 0)
+	_hide_overlay.add_child(hint)
+	hud.add_child(_hide_overlay)
+
+
+func _add_hide_bar(l: float, t: float, r: float, b: float) -> void:
+	var c := ColorRect.new()
+	c.color = Color(0, 0, 0, 1)
+	c.anchor_left = l
+	c.anchor_top = t
+	c.anchor_right = r
+	c.anchor_bottom = b
+	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hide_overlay.add_child(c)

@@ -40,7 +40,7 @@ func setup(p_player: Node, p_camera: Camera3D, p_ui: CanvasLayer) -> void:
 func _physics_process(_dt: float) -> void:
 	if camera == null:
 		return
-	if modal_open or NotesManager.is_open or InventoryManager.is_open:
+	if modal_open or NotesManager.is_open or InventoryManager.is_open or GameState.player_hidden:
 		prompt_label.text = ""
 		_current_target = null
 		return
@@ -75,7 +75,7 @@ func _physics_process(_dt: float) -> void:
 # --- Input dispatch ---------------------------------------------------------
 
 func handle_input(event: InputEvent) -> void:
-	if InventoryManager.is_open:
+	if InventoryManager.is_open or GameState.player_hidden:
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_E:
@@ -124,6 +124,9 @@ func _trigger_current() -> void:
 		"collect_item":
 			InventoryManager.add(data.get("item_id", ""))
 			ent.queue_free()
+		"hide_spot":
+			if GameState.player and GameState.player.has_method("enter_hide"):
+				GameState.player.enter_hide(data)
 		"use_item":
 			var req: String = data.get("required_item", "")
 			if req == "" or InventoryManager.has(req):
