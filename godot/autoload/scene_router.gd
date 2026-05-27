@@ -4,24 +4,16 @@ extends Node
 signal scene_changed(act_name: String)
 
 const ACT_SCENES := {
-	"act1":         "res://scenes/acts/act1_surface.tscn",
-	"act2":         "res://scenes/acts/act2_dormitory.tscn",
-	"act_med":      "res://scenes/acts/act_med.tscn",
-	"act3":         "res://scenes/acts/act3_mess.tscn",
-	"act4":         "res://scenes/acts/act4_labs.tscn",
-	"act_obs":      "res://scenes/acts/act_obs.tscn",
-	"act_mess":     "res://scenes/acts/act_mess.tscn",
-	"act_comms":    "res://scenes/acts/act_comms.tscn",
-	"act5":         "res://scenes/acts/act5_generator.tscn",
-	"act6":         "res://scenes/acts/act6_morgue.tscn",
-	"act_cargo":    "res://scenes/acts/act_cargo.tscn",
-	"act7":         "res://scenes/acts/act7_shaft.tscn",
-	"act_eva":      "res://scenes/acts/act_eva.tscn",
-	"act_storage":  "res://scenes/acts/act_storage.tscn",
-	"act8":         "res://scenes/acts/act8_caves.tscn",
-	"act_maint":    "res://scenes/acts/act_maint.tscn",
-	"act9":         "res://scenes/acts/act9_chamber.tscn",
-	"act10":        "res://scenes/acts/act10_choice.tscn",
+	"act1":  "res://scenes/acts/act1_surface.tscn",     # The Surface
+	"act2":  "res://scenes/acts/act2_dormitory.tscn",   # The Dormitory Wing
+	"act3":  "res://scenes/acts/act3_mess.tscn",         # The Mess & Infirmary
+	"act4":  "res://scenes/acts/act4_labs.tscn",         # The Sample Labs
+	"act5":  "res://scenes/acts/act5_generator.tscn",    # The Generator Hall
+	"act6":  "res://scenes/acts/act6_morgue.tscn",       # Cold Storage
+	"act7":  "res://scenes/acts/act7_shaft.tscn",        # The Drill Shaft
+	"act8":  "res://scenes/acts/act8_caves.tscn",        # The Ice Caves
+	"act9":  "res://scenes/acts/act9_chamber.tscn",      # The Sealed Chamber
+	"act10": "res://scenes/acts/act10_choice.tscn",      # The Choice
 }
 
 var world_root: Node3D = null
