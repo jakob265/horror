@@ -9,6 +9,7 @@ const STAND_HEIGHT := 1.7
 const CROUCH_HEIGHT := 1.3
 const GRAVITY := 18.0
 const MOUSE_SENS_DEFAULT := 0.0028
+const BATTERY_LIFE := 110.0  # seconds of light per full cell (no passive recharge)
 
 @onready var head: Node3D = $Head
 @onready var camera: Camera3D = $Head/Camera3D
@@ -93,17 +94,16 @@ func _physics_process(delta: float) -> void:
 
 
 func _update_flashlight(delta: float) -> void:
+	# Drains only while on. No passive recharge — refill with a spare battery (R).
 	if flashlight_on:
-		flashlight_battery = max(0.0, flashlight_battery - delta / 90.0)
+		flashlight_battery = max(0.0, flashlight_battery - delta / BATTERY_LIFE)
 		if flashlight_battery <= 0.0:
 			flashlight_on = false
 			flashlight.visible = false
 			flashlight_core.visible = false
-	else:
-		flashlight_battery = min(1.0, flashlight_battery + delta / 45.0)
-	# Brown-out as the battery dies: dim the energy in the last 15%.
+	# Brown-out as the cell dies: dim the energy in the last 18%.
 	if flashlight_on:
-		var t: float = clamp(flashlight_battery / 0.15, 0.35, 1.0)
+		var t: float = clamp(flashlight_battery / 0.18, 0.30, 1.0)
 		flashlight.light_energy = 4.5 * t
 		flashlight_core.light_energy = 2.8 * t
 	if hud and hud.has_method("update_battery"):
@@ -116,6 +116,8 @@ func handle_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_F:
 			toggle_flashlight()
+		elif event.keycode == KEY_R:
+			reload_battery()
 
 
 func toggle_flashlight() -> void:
@@ -124,6 +126,14 @@ func toggle_flashlight() -> void:
 	flashlight_on = not flashlight_on
 	flashlight.visible = flashlight_on
 	flashlight_core.visible = flashlight_on
+
+
+func reload_battery() -> void:
+	if flashlight_battery >= 0.98:
+		return
+	if InventoryManager.has("spare_battery"):
+		InventoryManager.remove("spare_battery", 1)
+		flashlight_battery = 1.0
 
 
 func freeze() -> void:
