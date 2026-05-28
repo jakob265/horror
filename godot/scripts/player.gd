@@ -27,6 +27,11 @@ var mouse_sens := MOUSE_SENS_DEFAULT
 var hud: Control = null
 var hidden := false
 var _hide_overlay: Control = null
+var has_gun := false
+var ammo := 0
+var _gun_view: Node3D = null
+var _muzzle: OmniLight3D = null
+var _ammo_label: Label = null
 
 
 func _ready() -> void:
@@ -127,6 +132,9 @@ func _update_flashlight(delta: float) -> void:
 func handle_input(event: InputEvent) -> void:
 	if frozen:
 		return
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT and not hidden:
+		fire()
+		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		if hidden:
 			if event.keycode == KEY_E:
@@ -226,3 +234,87 @@ func _add_hide_bar(l: float, t: float, r: float, b: float) -> void:
 	c.anchor_bottom = b
 	c.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hide_overlay.add_child(c)
+
+
+# --- Gun (the finale) -----------------------------------------------------
+
+func equip_gun(n: int) -> void:
+	ammo += n
+	if not has_gun:
+		has_gun = true
+		_build_gun_view()
+	_update_ammo()
+
+
+func _build_gun_view() -> void:
+	_gun_view = Node3D.new()
+	camera.add_child(_gun_view)
+	_gun_view.position = Vector3(0.22, -0.20, -0.45)
+	var metal := StandardMaterial3D.new()
+	metal.albedo_color = Color(0.12, 0.12, 0.14)
+	metal.metallic = 0.7
+	metal.roughness = 0.4
+	for part in [[Vector3(0.08, 0.12, 0.32), Vector3(0, 0, 0)], [Vector3(0.045, 0.05, 0.30), Vector3(0, 0.03, -0.28)], [Vector3(0.06, 0.16, 0.09), Vector3(0, -0.12, 0.10)]]:
+		var mi := MeshInstance3D.new()
+		var b := BoxMesh.new()
+		b.size = part[0]
+		mi.mesh = b
+		mi.position = part[1]
+		mi.material_override = metal
+		_gun_view.add_child(mi)
+	_muzzle = OmniLight3D.new()
+	_muzzle.light_color = Color(1.0, 0.85, 0.5)
+	_muzzle.light_energy = 0.0
+	_muzzle.omni_range = 4.0
+	_muzzle.position = Vector3(0, 0.03, -0.45)
+	_gun_view.add_child(_muzzle)
+	if hud and is_instance_valid(hud):
+		_ammo_label = Label.new()
+		_ammo_label.add_theme_font_size_override("font_size", 20)
+		_ammo_label.add_theme_color_override("font_color", Color(0.9, 0.85, 0.6))
+		_ammo_label.anchor_left = 0.88
+		_ammo_label.anchor_top = 0.9
+		hud.add_child(_ammo_label)
+		var cross := Label.new()
+		cross.text = "+"
+		cross.add_theme_font_size_override("font_size", 22)
+		cross.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9, 0.7))
+		cross.anchor_left = 0.5
+		cross.anchor_top = 0.5
+		cross.position = Vector2(-7, -14)
+		hud.add_child(cross)
+
+
+func _update_ammo() -> void:
+	if _ammo_label and is_instance_valid(_ammo_label):
+		_ammo_label.text = "AMMO  %d" % ammo
+
+
+func fire() -> void:
+	if not has_gun or hidden or ammo <= 0:
+		return
+	ammo -= 1
+	_update_ammo()
+	AudioManager.shape_sting()
+	if _muzzle:
+		_muzzle.light_energy = 3.0
+		create_tween().tween_property(_muzzle, "light_energy", 0.0, 0.08)
+	if _gun_view:
+		_gun_view.position.z = -0.38
+		create_tween().tween_property(_gun_view, "position:z", -0.45, 0.10)
+	var space := camera.get_world_3d().direct_space_state
+	var from := camera.global_position
+	var to := from - camera.global_transform.basis.z * 60.0
+	var params := PhysicsRayQueryParameters3D.create(from, to)
+	params.collide_with_bodies = true
+	params.exclude = [get_collider_rid()]
+	var hit := space.intersect_ray(params)
+	if hit.is_empty():
+		return
+	var n: Node = hit["collider"]
+	while n and not n.has_meta("on_shot"):
+		n = n.get_parent()
+	if n and n.has_meta("on_shot"):
+		var cb: Callable = n.get_meta("on_shot")
+		if cb.is_valid():
+			cb.call()
