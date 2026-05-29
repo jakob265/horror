@@ -86,6 +86,80 @@ func trigger_manual(intercom_id: int, panel: Node) -> void:
 	_fire(intercom_id, panel)
 
 
+# Boss-fight mercy window: a single Kael line streamed through the same widget
+# as the OLEN path but with KAEL as the speaker. Caller passes a callback that
+# fires after the line finishes streaming, so the boss can resume / the window
+# can close. Doesn't go through the fired/_note_fired sets - the boss script
+# guards its own one-shot semantics.
+const BOSS_MERCY_LINE := "please. we're tired. let us sleep."
+
+func play_boss_mercy(panel: Node, on_done: Callable = Callable()) -> void:
+	AudioManager.intercom_click()
+	AudioManager.set_olen_harmonic_volume(0.12)
+	current_panel = panel
+	if panel and is_instance_valid(panel) and panel.has_method("set_speaking"):
+		panel.set_speaking(true)
+	_stream_mercy_subtitle(BOSS_MERCY_LINE, on_done)
+
+
+func _stream_mercy_subtitle(line: String, on_done: Callable) -> void:
+	_hide_subtitle()
+	_subtitle_active = true
+	_subtitle_root = Control.new()
+	_subtitle_root.anchor_right = 1.0
+	_subtitle_root.anchor_bottom = 1.0
+	_subtitle_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var bg := ColorRect.new()
+	bg.color = Color(0, 0, 0, 0.85)
+	bg.anchor_left = 0.05
+	bg.anchor_top = 0.80
+	bg.anchor_right = 0.95
+	bg.anchor_bottom = 0.95
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_subtitle_root.add_child(bg)
+	var label_speaker := Label.new()
+	label_speaker.text = "KAEL"
+	label_speaker.add_theme_font_size_override("font_size", 14)
+	label_speaker.add_theme_color_override("font_color", Color(0.86, 0.78, 0.62))
+	label_speaker.anchor_left = 0.06
+	label_speaker.anchor_top = 0.81
+	_subtitle_root.add_child(label_speaker)
+	_subtitle_label = Label.new()
+	_subtitle_label.text = ""
+	_subtitle_label.add_theme_font_size_override("font_size", 16)
+	_subtitle_label.add_theme_color_override("font_color", Color(0.90, 0.84, 0.74))
+	_subtitle_label.anchor_left = 0.13
+	_subtitle_label.anchor_top = 0.81
+	_subtitle_label.anchor_right = 0.94
+	_subtitle_label.anchor_bottom = 0.94
+	_subtitle_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_subtitle_root.add_child(_subtitle_label)
+	_ui_layer.add_child(_subtitle_root)
+	var words := line.split(" ")
+	_stream_mercy_step(words, 0, on_done)
+
+
+func _stream_mercy_step(words: PackedStringArray, idx: int, on_done: Callable) -> void:
+	if idx >= words.size() or _subtitle_label == null:
+		get_tree().create_timer(0.9).timeout.connect(func(): _on_mercy_done(on_done))
+		return
+	var text := _subtitle_label.text
+	_subtitle_label.text = (text + (" " if text != "" else "") + words[idx])
+	get_tree().create_timer(1.0 / 3.5).timeout.connect(
+		func(): _stream_mercy_step(words, idx + 1, on_done)
+	)
+
+
+func _on_mercy_done(on_done: Callable) -> void:
+	_hide_subtitle()
+	if current_panel and is_instance_valid(current_panel) and current_panel.has_method("set_speaking"):
+		current_panel.set_speaking(false)
+	current_panel = null
+	AudioManager.set_olen_harmonic_volume(0.0)
+	if on_done.is_valid():
+		on_done.call()
+
+
 func update(player_pos: Vector3) -> void:
 	if _subtitle_active:
 		return

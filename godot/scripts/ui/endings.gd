@@ -1,5 +1,7 @@
 extends Control
-# VESPER endings: SEAL (leave it to dream), BURN (destroy it), SUCCUMB (join it).
+# VESPER endings: SEAL (leave it to dream), BURN (destroy it), SUCCUMB (join it),
+# MERCY (let it sleep - reached only by laying the gun down in the boss's final
+# phase, after it asks in Kael's voice).
 
 signal finished
 
@@ -40,6 +42,32 @@ const ENDING_BURN := [
 	"You killed it. You are almost sure you killed it.",
 	"You will be almost sure for the rest of your life.",
 ]
+
+const ENDING_MERCY := [
+	"You lower the gun.",
+	"",
+	"You did not have words for what the thing in front of you was",
+	"until it asked for sleep in a voice you'd have known anywhere.",
+	"",
+	"You did not kill it. You did not stay. You let it lie down.",
+	"",
+	"The chamber dims like a lamp being lifted away.",
+	"The cocooned go quiet, one by one, the way a room goes quiet",
+	"when the people in it are finally able to rest.",
+	"",
+	"You walk out alone. The cavity does not follow.",
+	"The ice does not seal it - the ice does not need to.",
+	"",
+	"You file no report. There would be no way to say it.",
+	"",
+	"You think about them, every winter, when the light goes early.",
+	"You think they are sleeping. You think you are not lying to yourself.",
+	"You are not entirely sure.",
+	"",
+	"You did the kindest thing you could think of.",
+	"You will spend the rest of your life trusting that that was enough.",
+]
+
 
 const ENDING_SUCCUMB := [
 	"You stop running.",
@@ -106,6 +134,15 @@ func play_ending_succumb() -> void:
 	tween.tween_property(bg, "color", Color(0.7, 0.78, 0.9, 1), 3.5).set_delay(1.5)
 	tween.tween_property(bg, "color", Color(0, 0, 0, 1), 2.0).set_delay(0.4)
 	_stream(ENDING_SUCCUMB, 4.0, 0.6, 0.6, "You stayed.")
+
+
+func play_ending_mercy() -> void:
+	AudioManager.ramp_ending_hum(0.30, 4.0)
+	get_tree().create_timer(2.4).timeout.connect(AudioManager.cut_hum)
+	bg.color = Color(0.04, 0.06, 0.09, 1)
+	var tween := create_tween()
+	tween.tween_property(bg, "color", Color(0.02, 0.03, 0.05, 1), 4.0).set_delay(1.0)
+	_stream(ENDING_MERCY, 2.4, 0.6, 0.62, "You let it sleep.")
 
 
 func _stream(lines: Array, start_delay: float, gap_blank: float, gap_line: float, sub: String) -> void:

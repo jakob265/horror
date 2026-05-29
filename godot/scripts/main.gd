@@ -277,6 +277,8 @@ func start_ending(which: String) -> void:
 			ending_overlay.play_ending_burn()
 		"succumb":
 			ending_overlay.play_ending_succumb()
+		"mercy":
+			ending_overlay.play_ending_mercy()
 		_:
 			ending_overlay.play_ending_seal()
 
