@@ -33,6 +33,19 @@ func _ready() -> void:
 		],
 	})
 
+	# Pak's voice from the cold. "Don't trust a kind face down here."
+	ActUtil.enable_lure(self, {
+		"voice": "Pak",
+		"calls": [
+			{"call": "i can't find the others in the cold. say something so i know where you are.",
+			 "answer": "oh. it's you. stay there. you're so cold."},
+			{"call": "the drawers won't stay shut. help me close them. i can't do it alone.",
+			 "answer": "i hear you breathing. good. keep breathing."},
+			{"call": "your hands are shaking. it's just the cold. come closer to the light.",
+			 "answer": "there. i see your lamp. i'm coming."},
+		],
+	})
+
 	if GameState.player:
 		GameState.player.global_position = Vector3(0, 0.5, 8.0)
 		GameState.player.rotation_degrees.y = 0.0

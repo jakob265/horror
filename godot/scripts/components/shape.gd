@@ -563,6 +563,22 @@ func _enter_investigate(pos: Vector3) -> void:
 	AudioManager.breath()
 
 
+# Public: anything louder than patrol counts as hunting. Used by the lure
+# controller to gate calls (it never speaks while it's already on you).
+func is_hunting() -> bool:
+	return stalking and _stalk_state != StalkState.PATROL
+
+
+# Public: you answered the voice. It now knows roughly where you are and moves
+# to investigate; if it then gets line of sight it will chase. Skip if already
+# chasing - we don't want to soften a chase by bumping it back to investigate.
+func alert_to(pos: Vector3) -> void:
+	if not stalking or _stalk_state == StalkState.CHASE:
+		return
+	_last_known = pos
+	_enter_investigate(pos)
+
+
 func _enter_chase(pos: Vector3) -> void:
 	_stalk_state = StalkState.CHASE
 	_state_t = 0.0

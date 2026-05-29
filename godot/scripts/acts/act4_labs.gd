@@ -26,6 +26,19 @@ func _ready() -> void:
 
 	ActUtil.haunt(self, {"intensity": 0.5, "flicker": true, "flicker_rate": 1.4})
 
+	# "It is wearing Sundqvist now."
+	ActUtil.enable_lure(self, {
+		"voice": "Sundqvist",
+		"calls": [
+			{"call": "you found my notes. come read the rest with me - it's warmer in here.",
+			 "answer": "there you are. i knew your light anywhere."},
+			{"call": "the sample's awake. you should see how it leans toward you.",
+			 "answer": "good. stay still. let me come to you."},
+			{"call": "i kept your seat for you. by the lamp. where i can see your face.",
+			 "answer": "thank you. don't move. don't move."},
+		],
+	})
+
 	if GameState.player:
 		GameState.player.global_position = Vector3(-7.0, 0.5, 0.0)
 		GameState.player.rotation_degrees.y = -90.0

@@ -484,6 +484,24 @@ static func haunt(act: Node3D, opts: Dictionary = {}) -> void:
 		ShapeTracker.register(s)
 
 
+# "The Voice" - the entity, wearing a dead crewmate, calls to you from the dark.
+# Cashes the warning in note `v_mess`: "DO NOT ANSWER IF HE CALLS YOU BY YOUR
+# FIRST NAME." Strictly opt-in: ignoring the prompt costs nothing; answering
+# alerts the nearest hunter to your position. See LureController for the state
+# machine. opts: {voice: String, calls: Array[{call, answer}], gap_min, gap_max,
+# first_delay, window, cooldown}.
+static func enable_lure(act: Node, opts: Dictionary) -> void:
+	var lure := LureController.new()
+	lure.voice_name = opts.get("voice", "")
+	lure.calls = opts.get("calls", [])
+	lure.gap_min = opts.get("gap_min", lure.gap_min)
+	lure.gap_max = opts.get("gap_max", lure.gap_max)
+	lure.first_delay = opts.get("first_delay", lure.first_delay)
+	lure.window = opts.get("window", lure.window)
+	lure.cooldown = opts.get("cooldown", lure.cooldown)
+	act.add_child(lure)
+
+
 static func _flicker_lights(node: Node, rate: float) -> void:
 	for child in node.get_children():
 		if child is OmniLight3D or child is SpotLight3D:

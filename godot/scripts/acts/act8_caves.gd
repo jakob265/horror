@@ -25,6 +25,20 @@ func _ready() -> void:
 
 	ActUtil.haunt(self, {"intensity": 0.7, "flicker": true, "flicker_rate": 0.9})
 
+	# Kael, who came down here to end it and understood there was nothing to end.
+	ActUtil.enable_lure(self, {
+		"voice": "Kael",
+		"calls": [
+			{"call": "it isn't many. it's one. and there's room. you'll never be cold again.",
+			 "answer": "come down. we've been keeping your place."},
+			{"call": "i was wrong about the lamp. the lamp is fine. bring it. we'll keep it lit forever.",
+			 "answer": "yes. that's it. don't stop walking."},
+			{"call": "frey says hello. pak says hello. we all say hello. with one mouth.",
+			 "answer": "good. you heard us. now stand still."},
+		],
+		"gap_min": 22.0, "gap_max": 50.0,
+	})
+
 	if GameState.player:
 		GameState.player.global_position = Vector3(0, 0.5, 8.5)
 		GameState.player.rotation_degrees.y = 0.0

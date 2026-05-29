@@ -28,6 +28,19 @@ func _ready() -> void:
 
 	ActUtil.haunt(self, {"intensity": 0.55, "flicker": true, "flicker_rate": 1.6})
 
+	# Renn left the warning about the hall. Renn doesn't leave warnings anymore.
+	ActUtil.enable_lure(self, {
+		"voice": "Renn",
+		"calls": [
+			{"call": "i got the hall lit too, in the end. stand in it with me. just for a second.",
+			 "answer": "good. don't move. let me find you."},
+			{"call": "the breaker's the easy part. the easy part is wanting to throw it.",
+			 "answer": "ah. there. i hear your breathing now."},
+			{"call": "ninety seconds is plenty. plenty of time. plenty of warm.",
+			 "answer": "good. stay in the light. stay where i can see you."},
+		],
+	})
+
 	if GameState.player:
 		GameState.player.global_position = Vector3(0, 0.5, 7.0)
 		GameState.player.rotation_degrees.y = 0.0
