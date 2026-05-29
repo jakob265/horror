@@ -307,14 +307,46 @@ func fire() -> void:
 	var to := from - camera.global_transform.basis.z * 60.0
 	var params := PhysicsRayQueryParameters3D.create(from, to)
 	params.collide_with_bodies = true
+	params.collide_with_areas = true
 	params.exclude = [get_collider_rid()]
 	var hit := space.intersect_ray(params)
-	if hit.is_empty():
+	var endpoint := to
+	if not hit.is_empty():
+		endpoint = hit["position"]
+		var n: Node = hit["collider"]
+		while n and not n.has_meta("on_shot"):
+			n = n.get_parent()
+		if n and n.has_meta("on_shot"):
+			var cb: Callable = n.get_meta("on_shot")
+			if cb.is_valid():
+				cb.call()
+	_tracer(_muzzle.global_position if _muzzle else from, endpoint)
+
+
+func _tracer(from: Vector3, to: Vector3) -> void:
+	var dist := from.distance_to(to)
+	if dist < 0.05:
 		return
-	var n: Node = hit["collider"]
-	while n and not n.has_meta("on_shot"):
-		n = n.get_parent()
-	if n and n.has_meta("on_shot"):
-		var cb: Callable = n.get_meta("on_shot")
-		if cb.is_valid():
-			cb.call()
+	var tr := MeshInstance3D.new()
+	var cyl := CylinderMesh.new()
+	cyl.top_radius = 0.012
+	cyl.bottom_radius = 0.012
+	cyl.height = dist
+	cyl.radial_segments = 5
+	tr.mesh = cyl
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(1.0, 0.9, 0.6)
+	mat.emission_enabled = true
+	mat.emission = Color(1.0, 0.85, 0.5)
+	mat.emission_energy_multiplier = 5.0
+	tr.material_override = mat
+	var holder := get_tree().current_scene
+	if holder == null:
+		return
+	holder.add_child(tr)
+	tr.global_position = (from + to) * 0.5
+	tr.look_at(to, Vector3.UP)
+	tr.rotate_object_local(Vector3(1, 0, 0), PI / 2.0)
+	var t := create_tween()
+	t.tween_property(mat, "emission_energy_multiplier", 0.0, 0.13)
+	t.tween_callback(tr.queue_free)

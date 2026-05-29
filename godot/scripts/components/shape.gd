@@ -46,6 +46,8 @@ var _stung := false
 var _agent: NavigationAgent3D = null
 var _catch_t := 0.0
 var _grace_t := 0.0
+var _hp := 3
+var _hitbox: Area3D = null
 
 
 static func reset_session() -> void:
@@ -64,6 +66,7 @@ static func create(p_kind: String, position: Vector3, rotation_y: float, crouche
 
 func _ready() -> void:
 	_start_idle()
+	_schedule_twitch()
 
 
 func _start_idle() -> void:
@@ -73,6 +76,47 @@ func _start_idle() -> void:
 	var t := create_tween().set_loops()
 	t.tween_property(torso, "scale", Vector3(1.05, 0.97, 1.05), randf_range(1.7, 2.5)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	t.tween_property(torso, "scale", Vector3(0.96, 1.04, 0.96), randf_range(1.7, 2.5)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func _schedule_twitch() -> void:
+	if not is_inside_tree():
+		return
+	get_tree().create_timer(randf_range(2.0, 5.5)).timeout.connect(_twitch)
+
+
+func _twitch() -> void:
+	# A sudden, wrong snap of the head - more unsettling than smooth motion.
+	if not is_instance_valid(self) or head_pivot == null:
+		return
+	var base := head_pivot.rotation_degrees
+	var t := create_tween()
+	t.tween_property(head_pivot, "rotation_degrees", base + Vector3(randf_range(-7, 7), randf_range(-16, 16), randf_range(-6, 6)), 0.05)
+	t.tween_property(head_pivot, "rotation_degrees", base, 0.09)
+	t.tween_callback(_schedule_twitch)
+
+
+func _take_shot() -> void:
+	if not stalking:
+		return
+	_hp -= 1
+	AudioManager.whisper()
+	var pl: Node = GameState.player
+	if pl is Node3D:
+		var away := global_position - (pl as Node3D).global_position
+		away.y = 0.0
+		if away.length() > 0.1:
+			global_position += away.normalized() * 0.45
+	if _hp <= 0:
+		_die_shot()
+
+
+func _die_shot() -> void:
+	AudioManager.shape_sting()
+	visible = false
+	if _hitbox and is_instance_valid(_hitbox):
+		_hitbox.queue_free()
+		_hitbox = null
+	queue_free()
 
 
 func _build() -> void:
@@ -148,6 +192,16 @@ func _build() -> void:
 		eye.position = Vector3(ex, 0.0, -0.115)
 		eye.material_override = _emit_mat(eye_col, 6.0)
 		head_pivot.add_child(eye)
+	# A few extra eyes, wrong and scattered across the face.
+	for ep in [Vector3(-0.095, 0.05, -0.07), Vector3(0.10, 0.04, -0.06), Vector3(0.0, 0.10, -0.10), Vector3(-0.03, -0.10, -0.10)]:
+		var xe := MeshInstance3D.new()
+		var xs := SphereMesh.new()
+		xs.radius = 0.012
+		xs.height = 0.024
+		xe.mesh = xs
+		xe.position = ep
+		xe.material_override = _emit_mat(eye_col, 4.5)
+		head_pivot.add_child(xe)
 	# Sunken cheeks + a long split maw with inner glow.
 	for cx in [-0.08, 0.08]:
 		head_pivot.add_child(_box(Vector3(0.05, 0.15, 0.05), Vector3(cx, -0.08, -0.05), dark))
@@ -178,6 +232,8 @@ func _build() -> void:
 	head_pivot.rotation_degrees.x = 16.0 if crouched else 8.0
 	if crouched:
 		right_arm_pivot.rotation_degrees.x = 30
+	else:
+		scale = Vector3(1.05, 1.22, 1.05)   # taller, looming
 
 
 # A jagged ice/bone spike with a cold glowing edge. Tapers to a point.
@@ -406,6 +462,18 @@ func set_stalk(points: Array, p_patrol_speed: float = 1.15, p_chase_speed: float
 	_agent.target_desired_distance = 0.6
 	_agent.avoidance_enabled = false
 	add_child(_agent)
+	# A shootable hitbox (an Area so it never blocks the player physically).
+	_hp = 3
+	_hitbox = Area3D.new()
+	var hcol := CollisionShape3D.new()
+	var hcap := CapsuleShape3D.new()
+	hcap.radius = 0.45
+	hcap.height = 2.0
+	hcol.shape = hcap
+	hcol.position = Vector3(0, 1.1, 0)
+	_hitbox.add_child(hcol)
+	_hitbox.set_meta("on_shot", Callable(self, "_take_shot"))
+	add_child(_hitbox)
 
 
 func reset_stalk(player_pos: Vector3) -> void:

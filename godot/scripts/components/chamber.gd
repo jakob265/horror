@@ -136,8 +136,29 @@ static func add_wall(parent: Node3D, axis: String, fixed: float, span_min: float
 			hpos = Vector3(gap_center, DOOR_H + header_h / 2, fixed)
 			hsize = Vector3(DOOR_W + 0.2, header_h, 0.2)
 		parent.add_child(_make_box(hsize, hpos, color, "header"))
-	# Frame every opening so it reads as a doorway, not a bare hole.
+	# Frame every opening and hang an open door leaf so it reads as a real door.
 	_add_doorframe(parent, axis, fixed, gap_center)
+	_add_open_door(parent, axis, fixed, gap_center)
+
+
+# A door leaf swung open in the opening, so a doorway reads as a real door
+# rather than a bare hole. Non-colliding (purely visual) so it never blocks.
+static func _add_open_door(parent: Node3D, axis: String, fixed: float, gap_center: float) -> void:
+	var pivot := Node3D.new()
+	var leaf_size: Vector3
+	var leaf_offset: Vector3
+	if axis == "x":
+		pivot.position = Vector3(fixed + 0.13, 0, gap_center - DOOR_W / 2.0)
+		leaf_size = Vector3(0.07, DOOR_H - 0.05, DOOR_W)
+		leaf_offset = Vector3(0, DOOR_H / 2.0, DOOR_W / 2.0)
+	else:
+		pivot.position = Vector3(gap_center - DOOR_W / 2.0, 0, fixed + 0.13)
+		leaf_size = Vector3(DOOR_W, DOOR_H - 0.05, 0.07)
+		leaf_offset = Vector3(DOOR_W / 2.0, DOOR_H / 2.0, 0)
+	pivot.rotation_degrees.y = 112.0
+	var leaf := _make_box(leaf_size, leaf_offset, Color(0.20, 0.22, 0.26), "door_leaf", false, SurfaceFactory.CAT_WALL_METAL)
+	pivot.add_child(leaf)
+	parent.add_child(pivot)
 
 
 static func add_door(parent: Node3D, axis: String, fixed: float, gap_center: float, label: String, color: Color, on_open: Callable = Callable(), interact_label: String = "", sealed: bool = false) -> Node3D:
