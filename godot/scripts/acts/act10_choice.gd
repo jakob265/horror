@@ -52,7 +52,7 @@ func _process(_dt: float) -> void:
 func _build_arena() -> void:
 	Chamber.add_room(self, 28, 26, 11.0, FLOOR, CEIL, WALL, Vector3(0, 0, 0), {},
 		[{"axis": "z", "fixed": 13.0, "gap": 0.0}])
-	Chamber.add_door(self, "z", 13 - 0.05, 0, "ENTRY", Color(0.26, 0.34, 0.44), Callable(), "", true)
+	Chamber.invis_wall(self, "z", 13, 0)
 	# Cover columns flanking the arena - none between you and the boss.
 	for cp in [Vector3(-9, 0, 5), Vector3(9, 0, 5), Vector3(-9, 0, -1), Vector3(9, 0, -1), Vector3(-6, 0, 9), Vector3(6, 0, 9)]:
 		Chamber.make_prop_box(self, Vector3(1.2, 11.0, 1.2), cp + Vector3(0, 5.5, 0), ICE, true, "ice")

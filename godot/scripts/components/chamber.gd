@@ -160,6 +160,24 @@ static func _add_open_door(parent: Node3D, axis: String, fixed: float, gap_cente
 	parent.add_child(pivot)
 
 
+# A framed doorway with an invisible collision wall over the opening - the
+# entry you came through, blocked so you can't back out into the void.
+static func invis_wall(parent: Node3D, axis: String, fixed: float, gap_center: float) -> void:
+	_add_doorframe(parent, axis, fixed, gap_center)
+	var body := StaticBody3D.new()
+	var col := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	if axis == "x":
+		box.size = Vector3(0.4, 4.0, DOOR_W + 0.8)
+		body.position = Vector3(fixed, 2.0, gap_center)
+	else:
+		box.size = Vector3(DOOR_W + 0.8, 4.0, 0.4)
+		body.position = Vector3(gap_center, 2.0, fixed)
+	col.shape = box
+	body.add_child(col)
+	parent.add_child(body)
+
+
 static func add_door(parent: Node3D, axis: String, fixed: float, gap_center: float, label: String, color: Color, on_open: Callable = Callable(), interact_label: String = "", sealed: bool = false) -> Node3D:
 	var pos: Vector3
 	var size: Vector3

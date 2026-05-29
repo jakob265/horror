@@ -42,7 +42,7 @@ func _build_hall() -> void:
 	Chamber.add_room(self, 20, 18, 5.0, FLOOR, CEIL, WALL, Vector3(0, 0, 0), {},
 		[{"axis": "z", "fixed": -9.0, "gap": 0.0}, {"axis": "z", "fixed": 9.0, "gap": 0.0}])
 	exit_door = Chamber.add_door(self, "z", -9 + 0.05, 0, "MAIN DOOR", Color(0.24, 0.26, 0.32), Callable(), "", true)
-	Chamber.add_door(self, "z", 9 - 0.05, 0, "ENTRY", Color(0.22, 0.24, 0.28), Callable(), "", true)
+	Chamber.invis_wall(self, "z", 9, 0)
 	# Faint failing emergency strip so the hall isn't a total void.
 	ActUtil.emergency_strip(self, Vector3(-9, 4.6, -8), Vector3(-9, 4.6, 8), Color(0.7, 0.2, 0.15), 0.6)
 	ActUtil.add_ceiling_pipes(self, 20, 18, 5.0, Vector3(0, 0, 0))

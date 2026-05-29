@@ -38,7 +38,7 @@ func _process(_dt: float) -> void:
 func _build_cavern() -> void:
 	Chamber.add_room(self, 22, 20, 6.0, FLOOR, CEIL, WALL, Vector3(0, 0, 0), {},
 		[{"axis": "z", "fixed": -10.0, "gap": 0.0}, {"axis": "z", "fixed": 10.0, "gap": 0.0}])
-	Chamber.add_door(self, "z", 10 - 0.05, 0, "ENTRY", Color(0.34, 0.42, 0.52), Callable(), "", true)
+	Chamber.invis_wall(self, "z", 10, 0)
 
 	# Ice formations: leaning slabs + floor/ceiling columns. They break sight
 	# lines and force a winding path - cover from the hunters.
