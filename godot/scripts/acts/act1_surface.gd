@@ -42,6 +42,10 @@ func _ready() -> void:
 	# Notes.
 	Interactable.make_note(self, Vector3(0.9, 0.04, 7.0), "v_arrival", "Read the dispatch")
 	Interactable.make_note(self, Vector3(-5.6, 0.04, -1.4), "v_bay", "Read the scrawl")
+	# Recovered tablet + wall printout from somewhere called Crestfall-9. They
+	# don't belong here. Someone (you?) carried them down.
+	Interactable.make_note(self, Vector3(8.4, 0.18, 5.0), "note_1", "Recovered tablet")
+	Interactable.make_note(self, Vector3(-2.4, 1.6, -9.85), "note_8", "Read the wall printout")
 
 	# The dead and their blood.
 	ActUtil.corpse(self, Vector3(-7.6, 0, 1.4), 64.0, true, Color(0.20, 0.22, 0.16))

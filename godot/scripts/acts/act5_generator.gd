@@ -104,6 +104,8 @@ func _build_hall() -> void:
 	ActUtil.hide_locker(self, Vector3(9.5, 0, 0.0), 90.0)
 	ActUtil.hide_locker(self, Vector3(-9.4, 0, 6.5), 90.0)
 	Interactable.make_note(self, Vector3(-2.5, 1.12, -0.3), "v_gen", "Read the plant log")
+	# A research journal someone left on the desk. Day 34 of contact protocol.
+	Interactable.make_note(self, Vector3(-1.5, 1.12, -0.3), "note_2", "Read the research journal")
 	ActUtil.corpse(self, Vector3(-7.0, 0, 5.5), 20.0, true, Color(0.20, 0.22, 0.26))
 	ActUtil.blood_trail(self, Vector3(-7.0, 0.02, 5.5), Vector3(-2.0, 0.02, 7.5), 7)
 	ActUtil.signal_growth(self, Vector3(-9.3, 0, -6.5), 1.6, Color(0.08, 0.13, 0.10))

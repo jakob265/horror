@@ -55,6 +55,8 @@ func _build_mess() -> void:
 	ActUtil.wall_label(self, "MESS", Vector3(-3.0, 2.8, 6.8), 26, Color(0.78, 0.84, 0.6))
 	# The roster note on the counter.
 	Interactable.make_note(self, Vector3(-1.0, 1.12, -5.7), "v_mess", "Read the roster")
+	# Folded under a plate at the long table - not Vesper handwriting.
+	Interactable.make_note(self, Vector3(-2.5, 0.83, 0.0), "note_16", "Read the folded note")
 	# Overturned chairs, a body, blood.
 	var c := Chamber.make_chair(self, Vector3(1.0, 0.45, 2.0), Color(0.30, 0.31, 0.34), 30.0)
 	c.rotation_degrees = Vector3(84, 30, 0)

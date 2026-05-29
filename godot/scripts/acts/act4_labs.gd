@@ -121,6 +121,10 @@ func _build_storage() -> void:
 	ActUtil.corpse(self, Vector3(16.5, 0, 2.6), -150.0, true, Color(0.22, 0.20, 0.16))
 	ActUtil.viscera(self, Vector3(15.6, 0.02, 2.2))
 	Interactable.make_note(self, Vector3(11.0, 0.04, 2.5), "v_labs", "Read the workstation log")
+	# A lab notebook in someone else's shorthand. The signal enters through grief.
+	Interactable.make_note(self, Vector3(-3.5, 0.83, -1.5), "note_5", "Read the lab notebook")
+	# Engineering transcript - a confession addressed to no one here.
+	Interactable.make_note(self, Vector3(15.8, 0.04, -2.6), "note_11", "Read the engineering transcript")
 	ActUtil.bloody_smears(self, Vector3(17.85, 2.2, 0.0), -90.0, 5)
 	ActUtil.wall_label(self, "SAMPLE STORAGE", Vector3(13, 2.9, 3.8), 18, Color(0.7, 0.84, 0.9))
 

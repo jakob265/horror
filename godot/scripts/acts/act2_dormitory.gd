@@ -68,6 +68,8 @@ func _build_bunkroom() -> void:
 	ActUtil.wall_label(self, "BUNKS A-F", Vector3(0, 2.7, 10.8), 22, Color(0.78, 0.84, 0.6))
 	# Note + a body + blood.
 	Interactable.make_note(self, Vector3(-3.55, 0.62, 3.2), "v_bunk", "Read the diary")
+	# Grocery list pinned to a corkboard - not anyone you know. WALTER WALTER WALTER.
+	Interactable.make_note(self, Vector3(4.6, 1.5, 1.05), "note_15", "Read the bulletin")
 	ActUtil.corpse(self, Vector3(3.4, 0, 5.2), 40.0, true, Color(0.20, 0.24, 0.28))
 	ActUtil.blood_decal(self, Vector3(2.6, 0.02, 6.2), Vector2(1.4, 1.0))
 	ActUtil.blood_wall(self, Vector3(5.9, 1.4, 7.0), Vector2(1.2, 1.6), -90.0)
@@ -142,6 +144,8 @@ func _build_quarters() -> void:
 	Chamber.make_chair(self, Vector3(-4.0, 0, -19.1), Color(0.30, 0.31, 0.34), 180.0)
 	_make_key(Vector3(-4.2, 0.99, -20.0))
 	Interactable.make_note(self, Vector3(-3.5, 0.98, -20.2), "v_quarters", "Read the log")
+	# A taped note that doesn't belong here. The handwriting isn't Vesper's.
+	Interactable.make_note(self, Vector3(5.0, 1.55, -22.85), "note_3", "Read the taped note")
 	# Dead radio console along the east wall.
 	Chamber.make_prop_box(self, Vector3(1.6, 1.0, 0.7), Vector3(4.6, 0.5, -18.5), Color(0.22, 0.24, 0.28))
 	Chamber.make_prop_box(self, Vector3(1.4, 0.5, 0.1), Vector3(4.6, 1.2, -18.2), Color(0.10, 0.12, 0.16), false)

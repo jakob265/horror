@@ -61,6 +61,9 @@ func _build_chamber() -> void:
 
 	# Your recorder, dropped at the threshold.
 	Interactable.make_note(self, Vector3(1.0, 0.04, 8.5), "v_chamber", "Play your recorder")
+	# At the base of the pillar - a torn page in someone else's handwriting.
+	# "i looked away and you weren't there when i looked back."
+	Interactable.make_note(self, Vector3(0.0, 0.04, -0.5), "note_7", "Read the torn page")
 	ActUtil.wall_scrawl(self, "DECIDE WHAT MERCY MEANS", Vector3(0, 3.0, -10.85), 0.0, 30, Color(0.45, 0.06, 0.07))
 	ActUtil.wall_label(self, "THE CHAMBER", Vector3(0, 4.2, 10.8), 22, Color(0.6, 0.78, 0.9))
 

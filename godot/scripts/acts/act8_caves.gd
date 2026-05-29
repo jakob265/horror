@@ -86,6 +86,8 @@ func _build_cavern() -> void:
 	# Kael's last entry on a frozen body near the fissure.
 	ActUtil.corpse(self, Vector3(-1.5, 0, -8.0), 10.0, true, Color(0.34, 0.40, 0.48))
 	Interactable.make_note(self, Vector3(-1.0, 0.04, -7.4), "v_caves", "Read the frozen log")
+	# A torn corridor panel half-buried in ice. "It feels like home. It isn't home."
+	Interactable.make_note(self, Vector3(6.0, 0.04, -3.0), "note_13", "Read the scratched panel")
 	ActUtil.wall_scrawl(self, "IT IS ONE", Vector3(0, 2.4, -9.85), 0.0, 40, Color(0.45, 0.06, 0.07))
 	ActUtil.wall_label(self, "THE CAVITY - 1114 m", Vector3(0, 3.4, 9.8), 18, Color(0.6, 0.78, 0.9))
 

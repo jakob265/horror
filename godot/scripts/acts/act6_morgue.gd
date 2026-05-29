@@ -115,6 +115,9 @@ func _build_store() -> void:
 	ActUtil.signal_growth(self, Vector3(8.5, 0, 6.5), 1.5, Color(0.08, 0.13, 0.12))
 	ActUtil.wall_scrawl(self, "COLD IS WHERE IT'S FROM", Vector3(-4.0, 2.1, 8.85), 180.0, 26, Color(0.45, 0.06, 0.07))
 	Interactable.make_note(self, Vector3(-8.2, 0.04, 3.0), "v_morgue", "Read the tally")
+	# Hydroponics journal jammed into a drawer handle. Plants dying faster than
+	# the schedule. Plants are not the message; they're what hears it first.
+	Interactable.make_note(self, Vector3(-7.85, 1.2, 4.5), "note_10", "Read the journal")
 
 
 func _make_pickup(pos: Vector3, size: Vector3, color: Color, item_id: String, prompt: String) -> void:

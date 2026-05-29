@@ -85,6 +85,9 @@ func _build_shaft() -> void:
 	ActUtil.wall_label(self, "SHAFT HEAD - 1114 m", Vector3(0, 3.0, 5.8), 18, Color(0.7, 0.82, 0.88))
 	ActUtil.wall_scrawl(self, "IT CAME UP THE SHAFT", Vector3(-3.5, 2.0, -5.85), 0.0, 28, Color(0.45, 0.06, 0.07))
 	Interactable.make_note(self, Vector3(-0.5, 1.04, 0.2), "v_shaft", "Read the drill log")
+	# Scratched into a service panel: a warning from a different station,
+	# carried down here in someone's pocket and pressed flat.
+	Interactable.make_note(self, Vector3(5.85, 1.6, 0.0), "note_18", "Read the scratched warning")
 	ActUtil.corpse(self, Vector3(-4.5, 0, -3.5), 60.0, true, Color(0.22, 0.20, 0.16))
 	ActUtil.signal_growth(self, Vector3(5.5, 0, -5.5), 1.3, Color(0.08, 0.13, 0.10))
 	ActUtil.blood_trail(self, Vector3(-4.5, 0.02, -3.5), Vector3(2.6, 0.02, -3.8), 6)
