@@ -110,10 +110,25 @@ func _build_store() -> void:
 	# Hide spots, a body, blood, dread filament, the tally note.
 	ActUtil.hide_locker(self, Vector3(8.5, 0, -1.0), 90.0)
 	ActUtil.hide_locker(self, Vector3(-8.4, 0, 6.5), 90.0)
+	# An extra hide-niche between rack columns - critical for the maze with
+	# two lurkers in it.
+	ActUtil.hide_locker(self, Vector3(4.5, 0, -5.5), 180.0)
 	ActUtil.corpse(self, Vector3(-1.5, 0, -7.0), 0.0, true, Color(0.30, 0.34, 0.40))
 	ActUtil.blood_decal(self, Vector3(0.5, 0.02, -6.0), Vector2(1.8, 1.4))
 	ActUtil.signal_growth(self, Vector3(8.5, 0, 6.5), 1.5, Color(0.08, 0.13, 0.12))
 	ActUtil.wall_scrawl(self, "COLD IS WHERE IT'S FROM", Vector3(-4.0, 2.1, 8.85), 180.0, 26, Color(0.45, 0.06, 0.07))
+	# The furnace corner. They brought bodies here, they tried to burn them, and
+	# they stopped. The scrawl on the wall is what they wrote when they did.
+	Chamber.make_prop_box(self, Vector3(2.2, 1.6, 1.4), Vector3(7.2, 0.8, -7.6), Color(0.18, 0.16, 0.14))
+	Chamber.make_prop_box(self, Vector3(1.2, 0.8, 0.06), Vector3(7.2, 0.7, -6.85), Color(0.04, 0.05, 0.05), false)
+	# A short black stovepipe rising into the ceiling.
+	Chamber.make_prop_box(self, Vector3(0.30, 1.8, 0.30), Vector3(7.2, 2.5, -7.6), Color(0.10, 0.10, 0.10))
+	# Half-burned debris drifted across the floor in front of the door.
+	ActUtil.blood_decal(self, Vector3(6.4, 0.02, -6.5), Vector2(1.6, 1.2), "up", Color(0.10, 0.10, 0.08, 0.65))
+	ActUtil.wall_scrawl(self, "CAN'T BURN COLD", Vector3(8.85, 1.4, -7.6), -90.0, 22, Color(0.50, 0.06, 0.06))
+	# A second open drawer further along the wall - the body in it is half-out.
+	Chamber.make_prop_box(self, Vector3(0.25, 0.5, 0.85), Vector3(-8.25, 0.5, -1.85), Color(0.5, 0.54, 0.58), false)
+	ActUtil.corpse(self, Vector3(-7.9, 0.5, -2.0), 90.0, true, Color(0.40, 0.44, 0.50))
 	Interactable.make_note(self, Vector3(-8.2, 0.04, 3.0), "v_morgue", "Read the tally")
 	# Hydroponics journal jammed into a drawer handle. Plants dying faster than
 	# the schedule. Plants are not the message; they're what hears it first.

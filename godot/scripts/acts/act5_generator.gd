@@ -107,6 +107,24 @@ func _build_hall() -> void:
 	# Hide spots + dressing + dread.
 	ActUtil.hide_locker(self, Vector3(9.5, 0, 0.0), 90.0)
 	ActUtil.hide_locker(self, Vector3(-9.4, 0, 6.5), 90.0)
+	# Two more spots tucked behind transformers - more cover means more time
+	# to wait the patrol out instead of sprinting (which it hears anyway).
+	ActUtil.hide_locker(self, Vector3(-9.4, 0, -5.0), 90.0)
+	ActUtil.hide_locker(self, Vector3(8.5, 0, 7.5), -90.0)
+	# A fuel rack along the north wall: more diesel than Renn was supposed
+	# to need. He kept lighting the hall and running.
+	for fz in [-8.4, -8.0, -7.6]:
+		Chamber.make_prop_box(self, Vector3(0.45, 0.7, 0.35), Vector3(-7.0, 0.35, fz), Color(0.74, 0.16, 0.12))
+		Chamber.make_prop_box(self, Vector3(0.45, 0.7, 0.35), Vector3(-6.4, 0.35, fz), Color(0.74, 0.16, 0.12))
+	Chamber.make_prop_box(self, Vector3(2.4, 0.1, 1.6), Vector3(-6.7, 0.05, -8.0), Color(0.22, 0.22, 0.20), false)
+	# A spilled drum on its side, leaking - the slick trails toward the breaker.
+	Chamber.make_prop_box(self, Vector3(0.7, 0.35, 0.4), Vector3(-3.8, 0.18, -7.5), Color(0.50, 0.12, 0.08))
+	ActUtil.blood_trail(self, Vector3(-3.8, 0.02, -7.5), Vector3(-2.6, 0.02, -3.0), 6)
+	# A second body half-collapsed against a transformer. Renn the fourth time.
+	ActUtil.corpse(self, Vector3(7.6, 0, -5.5), -90.0, true, Color(0.24, 0.22, 0.18))
+	ActUtil.bloody_smears(self, Vector3(7.9, 1.8, -6.5), 90.0, 4, Color(0.40, 0.06, 0.05))
+	# A safety poster nobody is reading anymore.
+	ActUtil.wall_poster(self, "x", -10.0 + 0.05, Vector3(-9.95, 1.6, 4.0), Vector2(0.9, 1.2), Color(0.30, 0.42, 0.55))
 	Interactable.make_note(self, Vector3(-2.5, 1.12, -0.3), "v_gen", "Read the plant log")
 	# A research journal someone left on the desk. Day 34 of contact protocol.
 	Interactable.make_note(self, Vector3(-1.5, 1.12, -0.3), "note_2", "Read the research journal")
