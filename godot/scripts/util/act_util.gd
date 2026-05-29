@@ -788,3 +788,15 @@ static func register_intercom(parent: Node3D, intercom_id: int, position: Vector
 		var trig_pos: Vector3 = position if trigger_at == Vector3.INF else trigger_at
 		OlenManager.add_proximity_trigger(intercom_id, trig_pos, panel, radius, delay)
 	return panel
+
+
+# Voss / Crestfall-9 thread: a wall intercom that crackles on proximity,
+# streams a short excerpt of `note_id`, and credits the full body to the
+# journal. The note must exist in NotesData and have an entry in
+# OlenManager.NOTE_FRAGMENT_EXCERPT.
+static func register_note_echo(parent: Node3D, position: Vector3, rotation_y: float, note_id: String, trigger_at: Vector3 = Vector3.INF, radius: float = 3.0, delay: float = 0.0) -> IntercomPanel:
+	var panel := IntercomPanel.create(position, rotation_y)
+	parent.add_child(panel)
+	var trig_pos: Vector3 = position if trigger_at == Vector3.INF else trigger_at
+	OlenManager.add_note_echo(trig_pos, panel, note_id, radius, delay)
+	return panel

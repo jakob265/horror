@@ -24,6 +24,9 @@ func _ready() -> void:
 			"kind": HorrorShape.KIND_YUNA, "creep": 0.6}],
 	})
 
+	# A dead wall intercom in the infirmary still has charge for one transmission.
+	ActUtil.register_note_echo(self, Vector3(18.85, 1.8, 1.0), -90.0, "note_4")
+
 	if GameState.player:
 		GameState.player.global_position = Vector3(-5.0, 0.5, 0.0)
 		GameState.player.rotation_degrees.y = -90.0

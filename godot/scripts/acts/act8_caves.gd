@@ -25,6 +25,9 @@ func _ready() -> void:
 
 	ActUtil.haunt(self, {"intensity": 0.7, "flicker": true, "flicker_rate": 0.9})
 
+	# A handheld radio frozen into the ice still has a fragment in its buffer.
+	ActUtil.register_note_echo(self, Vector3(10.85, 1.6, 3.0), -90.0, "note_9")
+
 	# Kael, who came down here to end it and understood there was nothing to end.
 	ActUtil.enable_lure(self, {
 		"voice": "Kael",

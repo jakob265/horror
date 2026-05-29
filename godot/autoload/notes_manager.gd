@@ -41,6 +41,19 @@ func collect(note_id: String) -> void:
 	open_reader(note_id)
 
 
+# Credit the journal without popping the reader - used by the intercom
+# note-echo path, which is already streaming an excerpt.
+func mark_collected(note_id: String) -> void:
+	if note_id in collected_ids:
+		return
+	if not NotesData.ALL.has(note_id):
+		return
+	collected_ids.append(note_id)
+	AudioManager.note_chime()
+	_show_toast()
+	emit_signal("note_collected", note_id)
+
+
 func _show_toast() -> void:
 	var tween := create_tween()
 	tween.tween_property(_toast_label, "modulate:a", 1.0, 0.25)

@@ -30,6 +30,10 @@ func _ready() -> void:
 		],
 	})
 
+	# Two intercom shells the cavity grew around. One in her voice, then the scan.
+	ActUtil.register_note_echo(self, Vector3(-11.85, 1.8, 6.0), 90.0, "note_12")
+	ActUtil.register_note_echo(self, Vector3(11.85, 1.8, 0.0), -90.0, "note_14")
+
 	if GameState.player:
 		GameState.player.global_position = Vector3(0, 0.5, 9.5)
 		GameState.player.rotation_degrees.y = 0.0

@@ -28,6 +28,10 @@ func _ready() -> void:
 
 	ActUtil.haunt(self, {"intensity": 0.55, "flicker": true, "flicker_rate": 1.6})
 
+	# Two dead intercoms catch carrier from a station that isn't here anymore.
+	ActUtil.register_note_echo(self, Vector3(-7.0, 1.8, -8.85), 0.0, "note_6")
+	ActUtil.register_note_echo(self, Vector3(4.0, 1.8, 8.85), 180.0, "note_17")
+
 	# Renn left the warning about the hall. Renn doesn't leave warnings anymore.
 	ActUtil.enable_lure(self, {
 		"voice": "Renn",
