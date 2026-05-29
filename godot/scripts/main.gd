@@ -129,6 +129,8 @@ func _respawn_player() -> void:
 		player.global_position = GameState.checkpoint_position
 	player.velocity = Vector3.ZERO
 	GameState.player_hidden = false
+	if player.has_method("revive"):
+		player.revive()
 	ShapeTracker.reset_stalkers(player.global_position)
 
 

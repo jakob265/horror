@@ -32,6 +32,11 @@ var ammo := 0
 var _gun_view: Node3D = null
 var _muzzle: OmniLight3D = null
 var _ammo_label: Label = null
+var hp := 100.0
+var max_hp := 100.0
+var _since_hit := 99.0
+var _hp_fill: ColorRect = null
+var _dmg_flash: ColorRect = null
 
 
 func _ready() -> void:
@@ -50,6 +55,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _physics_process(delta: float) -> void:
+	_health_tick(delta)
 	if frozen:
 		velocity = Vector3.ZERO
 		move_and_slide()
@@ -179,6 +185,75 @@ func get_collider_rid() -> RID:
 	return get_rid()
 
 
+# --- Health ---------------------------------------------------------------
+
+func take_damage(n: float) -> void:
+	if hp <= 0.0:
+		return
+	hp -= n
+	_since_hit = 0.0
+	_flash_damage()
+	if hp <= 0.0:
+		hp = 0.0
+		_update_health()
+		GameState.catch_player()      # full death -> fade + respawn
+		return
+	_update_health()
+
+
+func _health_tick(delta: float) -> void:
+	if hud != null and is_instance_valid(hud) and _hp_fill == null:
+		_build_health_ui()
+	_since_hit += delta
+	if hp > 0.0 and hp < max_hp and _since_hit > 3.5:
+		hp = minf(max_hp, hp + 9.0 * delta)
+		_update_health()
+
+
+func _build_health_ui() -> void:
+	var bg := ColorRect.new()
+	bg.color = Color(0.08, 0.08, 0.10, 0.7)
+	bg.anchor_top = 1.0
+	bg.anchor_bottom = 1.0
+	bg.offset_left = 40
+	bg.offset_right = 244
+	bg.offset_top = -52
+	bg.offset_bottom = -34
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hud.add_child(bg)
+	_hp_fill = ColorRect.new()
+	_hp_fill.color = Color(0.75, 0.16, 0.14)
+	_hp_fill.anchor_bottom = 1.0
+	_hp_fill.anchor_right = 1.0
+	_hp_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bg.add_child(_hp_fill)
+	_dmg_flash = ColorRect.new()
+	_dmg_flash.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_dmg_flash.anchor_right = 1.0
+	_dmg_flash.anchor_bottom = 1.0
+	_dmg_flash.color = Color(0.6, 0, 0, 0)
+	_dmg_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hud.add_child(_dmg_flash)
+	_update_health()
+
+
+func _update_health() -> void:
+	if _hp_fill and is_instance_valid(_hp_fill):
+		_hp_fill.anchor_right = clampf(hp / max_hp, 0.0, 1.0)
+
+
+func _flash_damage() -> void:
+	if _dmg_flash and is_instance_valid(_dmg_flash):
+		_dmg_flash.color = Color(0.6, 0.0, 0.0, 0.45)
+		create_tween().tween_property(_dmg_flash, "color", Color(0.6, 0, 0, 0.0), 0.4)
+
+
+func revive() -> void:
+	hp = max_hp
+	_since_hit = 99.0
+	_update_health()
+
+
 # --- Hiding ---------------------------------------------------------------
 
 func enter_hide(_data: Dictionary = {}) -> void:
@@ -295,7 +370,7 @@ func fire() -> void:
 		return
 	ammo -= 1
 	_update_ammo()
-	AudioManager.shape_sting()
+	AudioManager.gunshot()
 	if _muzzle:
 		_muzzle.light_energy = 3.0
 		create_tween().tween_property(_muzzle, "light_energy", 0.0, 0.08)

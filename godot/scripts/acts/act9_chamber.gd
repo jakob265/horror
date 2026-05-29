@@ -43,6 +43,7 @@ func _process(_dt: float) -> void:
 func _build_chamber() -> void:
 	Chamber.add_room(self, 24, 22, 8.0, FLOOR, CEIL, WALL, Vector3(0, 0, 0), {},
 		[{"axis": "z", "fixed": -11.0, "gap": 0.0}, {"axis": "z", "fixed": 11.0, "gap": 0.0}])
+	Chamber.add_door(self, "z", 11 - 0.05, 0, "ENTRY", Color(0.30, 0.40, 0.50), Callable(), "", true)
 
 	# The central mass: a pillar of grown dark rising through the chamber,
 	# its filament spread out across the floor, faintly breathing.

@@ -136,9 +136,8 @@ static func add_wall(parent: Node3D, axis: String, fixed: float, span_min: float
 			hpos = Vector3(gap_center, DOOR_H + header_h / 2, fixed)
 			hsize = Vector3(DOOR_W + 0.2, header_h, 0.2)
 		parent.add_child(_make_box(hsize, hpos, color, "header"))
-	# Frame every opening and hang an open door leaf so it reads as a real door.
+	# Frame every opening so it reads as a doorway, not a bare hole.
 	_add_doorframe(parent, axis, fixed, gap_center)
-	_add_open_door(parent, axis, fixed, gap_center)
 
 
 # A door leaf swung open in the opening, so a doorway reads as a real door

@@ -45,6 +45,8 @@ func _build_lab() -> void:
 	ActUtil.add_ceiling_pipes(self, 16, 14, 3.6, Vector3(0, 0, 0))
 	# Blast door north, chained shut.
 	exit_door = Chamber.add_door(self, "z", -7 + 0.05, 0, "BLAST DOOR", Color(0.24, 0.27, 0.33), Callable(), "", true)
+	# Seal the way you came in so you can't back out into the void.
+	Chamber.add_door(self, "x", -8 + 0.05, 0, "ENTRY", Color(0.22, 0.24, 0.28), Callable(), "", true)
 	chain = Node3D.new()
 	add_child(chain)
 	for cy in [0.8, 1.4, 2.0]:

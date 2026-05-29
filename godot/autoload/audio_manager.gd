@@ -91,6 +91,10 @@ func _bake_all() -> void:
 	_streams["footstep"] = _bake(_apply_fade(_mix(
 		_gen_sine(56.0, 0.10, 0.70),
 		_gen_noise(0.05, 0.32)), 0.002, 0.07))
+	# Gunshot: a sharp noise crack over a short low thump.
+	_streams["gunshot"] = _bake(_apply_fade(_mix(
+		_gen_noise(0.16, 0.85),
+		_gen_sine(95.0, 0.11, 0.9)), 0.0008, 0.13))
 	# --- Dynamic-dread music beds (seamless loops; freqs are N/8 so 8 s loops
 	#     cleanly, LFO periods divide the loop length) ---
 	_streams["drone_bed"] = _bake_loop(_make_drone())
@@ -118,6 +122,7 @@ func groan()          -> void: _one_shot("groan",          -10.0)
 func distant_scream() -> void: _one_shot("distant_scream", -13.0)
 func static_burst()   -> void: _one_shot("static_burst",   -15.0)
 func footstep(db: float = -15.0) -> void: _one_shot("footstep", db)
+func gunshot()        -> void: _one_shot("gunshot",        -3.0)
 
 
 # A one-shot at a chosen volume (lets the ScareDirector scale by intensity).

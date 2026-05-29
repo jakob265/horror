@@ -686,7 +686,13 @@ func _catch_player() -> void:
 	AudioManager.shape_sting()
 	_stalk_state = StalkState.PATROL
 	_state_t = 0.0
-	GameState.catch_player()
+	_catch_t = 0.0
+	_grace_t = 1.6                 # back off briefly so it can't grind you down
+	var pl: Node = GameState.player
+	if pl and pl.has_method("take_damage"):
+		pl.call("take_damage", 38.0)
+	else:
+		GameState.catch_player()
 
 
 # --- Stare detection (Felix only) ----------------------------------------

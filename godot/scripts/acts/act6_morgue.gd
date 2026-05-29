@@ -47,6 +47,7 @@ func _build_store() -> void:
 	Chamber.add_room(self, 18, 18, 3.4, FLOOR, CEIL, WALL, Vector3(0, 0, 0), {},
 		[{"axis": "z", "fixed": -9.0, "gap": 0.0}, {"axis": "z", "fixed": 9.0, "gap": 0.0}])
 	exit_door = Chamber.add_door(self, "z", -9 + 0.05, 0, "FREEZER", Color(0.30, 0.36, 0.42), Callable(), "", true)
+	Chamber.add_door(self, "z", 9 - 0.05, 0, "ENTRY", Color(0.24, 0.30, 0.36), Callable(), "", true)
 	# Sheet of ice glazing the exit (burn the flare to thaw it).
 	ice = Node3D.new()
 	add_child(ice)

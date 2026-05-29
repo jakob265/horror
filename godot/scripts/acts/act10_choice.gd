@@ -19,6 +19,8 @@ var boss_hp := 160
 var boss_max := 160
 var gun_node: Node = null
 var _phase := 0
+var _atk_index := 0
+var _breath_tw: Tween = null
 var _hunter_pts := [Vector3(-7, 0, 3), Vector3(7, 0, 3), Vector3(7, 0, -3), Vector3(-7, 0, -3)]
 
 
@@ -32,6 +34,17 @@ func _ready() -> void:
 	if GameState.player:
 		GameState.player.global_position = Vector3(0, 0.5, 10.5)
 		GameState.player.rotation_degrees.y = 0.0
+	_schedule_attack()
+
+
+func _process(_dt: float) -> void:
+	# The boss slowly turns to face you - it is always looking.
+	if chosen or boss_root == null or GameState.player == null:
+		return
+	var pp: Vector3 = GameState.player.global_position
+	var to := Vector3(pp.x, boss_root.global_position.y, pp.z) - boss_root.global_position
+	if to.length() > 0.5:
+		boss_root.rotation.y = lerp_angle(boss_root.rotation.y, atan2(to.x, to.z), _dt * 0.9)
 
 
 # --- Arena ----------------------------------------------------------------
@@ -39,10 +52,10 @@ func _ready() -> void:
 func _build_arena() -> void:
 	Chamber.add_room(self, 28, 26, 11.0, FLOOR, CEIL, WALL, Vector3(0, 0, 0), {},
 		[{"axis": "z", "fixed": 13.0, "gap": 0.0}])
-	# Ring of cover columns to break the hunters' sightlines.
-	for a in 8:
-		var ang: float = a * TAU / 8.0
-		Chamber.make_prop_box(self, Vector3(1.2, 11.0, 1.2), Vector3(cos(ang) * 8.0, 5.5, sin(ang) * 7.0), ICE, true, "ice")
+	Chamber.add_door(self, "z", 13 - 0.05, 0, "ENTRY", Color(0.26, 0.34, 0.44), Callable(), "", true)
+	# Cover columns flanking the arena - none between you and the boss.
+	for cp in [Vector3(-9, 0, 5), Vector3(9, 0, 5), Vector3(-9, 0, -1), Vector3(9, 0, -1), Vector3(-6, 0, 9), Vector3(6, 0, 9)]:
+		Chamber.make_prop_box(self, Vector3(1.2, 11.0, 1.2), cp + Vector3(0, 5.5, 0), ICE, true, "ice")
 	# Gun pickup at the entrance.
 	Chamber.make_prop_box(self, Vector3(1.0, 0.8, 0.8), Vector3(0, 0.4, 11.0), Color(0.30, 0.32, 0.36))
 	gun_node = StaticBody3D.new()
@@ -92,9 +105,9 @@ func _build_boss() -> void:
 		_big_shard(sp)
 	ActUtil.signal_growth(self, Vector3(0, 0, -9.0), 4.0, Color(0.07, 0.13, 0.11))
 	ActUtil.add_omni(self, Vector3(0, 4.0, -7.0), Color(0.2, 0.7, 0.55), 1.8, 14.0, false)
-	var br := boss_root.create_tween().set_loops()
-	br.tween_property(boss_root, "scale", Vector3.ONE * 1.03, 1.4).set_trans(Tween.TRANS_SINE)
-	br.tween_property(boss_root, "scale", Vector3.ONE * 0.98, 1.6).set_trans(Tween.TRANS_SINE)
+	_breath_tw = boss_root.create_tween().set_loops()
+	_breath_tw.tween_property(boss_root, "scale", Vector3.ONE * 1.03, 1.4).set_trans(Tween.TRANS_SINE)
+	_breath_tw.tween_property(boss_root, "scale", Vector3.ONE * 0.98, 1.6).set_trans(Tween.TRANS_SINE)
 	var boss := StaticBody3D.new()
 	boss.position = Vector3(0, 3.8, 0.8)
 	var bc := CollisionShape3D.new()
@@ -247,7 +260,7 @@ func _boss_hit() -> void:
 		_phase = 2
 		_roar()
 	if boss_hp <= 0:
-		_strike("burn")
+		_boss_death()
 
 
 func _roar() -> void:
@@ -265,6 +278,132 @@ func _flash_heart() -> void:
 	var base := clampf(float(boss_hp) / float(boss_max), 0.15, 1.0)
 	m.emission_energy_multiplier = 5.5
 	create_tween().tween_property(m, "emission_energy_multiplier", 2.6 * base, 0.18)
+
+
+# --- Telegraphed attacks (rotate through four) ----------------------------
+
+func _schedule_attack() -> void:
+	if chosen:
+		return
+	get_tree().create_timer(randf_range(3.2, 4.6)).timeout.connect(_do_attack)
+
+
+func _do_attack() -> void:
+	if chosen:
+		return
+	if GameState.player == null:
+		_schedule_attack()
+		return
+	var pp: Vector3 = GameState.player.global_position
+	_boss_tell()
+	match _atk_index % 4:
+		0:
+			_aoe(pp, 2.6, 30.0, 1.3, Color(0.9, 0.1, 0.05))            # SLAM
+		1:
+			_spit_glob(pp)
+			_aoe(pp, 2.1, 22.0, 1.5, Color(0.2, 0.9, 0.4))             # SPIT
+		2:
+			_aoe(pp, 3.3, 38.0, 0.95, Color(0.95, 0.45, 0.1))          # LUNGE
+		_:
+			var bp := boss_root.global_position if boss_root else Vector3.ZERO
+			var dir := pp - bp
+			dir.y = 0.0
+			var c := bp + (dir.normalized() * 4.5 if dir.length() > 0.1 else Vector3(0, 0, 4.5))
+			_aoe(c, 4.6, 26.0, 1.2, Color(0.9, 0.2, 0.5))              # SWEEP
+	_atk_index += 1
+
+
+func _boss_tell() -> void:
+	AudioManager.groan()
+	if heart_core:
+		var m := heart_core.material_override as StandardMaterial3D
+		if m:
+			m.emission_energy_multiplier = 5.0
+			create_tween().tween_property(m, "emission_energy_multiplier", 2.6, 0.5)
+
+
+func _spit_glob(target: Vector3) -> void:
+	if boss_root == null:
+		return
+	var glob := MeshInstance3D.new()
+	var sm := SphereMesh.new()
+	sm.radius = 0.35
+	sm.height = 0.7
+	glob.mesh = sm
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.1, 0.4, 0.2)
+	mat.emission_enabled = true
+	mat.emission = Color(0.2, 0.9, 0.4)
+	mat.emission_energy_multiplier = 2.0
+	glob.material_override = mat
+	add_child(glob)
+	glob.global_position = boss_root.global_position + Vector3(0, 4.0, 1.0)
+	var t := create_tween()
+	t.tween_property(glob, "global_position", Vector3(target.x, 0.5, target.z), 1.4)
+	t.tween_callback(glob.queue_free)
+
+
+func _aoe(center: Vector3, radius: float, damage: float, windup: float, col: Color) -> void:
+	var zone := MeshInstance3D.new()
+	var cm := CylinderMesh.new()
+	cm.top_radius = radius
+	cm.bottom_radius = radius
+	cm.height = 0.06
+	cm.radial_segments = 24
+	zone.mesh = cm
+	zone.position = Vector3(center.x, 0.06, center.z)
+	zone.scale = Vector3(0.15, 1, 0.15)
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(col.r, col.g, col.b, 0.5)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.emission_enabled = true
+	mat.emission = col
+	mat.emission_energy_multiplier = 1.2
+	zone.material_override = mat
+	add_child(zone)
+	var t := create_tween()
+	t.tween_property(zone, "scale", Vector3.ONE, windup).set_trans(Tween.TRANS_SINE)
+	t.parallel().tween_property(mat, "emission_energy_multiplier", 2.8, windup)
+	t.tween_callback(_strike_aoe.bind(center, radius, damage, zone, mat))
+
+
+func _strike_aoe(center: Vector3, radius: float, damage: float, zone: MeshInstance3D, mat: StandardMaterial3D) -> void:
+	AudioManager.boom()
+	if is_instance_valid(mat):
+		mat.emission = Color(1, 1, 0.8)
+		mat.emission_energy_multiplier = 6.0
+	if is_instance_valid(zone):
+		var ft := create_tween()
+		ft.tween_interval(0.12)
+		ft.tween_callback(zone.queue_free)
+	if not chosen and GameState.player:
+		var pp: Vector3 = GameState.player.global_position
+		if Vector2(pp.x - center.x, pp.z - center.z).length() <= radius + 0.4:
+			if GameState.player.has_method("take_damage"):
+				GameState.player.take_damage(damage)
+	_schedule_attack()
+
+
+func _boss_death() -> void:
+	if chosen:
+		return
+	chosen = true
+	GameState.push_modal()
+	ScareDirector.scare_flash()
+	AudioManager.boom()
+	if _breath_tw and _breath_tw.is_valid():
+		_breath_tw.kill()
+	if heart_core:
+		var m := heart_core.material_override as StandardMaterial3D
+		if m:
+			var t := create_tween()
+			t.tween_property(m, "emission_energy_multiplier", 11.0, 0.4)
+			t.tween_property(m, "emission_energy_multiplier", 0.0, 1.8)
+	if boss_root:
+		var bt := boss_root.create_tween()
+		bt.tween_property(boss_root, "scale", Vector3(1.2, 0.35, 1.2), 2.6).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+	get_tree().create_timer(1.7).timeout.connect(AudioManager.groan)
+	get_tree().create_timer(3.4).timeout.connect(_go.bind("burn"))
 
 
 func _give_gun() -> void:

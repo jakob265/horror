@@ -41,6 +41,7 @@ func _build_shaft() -> void:
 	# Tight room, only a south entrance - you leave by going down.
 	Chamber.add_room(self, 12, 12, 4.0, FLOOR, CEIL, WALL, Vector3(0, 0, 0), {},
 		[{"axis": "z", "fixed": 6.0, "gap": 0.0}])
+	Chamber.add_door(self, "z", 6 - 0.05, 0, "ENTRY", Color(0.22, 0.24, 0.28), Callable(), "", true)
 	ActUtil.add_ceiling_pipes(self, 12, 12, 4.0, Vector3(0, 0, 0))
 
 	# The derrick: a heavy mast through the ceiling, drawworks at its base.
