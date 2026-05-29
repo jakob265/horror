@@ -12,6 +12,7 @@ const ACT_SCENES := {
 	"act6":  "res://scenes/acts/act6_morgue.tscn",       # Cold Storage
 	"act7":  "res://scenes/acts/act7_shaft.tscn",        # The Drill Shaft
 	"act8":  "res://scenes/acts/act8_caves.tscn",        # The Ice Caves
+	"act8_5": "res://scenes/acts/act8_5_cathedral.tscn", # The Bone Cathedral
 	"act9":  "res://scenes/acts/act9_chamber.tscn",      # The Sealed Chamber
 	"act10": "res://scenes/acts/act10_choice.tscn",      # The Choice
 }

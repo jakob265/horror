@@ -49,7 +49,7 @@ func _ready() -> void:
 
 func _process(_dt: float) -> void:
 	if GameState.player and GameState.player.global_position.z < -9.4:
-		SceneRouter.transition_to("act9")
+		SceneRouter.transition_to("act8_5")
 
 
 func _build_cavern() -> void:
