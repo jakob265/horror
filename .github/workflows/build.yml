@@ -24,7 +24,7 @@ jobs:
     name: Export ${{ matrix.name }}
     runs-on: ubuntu-latest
     container:
-      image: barichello/godot-ci:4.3.0
+      image: barichello/godot-ci:4.3
     strategy:
       fail-fast: false
       matrix:
