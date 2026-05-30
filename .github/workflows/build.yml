@@ -8,7 +8,7 @@ name: Build Vesper
 # Tag a commit `v*` to also publish a GitHub Release with the binaries zipped.
 #
 # Uses the barichello/godot-ci image, which bundles Godot 4.3 + the matching
-# export templates (installed at /root/.local/share/godot/export_templates).
+# export templates.
 
 on:
   push:
@@ -42,16 +42,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Prepare export templates
+        # The barichello image installs templates under /root, but GitHub
+        # Actions container jobs run with HOME=/github/home, so Godot looks in
+        # the wrong place and "no export template found" kills the export.
+        # Copy them to where Godot will actually look for this job.
+        run: |
+          mkdir -p "$HOME/.local/share/godot/export_templates"
+          cp -r /root/.local/share/godot/export_templates/. "$HOME/.local/share/godot/export_templates/" || true
+          echo "Templates present:"
+          ls -la "$HOME/.local/share/godot/export_templates/"
+
       - name: Export ${{ matrix.name }}
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
           mkdir -p ${{ matrix.dir }}
           # Import first so the script-class cache + resources are generated,
           # then export. The game is fully procedural (no image/audio assets),
-          # so import is fast; tolerate its non-zero exit on --quit.
+          # so import is fast; tolerate its non-zero exit.
           godot --headless --import . || true
           godot --headless --verbose --export-release "${{ matrix.preset }}" ${{ matrix.out }}
+          echo "--- output ---"
           ls -la ${{ matrix.dir }}
+          test -s ${{ matrix.out }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
