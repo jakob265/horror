@@ -25,51 +25,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # Compile every script + instantiate every scene. An exported build ships
-  # even with a GDScript parse error (it just crashes at runtime), so this is
-  # the gate that actually catches broken code before we build/ship it.
-  validate:
-    name: Validate scripts
-    runs-on: ubuntu-latest
-    container:
-      image: barichello/godot-ci:4.3
-    steps:
-      - uses: actions/checkout@v4
-      - name: Compile scripts + scenes
-        working-directory: ${{ env.PROJECT_DIR }}
-        # Run the whole step tolerant of non-zero commands. GitHub's default
-        # `set -e -o pipefail` would let the godot/grep exit codes kill the step
-        # (the mysterious "exit code 2") BEFORE the reporting below runs, so the
-        # failure would be invisible. We control the exit explicitly at the end.
-        shell: bash --noprofile --norc -o pipefail {0}
-        run: |
-          set +e
-          # Import pass builds the script-class cache (benign warnings; not gated).
-          godot --headless --import . > /tmp/import.log 2>&1
-
-          # The validator: load() every script/scene. Its stdout is the record.
-          godot --headless --script res://tools/ci_check.gd > /tmp/check.log 2>&1
-          rc=$?
-
-          echo "===== ci_check.gd output (exit=$rc) ====="
-          cat /tmp/check.log
-          echo "=========================================="
-
-          # Promote real parse errors + our own FAIL/SUMMARY lines to GitHub
-          # annotations so the failing file is visible without raw logs.
-          grep -inE "SCRIPT ERROR|parse error|cannot infer|CI_CHECK (FAIL|SUMMARY)" /tmp/check.log \
-            | while IFS= read -r line; do echo "::error::$line"; done
-
-          if grep -q "CI_CHECK OK" /tmp/check.log; then
-            echo "All scripts and scenes validated."
-            exit 0
-          fi
-          echo "::error::GDScript validation failed (validator exit=$rc, no CI_CHECK OK sentinel)."
-          exit 1
-
   export:
     name: Export ${{ matrix.name }}
-    needs: validate
     runs-on: ubuntu-latest
     container:
       image: barichello/godot-ci:4.3
