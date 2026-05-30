@@ -272,7 +272,7 @@ func _boss_hit() -> void:
 	# P3+ rewards mobility: hits to the back of the heart core deal +50%.
 	var dmg := BOSS_DMG_PER_SHOT
 	if _phase >= 3 and boss_root and GameState.player:
-		var to_player := GameState.player.global_position - boss_root.global_position
+		var to_player: Vector3 = GameState.player.global_position - boss_root.global_position
 		to_player.y = 0.0
 		var forward := Vector3(sin(boss_root.rotation.y), 0.0, cos(boss_root.rotation.y))
 		if to_player.length() > 0.1 and to_player.normalized().dot(forward) < -0.2:

@@ -27,6 +27,7 @@ var mouse_sens := MOUSE_SENS_DEFAULT
 var hud: Control = null
 var hidden := false
 var _hide_overlay: Control = null
+var _hide_entered_frame: int = -1
 var has_gun := false
 var ammo := 0
 var _gun_view: Node3D = null
@@ -143,7 +144,11 @@ func handle_input(event: InputEvent) -> void:
 		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		if hidden:
-			if event.keycode == KEY_E:
+			# The same [E] press that entered the hide is re-dispatched to us on
+			# this frame (InteractionManager triggers enter_hide, then we run on
+			# the same event) and would pop us straight back out. Only honour an
+			# exit on a later frame.
+			if event.keycode == KEY_E and Engine.get_process_frames() > _hide_entered_frame:
 				exit_hide()
 			return
 		if event.keycode == KEY_F:
@@ -260,6 +265,7 @@ func enter_hide(_data: Dictionary = {}) -> void:
 	if hidden:
 		return
 	hidden = true
+	_hide_entered_frame = Engine.get_process_frames()
 	GameState.player_hidden = true
 	if flashlight_on:
 		toggle_flashlight()

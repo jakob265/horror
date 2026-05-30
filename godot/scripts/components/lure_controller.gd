@@ -145,7 +145,7 @@ func _answer() -> void:
 	_fade(_voice_label, 0.0, 1.2, true, 2.0)
 	AudioManager.shape_sting()
 	ScareDirector.sting()
-	var target := _nearest_stalker()
+	var target: HorrorShape = _nearest_stalker()
 	if target != null and GameState.player != null:
 		target.alert_to(GameState.player.global_position)
 	_state = State.COOLDOWN
@@ -160,9 +160,9 @@ func _timeout() -> void:
 	_t = 0.0
 
 
-func _nearest_stalker() -> Node:
+func _nearest_stalker() -> HorrorShape:
 	var player_pos: Vector3 = GameState.player.global_position
-	var best: Node = null
+	var best: HorrorShape = null
 	var best_d := INF
 	for s in ShapeTracker.shapes:
 		if s == null or not is_instance_valid(s):
@@ -172,7 +172,7 @@ func _nearest_stalker() -> Node:
 		var d: float = (s.global_position - player_pos).length()
 		if d < best_d:
 			best_d = d
-			best = s
+			best = s as HorrorShape
 	return best
 
 
