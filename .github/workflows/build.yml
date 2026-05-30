@@ -19,6 +19,11 @@ on:
 env:
   PROJECT_DIR: godot
 
+# A newer push to the same branch cancels the older, now-superseded run.
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   # Compile every script + instantiate every scene. An exported build ships
   # even with a GDScript parse error (it just crashes at runtime), so this is
@@ -33,10 +38,24 @@ jobs:
       - name: Compile scripts + scenes
         working-directory: ${{ env.PROJECT_DIR }}
         run: |
-          godot --headless --import . 2>&1 | tee /tmp/import.log || true
-          godot --headless --script res://tools/ci_check.gd 2>&1 | tee /tmp/check.log || true
-          if grep -inE "SCRIPT ERROR|parse error|compile error|cannot infer|failed to load script|CHECK FAIL" /tmp/import.log /tmp/check.log; then
-            echo "::error::GDScript validation failed - see matched lines above"
+          # Import pass generates the script-class cache. It prints benign
+          # warnings, so we do NOT gate on its output - only run it.
+          godot --headless --import . > /tmp/import.log 2>&1 || true
+
+          # The validator's exit code is the source of truth. Capture it via
+          # PIPESTATUS so the tee pipe doesn't mask it.
+          set +e
+          godot --headless --script res://tools/ci_check.gd 2>&1 | tee /tmp/check.log
+          rc=${PIPESTATUS[0]}
+          set -e
+
+          # Surface real parse/compile errors (and our own FAIL lines) as
+          # GitHub annotations so the failing file is visible without raw logs.
+          grep -inE "SCRIPT ERROR|parse error|cannot infer|CI_CHECK FAIL" /tmp/check.log \
+            | while IFS= read -r line; do echo "::error::$line"; done || true
+
+          if [ "$rc" -ne 0 ] || ! grep -q "CI_CHECK OK" /tmp/check.log; then
+            echo "::error::GDScript validation failed (exit=$rc). See annotations above."
             exit 1
           fi
           echo "All scripts and scenes validated."
