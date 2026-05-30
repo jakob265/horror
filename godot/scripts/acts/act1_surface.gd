@@ -10,6 +10,7 @@ var status_light: MeshInstance3D = null
 var fueled := false
 var started := false
 var powered := false
+var wing_door_open := false
 
 
 func _ready() -> void:
@@ -32,6 +33,7 @@ func _ready() -> void:
 	_build_generator()
 	_build_clutter()
 	_build_detail()
+	_build_north_wing()
 
 	# Pickups.
 	_make_pickup(Vector3(6.6, 0.32, 3.2), Vector3(0.34, 0.5, 0.26), Color(0.74, 0.16, 0.12),
@@ -66,8 +68,14 @@ func _ready() -> void:
 
 
 func _process(_dt: float) -> void:
-	if powered and GameState.player and GameState.player.global_position.z < -9.5:
+	# The inner door (z=-10) opens on power and leads into the north wing;
+	# the act ends at the far station door past the muster checkpoint.
+	if wing_door_open and GameState.player and GameState.player.global_position.z < -32.6:
 		SceneRouter.transition_to("act2")
+
+
+func _open_wing() -> void:
+	wing_door_open = true
 
 
 # --- Build helpers --------------------------------------------------------
@@ -134,6 +142,64 @@ func _emissive_box(parent: Node, size: Vector3, pos: Vector3, color: Color, ener
 	m.material_override = mat
 	parent.add_child(m)
 	return m
+
+
+# --- North wing: decon corridor + muster checkpoint -----------------------
+# Past the inner door (which the generator unseals). The bay's z=-10 wall is
+# already built with a centre opening, so we only add the new geometry north
+# of it. Corridor is low and narrow (claustrophobic) and opens into a taller
+# muster hall; the act now ends at the far STATION ACCESS door.
+
+func _build_north_wing() -> void:
+	var wall := Color(0.30, 0.32, 0.37)
+	var floor_c := Color(0.40, 0.43, 0.49)
+	var ceil_c := Color(0.14, 0.15, 0.18)
+
+	# Decon corridor: x -3..3, z -10..-21, low 3.0 ceiling.
+	Chamber.add_floor_ceiling(self, 6, 11, 3.0, floor_c, ceil_c, Vector3(0, 0, -15.5))
+	Chamber.add_wall(self, "x", -3, -21, -10, 3.0, wall)
+	Chamber.add_wall(self, "x", 3, -21, -10, 3.0, wall)
+
+	# Muster checkpoint: x -7..7, z -21..-33, taller 4.0 ceiling.
+	Chamber.add_floor_ceiling(self, 14, 12, 4.0, floor_c, ceil_c, Vector3(0, 0, -27))
+	Chamber.add_wall(self, "x", -7, -33, -21, 4.0, wall)
+	Chamber.add_wall(self, "x", 7, -33, -21, 4.0, wall)
+	# Divider between corridor and muster (doorway at centre).
+	Chamber.add_wall(self, "z", -21, -7, 7, 4.0, wall, 0.0)
+	# Far wall + the act-end door.
+	Chamber.add_wall(self, "z", -33, -7, 7, 4.0, wall, 0.0)
+	Chamber.add_door(self, "z", -33 + 0.05, 0, "STATION ACCESS",
+		Color(0.26, 0.30, 0.36), Callable(self, "_open_wing"), "Force the access door")
+
+	# Decon dressing: shower heads, a chem cabinet, hosed-down floor.
+	for sx in [-2.2, 0.0, 2.2]:
+		Chamber.make_prop_box(self, Vector3(0.16, 0.16, 0.5), Vector3(sx, 2.7, -13.0), Color(0.55, 0.58, 0.62), false)
+		Chamber.make_prop_box(self, Vector3(0.08, 0.4, 0.08), Vector3(sx, 2.45, -13.0), Color(0.45, 0.47, 0.50), false)
+	Chamber.make_prop_box(self, Vector3(0.7, 1.4, 0.4), Vector3(-2.6, 0.7, -18.5), Color(0.24, 0.34, 0.30))
+	ActUtil.wall_label(self, "DECONTAMINATION", Vector3(0, 2.7, -20.85), 15, Color(0.62, 0.80, 0.86))
+	ActUtil.blood_decal(self, Vector3(0.6, 0.02, -17.5), Vector2(1.2, 2.4), "up", Color(0.16, 0.03, 0.03, 0.6))
+
+	# Muster hall: benches, a roll-board, lockers (foreshadow hiding), bodies.
+	for bz in [-24.5, -29.5]:
+		Chamber.make_prop_box(self, Vector3(4.0, 0.45, 0.5), Vector3(-4.4, 0.22, bz), Color(0.32, 0.28, 0.20))
+	Chamber.make_prop_box(self, Vector3(0.5, 0.5, 4.0), Vector3(4.6, 0.25, -27.0), Color(0.32, 0.28, 0.20))
+	ActUtil.hide_locker(self, Vector3(-6.4, 0, -25.0), 90.0)
+	ActUtil.hide_locker(self, Vector3(-6.4, 0, -26.7), 90.0)
+	Chamber.make_prop_box(self, Vector3(2.2, 1.3, 0.1), Vector3(5.4, 1.5, -27.0), Color(0.16, 0.18, 0.20), false)
+	ActUtil.wall_label(self, "MUSTER - ALL HANDS", Vector3(0, 3.0, -32.8), 20, Color(0.86, 0.84, 0.58))
+	ActUtil.wall_label(self, "STATION ACCESS", Vector3(0, 2.55, -32.9), 13, Color(0.80, 0.50, 0.40))
+	ActUtil.corpse(self, Vector3(-4.4, 0, -24.5), -10.0, true, Color(0.18, 0.20, 0.24))
+	ActUtil.corpse(self, Vector3(3.0, 0, -30.6), 120.0, true, Color(0.16, 0.18, 0.22))
+	ActUtil.blood_wall(self, Vector3(-6.9, 1.5, -29.0), Vector2(1.6, 1.9), 90.0)
+	ActUtil.add_dust_motes(self, Vector3(0, 1.8, -27), Vector3(6, 2.0, 5), 50,
+		Color(0.78, 0.84, 0.96, 0.14))
+
+	# A printed roster you can read, and the dread of being watched from the dark.
+	Interactable.make_examine(self, Vector3(5.36, 1.5, -27.0), Vector3(0.05, 0.7, 1.6),
+		"Read the muster roster",
+		"MUSTER ROSTER - 14 names. Eleven are crossed out in the same hand. " +
+		"The last three share one scrawled bracket, and beside it: 'went down to bring them up.'", 6.0)
+	ActUtil.add_peeker(self, Vector3(6.2, 0, -31.0), HorrorShape.KIND_HARGROVE, 215.0)
 
 
 # --- Generator puzzle -----------------------------------------------------
