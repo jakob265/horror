@@ -20,8 +20,30 @@ env:
   PROJECT_DIR: godot
 
 jobs:
+  # Compile every script + instantiate every scene. An exported build ships
+  # even with a GDScript parse error (it just crashes at runtime), so this is
+  # the gate that actually catches broken code before we build/ship it.
+  validate:
+    name: Validate scripts
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile scripts + scenes
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          godot --headless --import . 2>&1 | tee /tmp/import.log || true
+          godot --headless --script res://tools/ci_check.gd 2>&1 | tee /tmp/check.log || true
+          if grep -inE "SCRIPT ERROR|parse error|compile error|cannot infer|failed to load script|CHECK FAIL" /tmp/import.log /tmp/check.log; then
+            echo "::error::GDScript validation failed - see matched lines above"
+            exit 1
+          fi
+          echo "All scripts and scenes validated."
+
   export:
     name: Export ${{ matrix.name }}
+    needs: validate
     runs-on: ubuntu-latest
     container:
       image: barichello/godot-ci:4.3
