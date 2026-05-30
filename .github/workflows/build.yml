@@ -1,0 +1,85 @@
+name: Build Vesper
+
+# Builds double-clickable game binaries on every push to the feature branch.
+# Grab them from the run's "Artifacts" (Actions tab, or the PR's Checks tab):
+# download VesperHorror-Windows, unzip, double-click VesperHorror.exe. No
+# Godot install, no editor, no dependencies.
+#
+# Tag a commit `v*` to also publish a GitHub Release with the binaries zipped.
+#
+# Uses the barichello/godot-ci image, which bundles Godot 4.3 + the matching
+# export templates (installed at /root/.local/share/godot/export_templates).
+
+on:
+  push:
+    branches: [claude/improve-visual-assets-tvk28]
+    tags: ['v*']
+  workflow_dispatch:
+
+env:
+  PROJECT_DIR: godot
+
+jobs:
+  export:
+    name: Export ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.3.0
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            preset: "Windows Desktop"
+            out: build/windows/VesperHorror.exe
+            artifact: VesperHorror-Windows
+            dir: build/windows
+          - name: Linux
+            preset: "Linux/X11"
+            out: build/linux/VesperHorror.x86_64
+            artifact: VesperHorror-Linux
+            dir: build/linux
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Export ${{ matrix.name }}
+        working-directory: ${{ env.PROJECT_DIR }}
+        run: |
+          mkdir -p ${{ matrix.dir }}
+          # Import first so the script-class cache + resources are generated,
+          # then export. The game is fully procedural (no image/audio assets),
+          # so import is fast; tolerate its non-zero exit on --quit.
+          godot --headless --import . || true
+          godot --headless --verbose --export-release "${{ matrix.preset }}" ${{ matrix.out }}
+          ls -la ${{ matrix.dir }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ env.PROJECT_DIR }}/${{ matrix.dir }}
+          if-no-files-found: error
+
+  release:
+    name: Publish release
+    needs: export
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+      - name: Zip per-platform builds
+        run: |
+          cd dist
+          for d in */; do
+            (cd "$d" && zip -r "../${d%/}.zip" .)
+          done
+          ls -la
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.zip
+          generate_release_notes: true
