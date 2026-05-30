@@ -37,28 +37,35 @@ jobs:
       - uses: actions/checkout@v4
       - name: Compile scripts + scenes
         working-directory: ${{ env.PROJECT_DIR }}
+        # Run the whole step tolerant of non-zero commands. GitHub's default
+        # `set -e -o pipefail` would let the godot/grep exit codes kill the step
+        # (the mysterious "exit code 2") BEFORE the reporting below runs, so the
+        # failure would be invisible. We control the exit explicitly at the end.
+        shell: bash --noprofile --norc -o pipefail {0}
         run: |
-          # Import pass generates the script-class cache. It prints benign
-          # warnings, so we do NOT gate on its output - only run it.
-          godot --headless --import . > /tmp/import.log 2>&1 || true
-
-          # The validator's exit code is the source of truth. Capture it via
-          # PIPESTATUS so the tee pipe doesn't mask it.
           set +e
-          godot --headless --script res://tools/ci_check.gd 2>&1 | tee /tmp/check.log
-          rc=${PIPESTATUS[0]}
-          set -e
+          # Import pass builds the script-class cache (benign warnings; not gated).
+          godot --headless --import . > /tmp/import.log 2>&1
 
-          # Surface real parse/compile errors (and our own FAIL lines) as
-          # GitHub annotations so the failing file is visible without raw logs.
-          grep -inE "SCRIPT ERROR|parse error|cannot infer|CI_CHECK FAIL" /tmp/check.log \
-            | while IFS= read -r line; do echo "::error::$line"; done || true
+          # The validator: load() every script/scene. Its stdout is the record.
+          godot --headless --script res://tools/ci_check.gd > /tmp/check.log 2>&1
+          rc=$?
 
-          if [ "$rc" -ne 0 ] || ! grep -q "CI_CHECK OK" /tmp/check.log; then
-            echo "::error::GDScript validation failed (exit=$rc). See annotations above."
-            exit 1
+          echo "===== ci_check.gd output (exit=$rc) ====="
+          cat /tmp/check.log
+          echo "=========================================="
+
+          # Promote real parse errors + our own FAIL/SUMMARY lines to GitHub
+          # annotations so the failing file is visible without raw logs.
+          grep -inE "SCRIPT ERROR|parse error|cannot infer|CI_CHECK (FAIL|SUMMARY)" /tmp/check.log \
+            | while IFS= read -r line; do echo "::error::$line"; done
+
+          if grep -q "CI_CHECK OK" /tmp/check.log; then
+            echo "All scripts and scenes validated."
+            exit 0
           fi
-          echo "All scripts and scenes validated."
+          echo "::error::GDScript validation failed (validator exit=$rc, no CI_CHECK OK sentinel)."
+          exit 1
 
   export:
     name: Export ${{ matrix.name }}
