@@ -6,6 +6,7 @@ signal scene_changed(act_name: String)
 const ACT_SCENES := {
 	"act0":  "res://scenes/acts/act0_outer.tscn",        # The Outer Station
 	"act1":  "res://scenes/acts/act1_surface.tscn",     # The Surface
+	"act1_5": "res://scenes/acts/act1_5_oldwing.tscn",   # The Old Wing
 	"act2":  "res://scenes/acts/act2_dormitory.tscn",   # The Dormitory Wing
 	"act3":  "res://scenes/acts/act3_mess.tscn",         # The Mess & Infirmary
 	"act3_5": "res://scenes/acts/act3_5_crawl.tscn",     # The Crawl Space

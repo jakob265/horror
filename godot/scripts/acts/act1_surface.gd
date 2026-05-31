@@ -71,7 +71,7 @@ func _process(_dt: float) -> void:
 	# The inner door (z=-10) opens on power and leads into the north wing;
 	# the act ends at the far station door past the muster checkpoint.
 	if wing_door_open and GameState.player and GameState.player.global_position.z < -32.6:
-		SceneRouter.transition_to("act2")
+		SceneRouter.transition_to("act1_5")
 
 
 func _open_wing() -> void:
