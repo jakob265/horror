@@ -175,11 +175,12 @@ static func _stamp_corridor_box(parent: Node3D, theme: Dictionary, axis: String,
 		# High-x wall (right side).
 		_run_wall_with_multi_gaps(parent, "x", corridor_high_perp, along_min, along_max,
 			c_h, theme["wall"], right_doors)
-		# End walls (z-axis walls).
-		Chamber.add_wall(parent, "z", along_min, corridor_low_perp, corridor_high_perp,
-			c_h, theme["wall"])
-		Chamber.add_wall(parent, "z", along_max, corridor_low_perp, corridor_high_perp,
-			c_h, theme["wall"])
+		# End walls (z-axis walls). Sealed = solid; unsealed = doorway gap at
+		# the corridor centerline (perp) so an adjoining wing can chain on.
+		_end_wall(parent, "z", along_min, corridor_low_perp, corridor_high_perp,
+			c_h, theme["wall"], perp, seal_low)
+		_end_wall(parent, "z", along_max, corridor_low_perp, corridor_high_perp,
+			c_h, theme["wall"], perp, seal_high)
 	else:
 		# x-axis corridor: along varies in x, perpendicular axis is z.
 		Chamber.add_floor_ceiling(parent, c_len, c_w, c_h, theme["floor"], theme["ceil"],
@@ -188,10 +189,21 @@ static func _stamp_corridor_box(parent: Node3D, theme: Dictionary, axis: String,
 			c_h, theme["wall"], left_doors)
 		_run_wall_with_multi_gaps(parent, "z", corridor_high_perp, along_min, along_max,
 			c_h, theme["wall"], right_doors)
-		Chamber.add_wall(parent, "x", along_min, corridor_low_perp, corridor_high_perp,
-			c_h, theme["wall"])
-		Chamber.add_wall(parent, "x", along_max, corridor_low_perp, corridor_high_perp,
-			c_h, theme["wall"])
+		_end_wall(parent, "x", along_min, corridor_low_perp, corridor_high_perp,
+			c_h, theme["wall"], perp, seal_low)
+		_end_wall(parent, "x", along_max, corridor_low_perp, corridor_high_perp,
+			c_h, theme["wall"], perp, seal_high)
+
+
+# An end-cap wall. If sealed, a solid wall; otherwise a wall with a doorway
+# gap at gap_center so the next wing chains seamlessly onto this opening.
+static func _end_wall(parent: Node3D, axis: String, fixed: float,
+		span_min: float, span_max: float, h: float, color: Color,
+		gap_center: float, sealed: bool) -> void:
+	if sealed:
+		Chamber.add_wall(parent, axis, fixed, span_min, span_max, h, color)
+	else:
+		Chamber.add_wall(parent, axis, fixed, span_min, span_max, h, color, gap_center)
 
 
 # Run a single straight wall with N doorway gaps. Each gap is DOOR_W wide
