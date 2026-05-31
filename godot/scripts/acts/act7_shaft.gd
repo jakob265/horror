@@ -16,9 +16,17 @@ var descending := false
 func _ready() -> void:
 	ActUtil.light_rig_dark(self, 0.10, 0.026)
 	_build_shaft()
+	_build_service_alcove()
 
 	var stalker := HorrorShape.create(HorrorShape.KIND_FELIX, Vector3(-3, 0, -2.0), 0.0)
-	stalker.set_stalk([Vector3(-3, 0, -3), Vector3(3, 0, -3), Vector3(0, 0, 2)], 1.1, 4.0)
+	stalker.set_stalk([
+		Vector3(-3, 0, -3),
+		Vector3(3, 0, -3),
+		Vector3(0, 0, 2),
+		Vector3(-3, 0, -1),
+		Vector3(-9, 0, -1),
+		Vector3(-3, 0, -1),
+	], 1.1, 4.0)
 	add_child(stalker)
 	ShapeTracker.register(stalker)
 
@@ -38,9 +46,11 @@ func _process(_dt: float) -> void:
 
 
 func _build_shaft() -> void:
-	# Tight room, only a south entrance - you leave by going down.
+	# Tight room, only a south entrance + a service alcove west at z=-1.
+	# (You still leave the act by going down.)
 	Chamber.add_room(self, 12, 12, 4.0, FLOOR, CEIL, WALL, Vector3(0, 0, 0), {},
-		[{"axis": "z", "fixed": 6.0, "gap": 0.0}])
+		[{"axis": "z", "fixed": 6.0, "gap": 0.0},
+		 {"axis": "x", "fixed": -6.0, "gap": -1.0}])
 	Chamber.invis_wall(self, "z", 6, 0)
 	ActUtil.add_ceiling_pipes(self, 12, 12, 4.0, Vector3(0, 0, 0))
 
@@ -91,6 +101,45 @@ func _build_shaft() -> void:
 	ActUtil.corpse(self, Vector3(-4.5, 0, -3.5), 60.0, true, Color(0.22, 0.20, 0.16))
 	ActUtil.signal_growth(self, Vector3(5.5, 0, -5.5), 1.3, Color(0.08, 0.13, 0.10))
 	ActUtil.blood_trail(self, Vector3(-4.5, 0.02, -3.5), Vector3(2.6, 0.02, -3.8), 6)
+
+
+# --- Service alcove (west off the shaft, drill-tool storage) -------------
+# A tight side niche off the cramped shaft. Doorway at x=-6 z=-1; alcove
+# centred at (-10, 0, -1), 6x5x3.0. Adds a place the stalker can corner you
+# and one more piece of foreshadowing for what's coming up the borehole.
+
+func _build_service_alcove() -> void:
+	Chamber.add_floor_ceiling(self, 6, 5, 3.0, FLOOR, CEIL, Vector3(-10, 0, -1))
+	Chamber.add_wall(self, "x", -13, -3.5, 1.5, 3.0, WALL)
+	Chamber.add_wall(self, "z", -3.5, -13, -7, 3.0, WALL)
+	Chamber.add_wall(self, "z", 1.5, -13, -7, 3.0, WALL)
+
+	# Tool rack + drill-pipe stack along the back wall.
+	Chamber.make_prop_box(self, Vector3(0.3, 2.2, 3.0), Vector3(-12.6, 1.1, -1.0), Color(0.32, 0.30, 0.22))
+	for ty in [0.5, 1.1, 1.7]:
+		Chamber.make_prop_box(self, Vector3(0.4, 0.06, 2.6), Vector3(-12.3, ty, -1.0), Color(0.45, 0.42, 0.30), false)
+	# Two stacked drill segments.
+	for sz in [-2.5, 0.5]:
+		Chamber.make_prop_box(self, Vector3(2.0, 0.20, 0.20), Vector3(-10.5, 0.15, sz), Color(0.34, 0.30, 0.22))
+		Chamber.make_prop_box(self, Vector3(2.0, 0.20, 0.20), Vector3(-10.5, 0.40, sz + 0.05), Color(0.34, 0.30, 0.22))
+	# Drum of drilling mud, half-spilled.
+	Chamber.make_prop_box(self, Vector3(0.56, 0.9, 0.56), Vector3(-8.0, 0.45, -2.8), Color(0.30, 0.28, 0.18))
+	ActUtil.blood_decal(self, Vector3(-8.0, 0.02, -2.0), Vector2(1.0, 1.4), "up", Color(0.20, 0.15, 0.06, 0.55))
+	# Hide niche in the corner.
+	ActUtil.hide_locker(self, Vector3(-12.4, 0, 1.1), 90.0)
+
+	# Horror: a service crewman crumpled by the rack, growth climbing the
+	# tools (the shaft is the conduit; this is where it surfaces first).
+	ActUtil.corpse(self, Vector3(-11.0, 0, 1.0), -45.0, true, Color(0.22, 0.20, 0.16))
+	ActUtil.signal_growth(self, Vector3(-12.6, 0, -2.5), 1.0, Color(0.08, 0.13, 0.10))
+	ActUtil.bloody_smears(self, Vector3(-12.85, 1.7, 0.0), 90.0, 3, Color(0.40, 0.06, 0.05))
+	ActUtil.wall_scrawl(self, "IT FOLLOWED THE PIPE UP", Vector3(-10.0, 2.2, -3.35), 0.0, 18, Color(0.50, 0.06, 0.06))
+	ActUtil.wall_label(self, "SERVICE", Vector3(-10.0, 2.5, 1.35), 14, Color(0.7, 0.82, 0.88))
+	Interactable.make_examine(self, Vector3(-12.45, 1.85, -1.0), Vector3(0.05, 0.5, 0.5),
+		"Read the daily inspection",
+		"A daily inspection sheet pinned over the rack. Today's entry, in a " +
+		"hand that wasn't checking the pipe: 'mud sample at 1102m is breathing. " +
+		"can the mud breathe. nobody come down here.'", 6.0)
 
 
 func _engage_winch() -> void:
