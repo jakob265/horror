@@ -17,10 +17,22 @@ var thawed := false
 func _ready() -> void:
 	ActUtil.light_rig_ice(self)
 	_build_store()
+	_build_deep_freeze()
 
-	# A hunter prowls the open north strip in front of the exit.
+	# A hunter prowls the open north strip in front of the exit, with a long
+	# detour through the deep freeze (so it's a place the patrol might burst
+	# in on you, not a free safe).
 	var stalker := HorrorShape.create(HorrorShape.KIND_HARGROVE, Vector3(0, 0, -6.0), 0.0)
-	stalker.set_stalk([Vector3(-4, 0, -6), Vector3(4, 0, -6), Vector3(4, 0, -3.5), Vector3(-4, 0, -3.5)], 1.1, 4.0)
+	stalker.set_stalk([
+		Vector3(-4, 0, -6),
+		Vector3(4, 0, -6),
+		Vector3(4, 0, -3.5),
+		Vector3(8, 0, 3),
+		Vector3(13, 0, 3),
+		Vector3(8, 0, 3),
+		Vector3(4, 0, -3.5),
+		Vector3(-4, 0, -3.5),
+	], 1.1, 4.0)
 	add_child(stalker)
 	ShapeTracker.register(stalker)
 
@@ -57,8 +69,10 @@ func _process(_dt: float) -> void:
 
 
 func _build_store() -> void:
+	# East wall now has a doorway at z=3 into the deep freeze annex.
 	Chamber.add_room(self, 18, 18, 3.4, FLOOR, CEIL, WALL, Vector3(0, 0, 0), {},
-		[{"axis": "z", "fixed": -9.0, "gap": 0.0}, {"axis": "z", "fixed": 9.0, "gap": 0.0}])
+		[{"axis": "z", "fixed": -9.0, "gap": 0.0}, {"axis": "z", "fixed": 9.0, "gap": 0.0},
+		 {"axis": "x", "fixed": 9.0, "gap": 3.0}])
 	exit_door = Chamber.add_door(self, "z", -9 + 0.05, 0, "FREEZER", Color(0.30, 0.36, 0.42), Callable(), "", true)
 	Chamber.invis_wall(self, "z", 9, 0)
 	# Sheet of ice glazing the exit (burn the flare to thaw it).
@@ -133,6 +147,48 @@ func _build_store() -> void:
 	# Hydroponics journal jammed into a drawer handle. Plants dying faster than
 	# the schedule. Plants are not the message; they're what hears it first.
 	Interactable.make_note(self, Vector3(-7.85, 1.2, 4.5), "note_10", "Read the journal")
+
+
+# --- Deep freeze (east annex, where the cold gets worse) -----------------
+# A smaller secondary chamber behind the morgue. Lower ceiling, more carcass
+# racks, deeper dread. Hangs off the cold store's x=9 wall at the new doorway
+# centred on z=3. Three new walls + shared store wall.
+
+func _build_deep_freeze() -> void:
+	# Annex x 9..17 (centre 13, w=8), z 0..6 (centre 3, d=6), h=2.8 (lower).
+	Chamber.add_floor_ceiling(self, 8, 6, 2.8, FLOOR, CEIL, Vector3(13, 0, 3))
+	Chamber.add_wall(self, "x", 17, 0, 6, 2.8, WALL)
+	Chamber.add_wall(self, "z", 0, 9, 17, 2.8, WALL)
+	Chamber.add_wall(self, "z", 6, 9, 17, 2.8, WALL)
+
+	# Three rows of hanging carcasses receding into the dark.
+	for cx in [11.0, 13.0, 15.0]:
+		for cz in [1.5, 3.0, 4.5]:
+			ActUtil.hanging_corpse(self, Vector3(cx, 2.7, cz), 1.5, Color(0.48, 0.46, 0.42))
+	# Heavy chains running along the ceiling (the rails the carcasses hang from).
+	for cz in [1.5, 3.0, 4.5]:
+		Chamber.make_prop_box(self, Vector3(7.0, 0.06, 0.06), Vector3(13, 2.72, cz), Color(0.20, 0.20, 0.22), false)
+	# Floor drains + a slick of red-frozen meltwater.
+	for dz in [1.0, 5.0]:
+		Chamber.make_prop_box(self, Vector3(0.5, 0.04, 0.5), Vector3(13, 0.02, dz), Color(0.18, 0.18, 0.20), false)
+	ActUtil.blood_decal(self, Vector3(13, 0.02, 3.0), Vector2(2.4, 1.6), "up", Color(0.40, 0.10, 0.06, 0.55))
+	# Hide locker tucked in the far corner - one more breathing space when the
+	# stalker pursues you through the doorway.
+	ActUtil.hide_locker(self, Vector3(16.4, 0, 5.5), -90.0)
+
+	# Horror: a body crumpled at the back, signal-growth corruption climbing
+	# the far wall (more advanced than in the main store), a brutal scrawl.
+	ActUtil.corpse(self, Vector3(15.8, 0, 0.5), 30.0, true, Color(0.32, 0.34, 0.40))
+	ActUtil.signal_growth(self, Vector3(16.6, 0, 4.5), 1.8, Color(0.07, 0.12, 0.10))
+	ActUtil.signal_growth(self, Vector3(10.0, 0, 0.6), 1.2, Color(0.07, 0.12, 0.10))
+	ActUtil.bloody_smears(self, Vector3(9.15, 2.0, 5.0), 90.0, 4, Color(0.36, 0.06, 0.05))
+	ActUtil.wall_scrawl(self, "I CAN HEAR THE OTHERS BREATHING IN HERE", Vector3(13.0, 2.0, 6.15), 180.0, 14, Color(0.50, 0.06, 0.06))
+	ActUtil.wall_label(self, "DEEP FREEZE", Vector3(13.0, 2.5, 0.15), 14, Color(0.7, 0.86, 0.92))
+	Interactable.make_examine(self, Vector3(15.5, 0.04, 0.5), Vector3(0.3, 0.04, 0.4),
+		"Read the cold-log slip",
+		"A flimsy cold-log slip in the dead man's hand: 'temp logged minus " +
+		"thirty-two and dropping. drawers won't close. the carcasses are warmer than the room. " +
+		"i don't know how that is.'", 6.0)
 
 
 func _make_pickup(pos: Vector3, size: Vector3, color: Color, item_id: String, prompt: String) -> void:
