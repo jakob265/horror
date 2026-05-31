@@ -20,9 +20,17 @@ var powered := false
 func _ready() -> void:
 	ActUtil.light_rig_dark(self, 0.07, 0.024)
 	_build_hall()
+	_build_fuel_bay()
 
 	var stalker := HorrorShape.create(HorrorShape.KIND_HARGROVE, Vector3(0, 0, -6.0), 0.0)
-	stalker.set_stalk([Vector3(-6, 0, 5), Vector3(6, 0, 5), Vector3(6, 0, -5), Vector3(-6, 0, -5)], 1.3, 4.2)
+	stalker.set_stalk([
+		Vector3(-6, 0, 5),
+		Vector3(6, 0, 5),
+		Vector3(6, 0, -5),
+		Vector3(14, 0, -4),
+		Vector3(6, 0, -5),
+		Vector3(-6, 0, -5),
+	], 1.3, 4.2)
 	add_child(stalker)
 	ShapeTracker.register(stalker)
 
@@ -56,8 +64,10 @@ func _process(_dt: float) -> void:
 
 
 func _build_hall() -> void:
+	# East wall now has a doorway at z=-4 into the fuel storage bay.
 	Chamber.add_room(self, 20, 18, 5.0, FLOOR, CEIL, WALL, Vector3(0, 0, 0), {},
-		[{"axis": "z", "fixed": -9.0, "gap": 0.0}, {"axis": "z", "fixed": 9.0, "gap": 0.0}])
+		[{"axis": "z", "fixed": -9.0, "gap": 0.0}, {"axis": "z", "fixed": 9.0, "gap": 0.0},
+		 {"axis": "x", "fixed": 10.0, "gap": -4.0}])
 	exit_door = Chamber.add_door(self, "z", -9 + 0.05, 0, "MAIN DOOR", Color(0.24, 0.26, 0.32), Callable(), "", true)
 	Chamber.invis_wall(self, "z", 9, 0)
 	# Faint failing emergency strip so the hall isn't a total void.
@@ -148,6 +158,46 @@ func _build_hall() -> void:
 	ActUtil.add_floor_decals(self, 20, 18, Vector3.ZERO, Color(0.86, 0.66, 0.12, 0.55))
 	for db in [Vector3(2, 0, 3), Vector3(-3, 0, -4), Vector3(5, 0, 6)]:
 		Chamber.make_prop_box(self, Vector3(0.5, 0.2, 0.4), db + Vector3(0, 0.1, 0), Color(0.24, 0.24, 0.26), false)
+
+
+# --- Fuel storage bay (east, where the diesel comes from) ----------------
+# A small attached room visible from the hall through the new x=10 doorway
+# at z=-4. Doesn't change the puzzle - the diesel can still sits on the hall
+# floor at (5, 0, 3.5) - but explains where the fuel racks came from and
+# extends the hunter's beat away from the desk.
+
+func _build_fuel_bay() -> void:
+	# Bay x 10..18 (centre 14, w=8), z -7..-1 (centre -4, d=6), h=4.0.
+	Chamber.add_floor_ceiling(self, 8, 6, 4.0, FLOOR, CEIL, Vector3(14, 0, -4))
+	Chamber.add_wall(self, "x", 18, -7, -1, 4.0, WALL)
+	Chamber.add_wall(self, "z", -7, 10, 18, 4.0, WALL)
+	Chamber.add_wall(self, "z", -1, 10, 18, 4.0, WALL)
+
+	# Diesel barrel pallets stacked along the back wall.
+	for px in [11.5, 13.5, 15.5]:
+		Chamber.make_prop_box(self, Vector3(1.6, 0.1, 1.0), Vector3(px, 0.05, -6.0), Color(0.22, 0.22, 0.20), false)
+		for bz in [-6.3, -5.7]:
+			Chamber.make_prop_box(self, Vector3(0.5, 0.9, 0.5), Vector3(px - 0.4, 0.5, bz), Color(0.74, 0.16, 0.12))
+			Chamber.make_prop_box(self, Vector3(0.5, 0.9, 0.5), Vector3(px + 0.4, 0.5, bz), Color(0.74, 0.16, 0.12))
+	# A tall fuel cabinet by the east wall.
+	Chamber.make_prop_box(self, Vector3(0.6, 2.8, 1.6), Vector3(17.4, 1.4, -4.0), Color(0.30, 0.32, 0.36))
+	# Spilled drum + slick across the floor.
+	var slick := Chamber.make_prop_box(self, Vector3(0.7, 0.35, 0.4), Vector3(13.0, 0.18, -2.5), Color(0.50, 0.12, 0.08))
+	slick.rotation_degrees = Vector3(0, 30, 0)
+	ActUtil.blood_decal(self, Vector3(13.5, 0.02, -2.5), Vector2(2.4, 1.8), "up", Color(0.32, 0.08, 0.04, 0.55))
+	# Hide locker in the back corner - the patrol now reaches in here.
+	ActUtil.hide_locker(self, Vector3(11.4, 0, -1.5), 0.0)
+
+	# Horror: a body crumpled by the cabinet, growth along the back wall.
+	ActUtil.corpse(self, Vector3(16.4, 0, -2.0), -110.0, true, Color(0.24, 0.22, 0.18))
+	ActUtil.signal_growth(self, Vector3(17.4, 0, -6.4), 1.1, Color(0.08, 0.13, 0.10))
+	ActUtil.wall_scrawl(self, "DON'T LIGHT A MATCH IN HERE", Vector3(14.0, 2.6, -6.85), 0.0, 18, Color(0.5, 0.05, 0.06))
+	ActUtil.wall_label(self, "FUEL STORAGE", Vector3(14.0, 3.2, -6.7), 16, Color(0.86, 0.66, 0.30))
+	Interactable.make_examine(self, Vector3(17.10, 1.6, -4.0), Vector3(0.05, 0.5, 0.5),
+		"Read the inventory clipboard",
+		"Inventory clipboard hung on the cabinet. Updated weekly through " +
+		"last winter. Final entry, in a different hand: 'twelve drums down, three to go, " +
+		"and Renn says one is enough for the hall. one is never enough.'", 6.0)
 
 
 func _ind(pos: Vector3, label: String) -> MeshInstance3D:
