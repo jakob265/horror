@@ -13,10 +13,13 @@ const ICE := Color(0.52, 0.66, 0.80)
 func _ready() -> void:
 	ActUtil.light_rig_ice(self)
 	_build_cavern()
+	_build_side_cavity()
 
 	for cfg in [
-		{"pos": Vector3(-4, 0, 0), "kind": HorrorShape.KIND_HARGROVE, "pts": [Vector3(-6, 0, 1), Vector3(6, 0, 1), Vector3(0, 0, -5)]},
-		{"pos": Vector3(4, 0, 4), "kind": HorrorShape.KIND_FELIX, "pts": [Vector3(4, 0, 5), Vector3(-5, 0, -3), Vector3(5, 0, -4)]},
+		{"pos": Vector3(-4, 0, 0), "kind": HorrorShape.KIND_HARGROVE,
+			"pts": [Vector3(-6, 0, 1), Vector3(6, 0, 1), Vector3(15, 0, 5), Vector3(6, 0, 1), Vector3(0, 0, -5)]},
+		{"pos": Vector3(4, 0, 4), "kind": HorrorShape.KIND_FELIX,
+			"pts": [Vector3(4, 0, 5), Vector3(-5, 0, -3), Vector3(5, 0, -4)]},
 	]:
 		var s := HorrorShape.create(cfg["kind"], cfg["pos"], 0.0)
 		s.set_stalk(cfg["pts"], 1.2, 4.2)
@@ -53,8 +56,10 @@ func _process(_dt: float) -> void:
 
 
 func _build_cavern() -> void:
+	# East wall now has a fissure-doorway at z=5 into a side cavity.
 	Chamber.add_room(self, 22, 20, 6.0, FLOOR, CEIL, WALL, Vector3(0, 0, 0), {},
-		[{"axis": "z", "fixed": -10.0, "gap": 0.0}, {"axis": "z", "fixed": 10.0, "gap": 0.0}])
+		[{"axis": "z", "fixed": -10.0, "gap": 0.0}, {"axis": "z", "fixed": 10.0, "gap": 0.0},
+		 {"axis": "x", "fixed": 11.0, "gap": 5.0}])
 	Chamber.invis_wall(self, "z", 10, 0)
 
 	# Ice formations: leaning slabs + floor/ceiling columns. They break sight
@@ -108,3 +113,50 @@ func _build_cavern() -> void:
 	ActUtil.viscera(self, Vector3(-5, 0.02, 8))
 
 	ActUtil.add_dust_motes(self, Vector3(0, 2.0, 0), Vector3(11, 3, 10), 90, Color(0.7, 0.82, 0.95, 0.16))
+
+
+# --- Side cavity (east branch off the cavern) ----------------------------
+# A tighter ice cavity reached through a narrow fissure at (11, 0, 5).
+# Lower ceiling, more concentrated nest growth. The hunters detour into
+# here; the hide niche in the back is critical when both come for you.
+
+func _build_side_cavity() -> void:
+	# Cavity x 11.5..18.5 (centre 15, w=7), z 1..9 (centre 5, d=8), h=4.5.
+	Chamber.add_floor_ceiling(self, 7, 8, 4.5, FLOOR, CEIL, Vector3(15, 0, 5))
+	Chamber.add_wall(self, "x", 18.5, 1, 9, 4.5, WALL)
+	Chamber.add_wall(self, "z", 1, 11.5, 18.5, 4.5, WALL)
+	Chamber.add_wall(self, "z", 9, 11.5, 18.5, 4.5, WALL)
+
+	# Ice formations: more density than the main cavern, no straight walk.
+	for slab_data in [
+		[Vector3(13.0, 1.6, 3.0), Vector3(2.2, 3.0, 0.8), 26.0],
+		[Vector3(17.0, 1.4, 6.5), Vector3(2.0, 2.6, 0.8), -22.0],
+		[Vector3(13.5, 1.5, 7.5), Vector3(2.0, 2.8, 0.8), 18.0],
+	]:
+		var slab := Chamber.make_prop_box(self, slab_data[1], slab_data[0], ICE, true, "ice")
+		slab.rotation_degrees = Vector3(0, 0, slab_data[2])
+	for cp in [Vector3(12.0, 0, 5.5), Vector3(17.5, 0, 2.5), Vector3(16.0, 0, 8.0)]:
+		Chamber.make_prop_box(self, Vector3(0.7, 2.4, 0.7), cp + Vector3(0, 1.2, 0), ICE, true, "ice")
+		Chamber.make_prop_box(self, Vector3(0.6, 1.6, 0.6), cp + Vector3(0.3, 3.6, 0.3), ICE, false, "ice")
+
+	# Nest growth concentrated against the back wall (this is closer to the
+	# source than the main cavern).
+	for gp in [Vector3(18.0, 0, 4.0), Vector3(17.5, 0, 7.0), Vector3(14.5, 0, 8.5)]:
+		ActUtil.signal_growth(self, gp, randf_range(1.6, 2.2), Color(0.06, 0.12, 0.11))
+	# Cocooned crewman wedged into the ceiling.
+	ActUtil.hanging_corpse(self, Vector3(15.0, 3.4, 5.5), 1.8, Color(0.28, 0.34, 0.32))
+	ActUtil.viscera(self, Vector3(16.5, 0.02, 5.5))
+
+	# Crevice to duck into; one only - this is supposed to be tight.
+	ActUtil.hide_locker(self, Vector3(18.0, 0, 1.6), 180.0, ICE)
+
+	# A body curled at the back, frozen mid-flinch.
+	ActUtil.corpse(self, Vector3(17.5, 0, 8.4), -45.0, true, Color(0.32, 0.38, 0.46))
+	ActUtil.wall_scrawl(self, "THE ROOM HAS MORE ROOM", Vector3(18.35, 2.4, 5.0), -90.0, 18, Color(0.45, 0.06, 0.07))
+	ActUtil.wall_label(self, "SIDE CAVITY", Vector3(15.0, 3.8, 8.85), 14, Color(0.6, 0.78, 0.9))
+	Interactable.make_examine(self, Vector3(17.7, 0.04, 8.4), Vector3(0.3, 0.04, 0.4),
+		"Read the laminated card",
+		"A laminated emergency card frozen to the dead man's chest. The " +
+		"printed text is a safety routine. The hand-written addition reads: " +
+		"'kael said don't go east of the fissure. i went east. there is more east.'", 6.0)
+	ActUtil.add_dust_motes(self, Vector3(15, 2.0, 5), Vector3(3.5, 2.5, 4), 50, Color(0.66, 0.80, 0.94, 0.18))
