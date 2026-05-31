@@ -109,10 +109,12 @@ func _build_shaft() -> void:
 # and one more piece of foreshadowing for what's coming up the borehole.
 
 func _build_service_alcove() -> void:
-	Chamber.add_floor_ceiling(self, 6, 5, 3.0, FLOOR, CEIL, Vector3(-10, 0, -1))
+	# Alcove east edge must reach the shaft's west wall at x=-6 (not x=-7) or
+	# the strip x[-7,-6] is open void. Floor spans x[-13,-6], side walls too.
+	Chamber.add_floor_ceiling(self, 7, 5, 3.0, FLOOR, CEIL, Vector3(-9.5, 0, -1))
 	Chamber.add_wall(self, "x", -13, -3.5, 1.5, 3.0, WALL)
-	Chamber.add_wall(self, "z", -3.5, -13, -7, 3.0, WALL)
-	Chamber.add_wall(self, "z", 1.5, -13, -7, 3.0, WALL)
+	Chamber.add_wall(self, "z", -3.5, -13, -6, 3.0, WALL)
+	Chamber.add_wall(self, "z", 1.5, -13, -6, 3.0, WALL)
 
 	# Tool rack + drill-pipe stack along the back wall.
 	Chamber.make_prop_box(self, Vector3(0.3, 2.2, 3.0), Vector3(-12.6, 1.1, -1.0), Color(0.32, 0.30, 0.22))

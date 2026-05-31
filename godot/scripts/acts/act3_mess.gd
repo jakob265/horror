@@ -24,7 +24,7 @@ func _ready() -> void:
 		"lurkers": [
 			{"points": [Vector3(17, 0, 4), Vector3(9, 0, 4), Vector3(17, 0, -4), Vector3(9, 0, -4)],
 				"kind": HorrorShape.KIND_YUNA, "creep": 0.6},
-			{"points": [Vector3(-1, 0, -10), Vector3(-4, 0, -12), Vector3(2, 0, -12), Vector3(-3, 0, 4)],
+			{"points": [Vector3(-1, 0, -10), Vector3(-4, 0, -12), Vector3(2, 0, -12), Vector3(-1, 0, -8), Vector3(-3, 0, 4)],
 				"kind": HorrorShape.KIND_YUNA, "creep": 0.5},
 		],
 	})

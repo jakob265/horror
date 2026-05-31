@@ -138,10 +138,12 @@ func _build_storage() -> void:
 # we only add three new walls and a floor/ceiling slab.
 
 func _build_prep() -> void:
-	# Prep room x 11..19 (centre 15, w=8), z 6..12 (centre 9, d=6), h=3.2.
-	Chamber.add_floor_ceiling(self, 8, 6, 3.2, FLOOR, CEIL, Vector3(15, 0, 9))
-	Chamber.add_wall(self, "x", 11, 6, 12, 3.2, WALL)
-	Chamber.add_wall(self, "x", 19, 6, 12, 3.2, WALL)
+	# Prep room must reach the storage south wall at z=4 (not z=6) or the strip
+	# z[4,6] is open void. Floor spans z[4,12] (d=8, centre 8); side walls span
+	# z[4,12]. The storage z=4 wall already has the doorway gap at x=15.
+	Chamber.add_floor_ceiling(self, 8, 8, 3.2, FLOOR, CEIL, Vector3(15, 0, 8))
+	Chamber.add_wall(self, "x", 11, 4, 12, 3.2, WALL)
+	Chamber.add_wall(self, "x", 19, 4, 12, 3.2, WALL)
 	Chamber.add_wall(self, "z", 12, 11, 19, 3.2, WALL)
 
 	# Analysis bench, autoclave, centrifuge - all dead, all bloodied.

@@ -136,7 +136,11 @@ func _build_exit() -> void:
 	Chamber.add_wall(self, "x", -3, -22, -16, 2.6, WALL)
 	Chamber.add_wall(self, "x", 3, -22, -16, 2.6, WALL)
 	Chamber.add_wall(self, "z", -22, -3, 3, 2.6, WALL, 0.0)
-	# (South wall is the crawl tunnel's z=-16 wall - already built with a gap.)
+	# South wall: crawl's north wall at z=-16 only spans x[-1.5, +1.5]. The
+	# exit is wider (x[-3, +3]), so the "wings" beyond the crawl need their
+	# own wall segments to close the seam - otherwise you see void.
+	Chamber.add_wall(self, "z", -16, -3, -1.5, 2.6, WALL)
+	Chamber.add_wall(self, "z", -16, 1.5, 3, 2.6, WALL)
 
 	# The hatch out (no door leaf - just an opening; the peeker is right there).
 	ActUtil.wall_label(self, "RESEARCH DECK ->", Vector3(0, 2.3, -21.85), 14, Color(0.78, 0.84, 0.6))

@@ -122,10 +122,12 @@ func _build_cavern() -> void:
 
 func _build_side_cavity() -> void:
 	# Cavity x 11.5..18.5 (centre 15, w=7), z 1..9 (centre 5, d=8), h=4.5.
-	Chamber.add_floor_ceiling(self, 7, 8, 4.5, FLOOR, CEIL, Vector3(15, 0, 5))
+	# Cavity west edge must reach the cavern's east wall at x=11 (not x=11.5)
+	# or the strip x[11,11.5] is open void. Floor spans x[11,18.5], walls too.
+	Chamber.add_floor_ceiling(self, 7.5, 8, 4.5, FLOOR, CEIL, Vector3(14.75, 0, 5))
 	Chamber.add_wall(self, "x", 18.5, 1, 9, 4.5, WALL)
-	Chamber.add_wall(self, "z", 1, 11.5, 18.5, 4.5, WALL)
-	Chamber.add_wall(self, "z", 9, 11.5, 18.5, 4.5, WALL)
+	Chamber.add_wall(self, "z", 1, 11, 18.5, 4.5, WALL)
+	Chamber.add_wall(self, "z", 9, 11, 18.5, 4.5, WALL)
 
 	# Ice formations: more density than the main cavern, no straight walk.
 	for slab_data in [
