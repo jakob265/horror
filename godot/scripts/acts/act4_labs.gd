@@ -47,7 +47,7 @@ func _ready() -> void:
 
 func _process(_dt: float) -> void:
 	if cut and GameState.player and GameState.player.global_position.z < -6.6:
-		SceneRouter.transition_to("act5")
+		SceneRouter.transition_to("act4_5")
 
 
 # --- Lab hall ------------------------------------------------------------

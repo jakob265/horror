@@ -11,6 +11,7 @@ const ACT_SCENES := {
 	"act3":  "res://scenes/acts/act3_mess.tscn",         # The Mess & Infirmary
 	"act3_5": "res://scenes/acts/act3_5_crawl.tscn",     # The Crawl Space
 	"act4":  "res://scenes/acts/act4_labs.tscn",         # The Sample Labs
+	"act4_5": "res://scenes/acts/act4_5_crestfall.tscn", # Crestfall-9
 	"act5":  "res://scenes/acts/act5_generator.tscn",    # The Generator Hall
 	"act6":  "res://scenes/acts/act6_morgue.tscn",       # Cold Storage
 	"act7":  "res://scenes/acts/act7_shaft.tscn",        # The Drill Shaft

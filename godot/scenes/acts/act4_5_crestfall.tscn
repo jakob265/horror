@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b45act4_5_crestfall"]
+
+[ext_resource type="Script" path="res://scripts/acts/act4_5_crestfall.gd" id="1"]
+
+[node name="act4_5_crestfall" type="Node3D"]
+script = ExtResource("1")
