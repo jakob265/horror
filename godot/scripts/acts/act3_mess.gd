@@ -39,7 +39,7 @@ func _ready() -> void:
 
 func _process(_dt: float) -> void:
 	if powered and GameState.player and GameState.player.global_position.x > 18.5:
-		SceneRouter.transition_to("act4")
+		SceneRouter.transition_to("act3_5")
 
 
 # --- Mess hall (west, entry) ---------------------------------------------
@@ -187,4 +187,4 @@ func _restore_power() -> void:
 				c.disabled = true
 	)
 	AudioManager.door()
-	InteractionManager.show_examine("The line hums back and the lab door releases. The note said to kill the lights behind you. You don't.", 5.0)
+	InteractionManager.show_examine("The line hums back and the lab door releases. Beyond it: a service crawl. The note said to kill the lights behind you. You don't.", 5.0)
