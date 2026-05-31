@@ -18,11 +18,18 @@ func _ready() -> void:
 
 	_build_bunkroom()
 	_build_corridor()
+	_build_washroom()
 	_build_quarters()
 
-	# The hunter patrols the corridor spine.
+	# The hunter patrols the corridor spine and detours into the washroom.
 	var stalker := HorrorShape.create(HorrorShape.KIND_HARGROVE, Vector3(0, 0, -9.0), 0.0)
-	stalker.set_stalk([Vector3(0, 0, -3.0), Vector3(0, 0, -13.0)], 1.0, 3.4)
+	stalker.set_stalk([
+		Vector3(0, 0, -3.0),
+		Vector3(0, 0, -9.0),
+		Vector3(-6.5, 0, -9.0),
+		Vector3(0, 0, -9.0),
+		Vector3(0, 0, -13.0),
+	], 1.0, 3.4)
 	add_child(stalker)
 	ShapeTracker.register(stalker)
 
@@ -99,7 +106,8 @@ func _bunk(pos: Vector3, yaw: float, occupied: bool) -> void:
 
 func _build_corridor() -> void:
 	Chamber.add_floor_ceiling(self, 4, 16, 3.2, FLOOR, CEIL, Vector3(0, 0, -7))
-	Chamber.add_wall(self, "x", -2, -15, 1, 3.2, WALL)
+	# West wall has a doorway at z=-9 into the washroom annex; east wall solid.
+	Chamber.add_wall(self, "x", -2, -15, 1, 3.2, WALL, -9.0)
 	Chamber.add_wall(self, "x", 2, -15, 1, 3.2, WALL)
 	# Hide lockers recessed along the run (kill your lamp, then duck in).
 	ActUtil.hide_locker(self, Vector3(1.55, 0, -5.0), -90.0)
@@ -123,6 +131,42 @@ func _build_corridor() -> void:
 	ActUtil.wall_scrawl(self, "LAMP OFF PAST HERE", Vector3(1.4, 1.9, 0.2), -90.0, 18, Color(0.5, 0.06, 0.07))
 	ActUtil.wall_label(self, "<- CABINS", Vector3(0, 2.6, 0.4), 16, Color(0.7, 0.84, 0.9))
 	ActUtil.wall_label(self, "QUARTERS ->", Vector3(0, 2.6, -14.4), 16, Color(0.7, 0.84, 0.9))
+
+
+# --- Washroom annex (west off the corridor, a dead-end pocket) ------------
+# Branches west through the corridor's z=-9 doorway. Shares the corridor's
+# x=-2 wall (already cut with the gap), so we add only the other three walls.
+# A dead end: it deepens the patrol sweep and gives one more place to duck.
+
+func _build_washroom() -> void:
+	var floor_c := Color(0.32, 0.34, 0.38)
+	var ceil_c := Color(0.12, 0.13, 0.16)
+	# Room spans x -9..-2, z -12..-6 (centre -5.5, -9).
+	Chamber.add_floor_ceiling(self, 7, 6, 3.0, floor_c, ceil_c, Vector3(-5.5, 0, -9))
+	Chamber.add_wall(self, "x", -9, -12, -6, 3.0, WALL)          # far west
+	Chamber.add_wall(self, "z", -12, -9, -2, 3.0, WALL)          # south
+	Chamber.add_wall(self, "z", -6, -9, -2, 3.0, WALL)           # north
+
+	# Sink trough + mirrors (a row of basins along the west wall).
+	Chamber.make_prop_box(self, Vector3(0.5, 0.25, 4.0), Vector3(-8.5, 0.85, -9.0), Color(0.50, 0.52, 0.56))
+	for mz in [-10.5, -9.0, -7.5]:
+		Chamber.make_prop_box(self, Vector3(0.05, 0.7, 0.6), Vector3(-8.7, 1.6, mz), Color(0.16, 0.18, 0.22), false)
+	# Toilet stalls (low dividers) along the south.
+	for sx in [-6.6, -4.4]:
+		Chamber.make_prop_box(self, Vector3(0.08, 1.4, 1.6), Vector3(sx, 0.7, -11.2), Color(0.40, 0.42, 0.45), false)
+		Chamber.make_prop_box(self, Vector3(0.5, 0.5, 0.5), Vector3(sx + 0.7, 0.25, -11.4), Color(0.60, 0.62, 0.64))
+	# A hide spot in the far corner; the patrol now reaches in here.
+	ActUtil.hide_locker(self, Vector3(-8.4, 0, -6.8), 0.0)
+	# Horror: a body slumped at the basins, water-thinned blood, a scrawl.
+	ActUtil.corpse(self, Vector3(-6.0, 0, -8.4), 50.0, true, Color(0.20, 0.22, 0.26))
+	ActUtil.blood_decal(self, Vector3(-7.0, 0.02, -9.0), Vector2(2.0, 1.4), "up", Color(0.20, 0.04, 0.05, 0.55))
+	ActUtil.blood_wall(self, Vector3(-8.85, 1.5, -10.5), Vector2(1.0, 1.4), -90.0)
+	ActUtil.wall_scrawl(self, "WASHED MY HANDS RAW", Vector3(-8.8, 2.0, -7.6), -90.0, 16, Color(0.5, 0.06, 0.07))
+	ActUtil.wall_label(self, "WASHROOM", Vector3(-5.5, 2.6, -6.2), 15, Color(0.7, 0.84, 0.9))
+	Interactable.make_examine(self, Vector3(-8.5, 1.05, -7.5), Vector3(0.3, 0.05, 0.4),
+		"Read the smeared note",
+		"A page swollen with damp, stuck to the basin: 'it isn't on the skin. " +
+		"i scrubbed til it bled and the sound is still under there. under everyone.'", 6.0)
 
 
 # --- Crew quarters (north, the key + exit) -------------------------------
