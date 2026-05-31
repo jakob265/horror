@@ -17,6 +17,7 @@ func _ready() -> void:
 	ActUtil.light_rig_dark(self, 0.12, 0.022)
 	_build_lab()
 	_build_storage()
+	_build_prep()
 
 	# An aggressive hunter circuits the lab hall.
 	var stalker := HorrorShape.create(HorrorShape.KIND_FELIX, Vector3(0, 0, -4.0), 0.0)
@@ -93,8 +94,10 @@ func _build_lab() -> void:
 # --- Sample storage (the breached core + the cutters) --------------------
 
 func _build_storage() -> void:
+	# South wall now has a doorway at x=15 into the sample-prep room.
 	Chamber.add_room(self, 10, 8, 3.4, FLOOR, CEIL, WALL, Vector3(13, 0, 0), {},
-		[{"axis": "x", "fixed": 8.0, "gap": 0.0}])
+		[{"axis": "x", "fixed": 8.0, "gap": 0.0},
+		 {"axis": "z", "fixed": 4.0, "gap": 15.0}])
 	# The containment cylinder, cracked open, the seed spilling out.
 	var base := Chamber.make_prop_box(self, Vector3(1.6, 0.4, 1.6), Vector3(15.0, 0.2, 0.0), Color(0.30, 0.33, 0.38))
 	var cyl := MeshInstance3D.new()
@@ -126,7 +129,54 @@ func _build_storage() -> void:
 	# Engineering transcript - a confession addressed to no one here.
 	Interactable.make_note(self, Vector3(15.8, 0.04, -2.6), "note_11", "Read the engineering transcript")
 	ActUtil.bloody_smears(self, Vector3(17.85, 2.2, 0.0), -90.0, 5)
-	ActUtil.wall_label(self, "SAMPLE STORAGE", Vector3(13, 2.9, 3.8), 18, Color(0.7, 0.84, 0.9))
+	ActUtil.wall_label(self, "SAMPLE STORAGE", Vector3(10.5, 2.9, 3.8), 18, Color(0.7, 0.84, 0.9))
+
+
+# --- Sample prep (south off storage, the analysis bench + a second body) --
+# Where the samples got dissected before storage. Hangs off the storage room's
+# south wall (z=4) at the new doorway centred on x=15. Shares that wall, so
+# we only add three new walls and a floor/ceiling slab.
+
+func _build_prep() -> void:
+	# Prep room x 11..19 (centre 15, w=8), z 6..12 (centre 9, d=6), h=3.2.
+	Chamber.add_floor_ceiling(self, 8, 6, 3.2, FLOOR, CEIL, Vector3(15, 0, 9))
+	Chamber.add_wall(self, "x", 11, 6, 12, 3.2, WALL)
+	Chamber.add_wall(self, "x", 19, 6, 12, 3.2, WALL)
+	Chamber.add_wall(self, "z", 12, 11, 19, 3.2, WALL)
+
+	# Analysis bench, autoclave, centrifuge - all dead, all bloodied.
+	Chamber.make_prop_box(self, Vector3(5.0, 0.10, 1.0), Vector3(15.0, 0.92, 7.6), Color(0.42, 0.44, 0.48))
+	for blx in [12.7, 14.5, 17.2]:
+		Chamber.make_prop_box(self, Vector3(0.08, 0.92, 0.08), Vector3(blx, 0.46, 7.3), Color(0.30, 0.32, 0.36), false)
+		Chamber.make_prop_box(self, Vector3(0.08, 0.92, 0.08), Vector3(blx, 0.46, 7.9), Color(0.30, 0.32, 0.36), false)
+	# Autoclave (drum on the bench).
+	Chamber.make_prop_box(self, Vector3(0.7, 0.6, 0.7), Vector3(13.5, 1.30, 7.6), Color(0.62, 0.64, 0.66))
+	# Centrifuge.
+	Chamber.make_prop_box(self, Vector3(0.6, 0.5, 0.6), Vector3(16.6, 1.25, 7.6), Color(0.46, 0.48, 0.52))
+	# Microscope.
+	Chamber.make_prop_box(self, Vector3(0.3, 0.5, 0.25), Vector3(15.5, 1.25, 7.7), Color(0.20, 0.22, 0.26))
+	# Fume hood along the south wall.
+	Chamber.make_prop_box(self, Vector3(3.0, 2.4, 0.5), Vector3(17.0, 1.2, 11.6), Color(0.30, 0.34, 0.38))
+	Chamber.make_prop_box(self, Vector3(2.7, 1.4, 0.05), Vector3(17.0, 1.5, 11.32), Color(0.05, 0.07, 0.10), false)
+	# Sample shelves along the west wall.
+	for sy in [0.6, 1.2, 1.8]:
+		Chamber.make_prop_box(self, Vector3(0.06, 0.06, 2.4), Vector3(11.18, sy, 9.0), Color(0.30, 0.32, 0.36), false)
+		Chamber.make_prop_box(self, Vector3(0.18, 0.30, 0.18), Vector3(11.25, sy + 0.15, 9.6), Color(0.45, 0.62, 0.70), false)
+		Chamber.make_prop_box(self, Vector3(0.18, 0.30, 0.18), Vector3(11.25, sy + 0.15, 8.4), Color(0.55, 0.40, 0.30), false)
+	# Hide locker by the door (the lab hunter chases you here through storage).
+	ActUtil.hide_locker(self, Vector3(18.4, 0, 6.6), 180.0)
+
+	# Horror dressing.
+	ActUtil.corpse(self, Vector3(15.0, 0, 10.4), 0.0, true, Color(0.18, 0.20, 0.24))
+	ActUtil.viscera(self, Vector3(13.8, 0.02, 10.0))
+	ActUtil.blood_wall(self, Vector3(11.15, 1.6, 11.0), Vector2(1.2, 1.6), 90.0)
+	ActUtil.signal_growth(self, Vector3(12.8, 0, 11.4), 0.9, Color(0.09, 0.14, 0.10))
+	ActUtil.wall_scrawl(self, "DON'T SPIN IT", Vector3(15.5, 2.2, 11.62), 0.0, 22, Color(0.5, 0.05, 0.06))
+	ActUtil.wall_label(self, "SAMPLE PREP", Vector3(15, 2.9, 11.7), 16, Color(0.7, 0.84, 0.9))
+	Interactable.make_examine(self, Vector3(13.5, 1.85, 7.6), Vector3(0.4, 0.04, 0.5),
+		"Read the test sheet",
+		"A printed test sheet pinned to the autoclave. Last line, hand-added: " +
+		"'spinning it makes more of it. confirmed three times. do not run the centrifuge again.'", 6.0)
 
 
 func _make_pickup(pos: Vector3, size: Vector3, color: Color, item_id: String, prompt: String) -> void:
