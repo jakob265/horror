@@ -14,7 +14,9 @@ const ACT_SCENES := {
 	"act4_5": "res://scenes/acts/act4_5_crestfall.tscn", # Crestfall-9
 	"act5":  "res://scenes/acts/act5_generator.tscn",    # The Generator Hall
 	"act6":  "res://scenes/acts/act6_morgue.tscn",       # Cold Storage
+	"act6_5": "res://scenes/acts/act6_5_evac.tscn",      # Evac Sublevel
 	"act7":  "res://scenes/acts/act7_shaft.tscn",        # The Drill Shaft
+	"act7_5": "res://scenes/acts/act7_5_deep.tscn",      # Deep Drill 1500-2000m
 	"act8":  "res://scenes/acts/act8_caves.tscn",        # The Ice Caves
 	"act8_5": "res://scenes/acts/act8_5_cathedral.tscn", # The Bone Cathedral
 	"act9":  "res://scenes/acts/act9_chamber.tscn",      # The Sealed Chamber

@@ -157,4 +157,4 @@ func _engage_winch() -> void:
 func _descend() -> void:
 	AudioManager.door()
 	InteractionManager.show_examine("The cage drops out from under the station, into the dark of the ice.", 3.0)
-	SceneRouter.transition_to("act8")
+	SceneRouter.transition_to("act7_5")

@@ -65,7 +65,7 @@ func _ready() -> void:
 
 func _process(_dt: float) -> void:
 	if thawed and GameState.player and GameState.player.global_position.z < -8.6:
-		SceneRouter.transition_to("act7")
+		SceneRouter.transition_to("act6_5")
 
 
 func _build_store() -> void:
