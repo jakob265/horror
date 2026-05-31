@@ -22,7 +22,7 @@ func _ready() -> void:
 
 	ActUtil.haunt(self, {
 		"intensity": 0.30, "flicker": true, "flicker_rate": 0.7,
-		"peekers": [{"pos": Vector3(0, 0, -84.0), "kind": HorrorShape.KIND_HARGROVE, "rot": 0.0}],
+		"peekers": [{"pos": Vector3(0, 0, -204.0), "kind": HorrorShape.KIND_HARGROVE, "rot": 0.0}],
 	})
 
 	if GameState.player:
@@ -35,7 +35,7 @@ func _ready() -> void:
 func _process(_dt: float) -> void:
 	if _crossed:
 		return
-	if GameState.player and GameState.player.global_position.z < -85.5:
+	if GameState.player and GameState.player.global_position.z < -205.5:
 		_crossed = true
 		SceneRouter.transition_to("act1")
 
@@ -80,20 +80,21 @@ func _build_entry_hall() -> void:
 
 func _build_spine() -> void:
 	# (theme, z_low, z_high, rooms_left, rooms_right, seed)
-	# Wings are 20 long with 2 rooms/side => doors 10 apart, ~5-unit gaps
-	# between the 5-wide rooms, so the side rooms are spread out along the
-	# corridor instead of packed shoulder to shoulder.
+	# Each wing is 40 long with 4 rooms/side => doors spaced 10 apart, ~4-unit
+	# gaps between the 6-wide rooms (same density as the locked-in spacing,
+	# just more rooms per wing). 5 wings = 5 themes = 45 procedural rooms.
 	var wings := [
-		["admin",      -20.0,   0.0, 2, 2, 110],
-		["dorm",       -40.0, -20.0, 2, 2, 220],
-		["lab",        -60.0, -40.0, 2, 2, 330],
-		["industrial", -76.0, -60.0, 2, 1, 440],
+		["admin",      -40.0,    0.0, 4, 4, 110],
+		["dorm",       -80.0,  -40.0, 4, 4, 220],
+		["lab",       -120.0,  -80.0, 4, 4, 330],
+		["industrial",-160.0, -120.0, 4, 4, 440],
+		["industrial",-196.0, -160.0, 3, 4, 550],
 	]
 	for i in wings.size():
 		var w: Array = wings[i]
 		# South end sealed only for the first wing (the entry hall connects via
 		# its own north doorway at x=0, z=0). Every north end is UNSEALED -
-		# including the last wing's, whose opening at x=0, z=-76 the final
+		# including the last wing's, whose opening at x=0, z=-196 the final
 		# passage chains onto. So no wing seals its north; only the very first
 		# wing seals its south.
 		var seal_south: bool = (i == 0)
@@ -118,18 +119,18 @@ func _build_final_passage() -> void:
 	var floor_c := Color(0.34, 0.36, 0.40)
 	var ceil_c := Color(0.13, 0.14, 0.17)
 
-	# x [-2, 2], z [-86, -76], h=3.0. The last spine wing (z up to -76) leaves
-	# its north end unsealed with a doorway at x=0; this passage's south wall
-	# (z=-76) has the matching doorway, so they connect through one opening.
-	# North end (z=-86) is the act-exit threshold.
-	Chamber.add_floor_ceiling(self, 4, 10, 3.0, floor_c, ceil_c, Vector3(0, 0, -81))
-	Chamber.add_wall(self, "x", -2, -86, -76, 3.0, wall)
-	Chamber.add_wall(self, "x",  2, -86, -76, 3.0, wall)
-	Chamber.add_wall(self, "z", -86, -2, 2, 3.0, wall)
-	Chamber.add_wall(self, "z", -76, -2, 2, 3.0, wall, 0.0)
+	# x [-2, 2], z [-206, -196], h=3.0. The last spine wing (z up to -196)
+	# leaves its north end unsealed with a doorway at x=0; this passage's
+	# south wall (z=-196) has the matching doorway, so they connect through
+	# one opening. North end (z=-206) is the act-exit threshold.
+	Chamber.add_floor_ceiling(self, 4, 10, 3.0, floor_c, ceil_c, Vector3(0, 0, -201))
+	Chamber.add_wall(self, "x", -2, -206, -196, 3.0, wall)
+	Chamber.add_wall(self, "x",  2, -206, -196, 3.0, wall)
+	Chamber.add_wall(self, "z", -206, -2, 2, 3.0, wall)
+	Chamber.add_wall(self, "z", -196, -2, 2, 3.0, wall, 0.0)
 
-	ActUtil.corpse(self, Vector3(-1.2, 0, -80.0), 35.0, true, Color(0.22, 0.24, 0.28))
-	ActUtil.signal_growth(self, Vector3(1.3, 0, -84.0), 1.2, Color(0.07, 0.13, 0.10))
-	ActUtil.wall_scrawl(self, "VESPER WAITS", Vector3(0, 2.2, -85.85), 0.0, 22, Color(0.50, 0.06, 0.06))
-	ActUtil.wall_label(self, "BAY ACCESS", Vector3(0, 2.6, -85.7), 13, Color(0.7, 0.84, 0.9))
+	ActUtil.corpse(self, Vector3(-1.2, 0, -200.0), 35.0, true, Color(0.22, 0.24, 0.28))
+	ActUtil.signal_growth(self, Vector3(1.3, 0, -204.0), 1.2, Color(0.07, 0.13, 0.10))
+	ActUtil.wall_scrawl(self, "VESPER WAITS", Vector3(0, 2.2, -205.85), 0.0, 22, Color(0.50, 0.06, 0.06))
+	ActUtil.wall_label(self, "BAY ACCESS", Vector3(0, 2.6, -205.7), 13, Color(0.7, 0.84, 0.9))
 	_room_count += 1
