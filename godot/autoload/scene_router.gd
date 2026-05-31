@@ -4,6 +4,7 @@ extends Node
 signal scene_changed(act_name: String)
 
 const ACT_SCENES := {
+	"act0":  "res://scenes/acts/act0_outer.tscn",        # The Outer Station
 	"act1":  "res://scenes/acts/act1_surface.tscn",     # The Surface
 	"act2":  "res://scenes/acts/act2_dormitory.tscn",   # The Dormitory Wing
 	"act3":  "res://scenes/acts/act3_mess.tscn",         # The Mess & Infirmary
