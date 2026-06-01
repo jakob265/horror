@@ -80,6 +80,76 @@ const THEMES := {
 }
 
 
+# --- Public: graft a side wing off a host wall ----------------------------
+# Helper for grafting a procedural wing into a hand-crafted act. Pass the
+# host wall description (what the act WOULD have built as a single solid
+# Chamber.add_wall) plus the wing parameters; the helper splits the host
+# wall around the wing portal, emits a lintel above if heights mismatch,
+# and emits the wing itself.
+#
+# cfg = stamp_corridor_wing's keys PLUS:
+#   host_axis: "x" | "z"           the host wall's fixed-axis
+#   host_fixed: float              host wall's fixed coordinate
+#   host_min, host_max: float      host wall's span on the other axis
+#   host_h: float                  host wall's height (>= corridor_h)
+#   host_color: Color              host wall's color
+# The wing's corridor axis MUST equal host_axis (perpendicular to the wall
+# plane). The wing's `perp` coordinate must satisfy
+#   host_min <= perp - corridor_w/2 and perp + corridor_w/2 <= host_max.
+# seal_low_end is forced false (the wing emits its own portal wall, which
+# carries the actual DOOR_W doorway gap).
+static func add_side_wing(parent: Node3D, cfg: Dictionary) -> int:
+	var host_axis: String = cfg["host_axis"]
+	var host_fixed: float = float(cfg["host_fixed"])
+	var host_min: float = float(cfg["host_min"])
+	var host_max: float = float(cfg["host_max"])
+	var host_h: float = float(cfg["host_h"])
+	var host_color: Color = cfg["host_color"]
+	var perp: float = float(cfg["perp"])
+	var c_w: float = float(cfg.get("corridor_w", 4.0))
+	var c_h: float = float(cfg.get("corridor_h", 3.0))
+	var portal_low: float = perp - c_w / 2.0
+	var portal_high: float = perp + c_w / 2.0
+
+	# Split the host wall around the wing portal.
+	if portal_low > host_min + 0.01:
+		Chamber.add_wall(parent, host_axis, host_fixed, host_min, portal_low,
+			host_h, host_color)
+	if portal_high < host_max - 0.01:
+		Chamber.add_wall(parent, host_axis, host_fixed, portal_high, host_max,
+			host_h, host_color)
+
+	# Lintel above the wing where host_h > c_h, so the host room reads as
+	# enclosed at its own ceiling height.
+	if host_h > c_h + 0.05:
+		var lintel_h: float = host_h - c_h
+		var lintel_y: float = c_h + lintel_h / 2.0
+		var lintel_size: Vector3
+		var lintel_pos: Vector3
+		if host_axis == "x":
+			lintel_size = Vector3(0.2, lintel_h, c_w)
+			lintel_pos = Vector3(host_fixed, lintel_y, perp)
+		else:
+			lintel_size = Vector3(c_w, lintel_h, 0.2)
+			lintel_pos = Vector3(perp, lintel_y, host_fixed)
+		Chamber.make_prop_box(parent, lintel_size, lintel_pos, host_color, true, "lintel")
+
+	# Whichever end of the corridor is closest to the host wall is the portal
+	# end - that end gets seal=false (wing emits its own portal wall with the
+	# DOOR_W gap), the other end is sealed.
+	var along_min: float = float(cfg["along_min"])
+	var along_max: float = float(cfg["along_max"])
+	var portal_on_low: bool = abs(along_min - host_fixed) <= abs(along_max - host_fixed)
+	var wing_cfg: Dictionary = cfg.duplicate()
+	if portal_on_low:
+		wing_cfg["seal_low_end"] = false
+		wing_cfg["seal_high_end"] = bool(cfg.get("seal_high_end", true))
+	else:
+		wing_cfg["seal_high_end"] = false
+		wing_cfg["seal_low_end"] = bool(cfg.get("seal_low_end", true))
+	return stamp_corridor_wing(parent, wing_cfg)
+
+
 # --- Public: stamp a corridor with N side rooms ---------------------------
 # cfg: {
 #   theme: String                     (key into THEMES)

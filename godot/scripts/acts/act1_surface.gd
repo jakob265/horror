@@ -22,9 +22,26 @@ func _ready() -> void:
 	var wall := Color(0.34, 0.36, 0.40)
 	Chamber.add_floor_ceiling(self, 18, 20, 4.5, Color(0.46, 0.49, 0.55), Color(0.16, 0.17, 0.20))
 	Chamber.add_wall(self, "x", -9, -10, 10, 4.5, wall)
-	Chamber.add_wall(self, "x", 9, -10, 10, 4.5, wall)
+	# East wall: handled by RoomGen.add_side_wing below (it splits the wall
+	# around the wing portal at z=2 and grafts the supply spur eastward).
 	Chamber.add_wall(self, "z", 10, -9, 9, 4.5, wall)
 	Chamber.add_wall(self, "z", -10, -9, 9, 4.5, wall, 0.0)
+
+	# Side wing: an east-branching supply spur grafted onto the bay's east
+	# wall. The helper splits the original wall at x=9 around z[0,4] and
+	# emits a procedural wing east. ~5 rooms with the variety pass.
+	RoomGen.add_side_wing(self, {
+		"host_axis": "x", "host_fixed": 9.0,
+		"host_min": -10.0, "host_max": 10.0, "host_h": 4.5,
+		"host_color": wall,
+		"theme": "industrial", "axis": "x",
+		"along_min": 9.0, "along_max": 27.0, "perp": 2.0,
+		"corridor_w": 4.0, "corridor_h": 3.4,
+		"rooms_left": 2, "rooms_right": 2,
+		"room_depth": 6.5, "room_w_along": 5.5, "room_h": 3.0,
+		"seed": 1100,
+	})
+	ActUtil.wall_label(self, "SUPPLY", Vector3(8.85, 2.6, 2.0), 16, Color(0.7, 0.8, 0.9))
 
 	# Inner door (north) - sealed until power is restored.
 	exit_door = Chamber.add_door(self, "z", -10 + 0.05, 0, "INNER DOOR",

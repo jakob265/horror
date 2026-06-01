@@ -90,7 +90,19 @@ func _build_pantry() -> void:
 	# Pantry x -5..3 (centre -1, w=8), z -13..-7 (centre -10, d=6), h=3.0.
 	Chamber.add_floor_ceiling(self, 8, 6, 3.0, floor_c, ceil_c, Vector3(-1, 0, -10))
 	Chamber.add_wall(self, "x", -5, -13, -7, 3.0, WALL)
-	Chamber.add_wall(self, "x", 3, -13, -7, 3.0, WALL)
+	# East wall: split around the side-wing portal (z=-10, c_w=4) by helper.
+	RoomGen.add_side_wing(self, {
+		"host_axis": "x", "host_fixed": 3.0,
+		"host_min": -13.0, "host_max": -7.0, "host_h": 3.0,
+		"host_color": WALL,
+		"theme": "industrial", "axis": "x",
+		"along_min": 3.0, "along_max": 27.0, "perp": -10.0,
+		"corridor_w": 4.0, "corridor_h": 3.0,
+		"rooms_left": 3, "rooms_right": 0,
+		"room_depth": 5.5, "room_w_along": 5.0, "room_h": 2.9,
+		"seed": 3300,
+	})
+	ActUtil.wall_label(self, "PREP", Vector3(3.15, 2.6, -10.0), 16, Color(0.78, 0.84, 0.6))
 	Chamber.add_wall(self, "z", -13, -5, 3, 3.0, WALL)
 
 	# Shelves along three walls, food crates and ration boxes.

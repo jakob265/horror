@@ -108,7 +108,19 @@ func _build_corridor() -> void:
 	Chamber.add_floor_ceiling(self, 4, 16, 3.2, FLOOR, CEIL, Vector3(0, 0, -7))
 	# West wall has a doorway at z=-9 into the washroom annex; east wall solid.
 	Chamber.add_wall(self, "x", -2, -15, 1, 3.2, WALL, -9.0)
-	Chamber.add_wall(self, "x", 2, -15, 1, 3.2, WALL)
+	# East wall: split around the side-wing portal (z[-5,-1]) by add_side_wing.
+	RoomGen.add_side_wing(self, {
+		"host_axis": "x", "host_fixed": 2.0,
+		"host_min": -15.0, "host_max": 1.0, "host_h": 3.2,
+		"host_color": WALL,
+		"theme": "dorm", "axis": "x",
+		"along_min": 2.0, "along_max": 28.0, "perp": -3.0,
+		"corridor_w": 4.0, "corridor_h": 3.0,
+		"rooms_left": 3, "rooms_right": 0,
+		"room_depth": 6.0, "room_w_along": 5.5, "room_h": 3.0,
+		"seed": 2200,
+	})
+	ActUtil.wall_label(self, "B-WING", Vector3(2.15, 2.6, -3.0), 16, Color(0.78, 0.84, 0.6))
 	# Hide lockers recessed along the run (kill your lamp, then duck in).
 	ActUtil.hide_locker(self, Vector3(1.55, 0, -5.0), -90.0)
 	ActUtil.hide_locker(self, Vector3(-1.55, 0, -10.5), 90.0)

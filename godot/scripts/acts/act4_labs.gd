@@ -143,7 +143,19 @@ func _build_prep() -> void:
 	# z[4,12]. The storage z=4 wall already has the doorway gap at x=15.
 	Chamber.add_floor_ceiling(self, 8, 8, 3.2, FLOOR, CEIL, Vector3(15, 0, 8))
 	Chamber.add_wall(self, "x", 11, 4, 12, 3.2, WALL)
-	Chamber.add_wall(self, "x", 19, 4, 12, 3.2, WALL)
+	# East wall: split around the side-wing portal (z[6,10]) by helper.
+	RoomGen.add_side_wing(self, {
+		"host_axis": "x", "host_fixed": 19.0,
+		"host_min": 4.0, "host_max": 12.0, "host_h": 3.2,
+		"host_color": WALL,
+		"theme": "lab", "axis": "x",
+		"along_min": 19.0, "along_max": 37.0, "perp": 8.0,
+		"corridor_w": 4.0, "corridor_h": 3.0,
+		"rooms_left": 2, "rooms_right": 2,
+		"room_depth": 6.0, "room_w_along": 5.5, "room_h": 3.0,
+		"seed": 4400,
+	})
+	ActUtil.wall_label(self, "ARCHIVE", Vector3(19.15, 2.6, 8.0), 16, Color(0.78, 0.84, 0.6))
 	Chamber.add_wall(self, "z", 12, 11, 19, 3.2, WALL)
 
 	# Analysis bench, autoclave, centrifuge - all dead, all bloodied.

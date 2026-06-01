@@ -157,7 +157,19 @@ func _build_store() -> void:
 func _build_deep_freeze() -> void:
 	# Annex x 9..17 (centre 13, w=8), z 0..6 (centre 3, d=6), h=2.8 (lower).
 	Chamber.add_floor_ceiling(self, 8, 6, 2.8, FLOOR, CEIL, Vector3(13, 0, 3))
-	Chamber.add_wall(self, "x", 17, 0, 6, 2.8, WALL)
+	# East wall: split around the side-wing portal (z[1,5]) by helper.
+	RoomGen.add_side_wing(self, {
+		"host_axis": "x", "host_fixed": 17.0,
+		"host_min": 0.0, "host_max": 6.0, "host_h": 2.8,
+		"host_color": WALL,
+		"theme": "ice", "axis": "x",
+		"along_min": 17.0, "along_max": 35.0, "perp": 3.0,
+		"corridor_w": 4.0, "corridor_h": 2.8,
+		"rooms_left": 2, "rooms_right": 2,
+		"room_depth": 5.5, "room_w_along": 5.0, "room_h": 2.8,
+		"seed": 6600,
+	})
+	ActUtil.wall_label(self, "SPECIMEN", Vector3(17.15, 2.4, 3.0), 14, Color(0.7, 0.84, 0.9))
 	Chamber.add_wall(self, "z", 0, 9, 17, 2.8, WALL)
 	Chamber.add_wall(self, "z", 6, 9, 17, 2.8, WALL)
 

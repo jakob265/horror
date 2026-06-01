@@ -169,7 +169,19 @@ func _build_hall() -> void:
 func _build_fuel_bay() -> void:
 	# Bay x 10..18 (centre 14, w=8), z -7..-1 (centre -4, d=6), h=4.0.
 	Chamber.add_floor_ceiling(self, 8, 6, 4.0, FLOOR, CEIL, Vector3(14, 0, -4))
-	Chamber.add_wall(self, "x", 18, -7, -1, 4.0, WALL)
+	# East wall: split around the side-wing portal (z[-6,-2]) by helper.
+	RoomGen.add_side_wing(self, {
+		"host_axis": "x", "host_fixed": 18.0,
+		"host_min": -7.0, "host_max": -1.0, "host_h": 4.0,
+		"host_color": WALL,
+		"theme": "industrial", "axis": "x",
+		"along_min": 18.0, "along_max": 36.0, "perp": -4.0,
+		"corridor_w": 4.0, "corridor_h": 3.2,
+		"rooms_left": 2, "rooms_right": 2,
+		"room_depth": 6.5, "room_w_along": 5.5, "room_h": 3.2,
+		"seed": 5500,
+	})
+	ActUtil.wall_label(self, "FUEL CELLS", Vector3(18.15, 2.8, -4.0), 16, Color(0.78, 0.84, 0.6))
 	Chamber.add_wall(self, "z", -7, 10, 18, 4.0, WALL)
 	Chamber.add_wall(self, "z", -1, 10, 18, 4.0, WALL)
 
