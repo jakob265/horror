@@ -225,8 +225,8 @@ static func stamp_corridor_wing(parent: Node3D, cfg: Dictionary) -> int:
 		count += 1
 
 	# Atmosphere: dust in the corridor body so the wing reads as a real space.
+	# (c_len was already computed above for the stride math; reuse it.)
 	var c_center_along: float = (along_min + along_max) / 2.0
-	var c_len: float = along_max - along_min
 	var dust_center: Vector3 = _vec(axis, perp, c_center_along, c_h * 0.5)
 	var dust_extents: Vector3 = _vec(axis, c_w * 0.4, c_len * 0.45, c_h * 0.5)
 	ActUtil.add_dust_motes(parent, dust_center, dust_extents, max(20, int(c_len * 4.0)),
