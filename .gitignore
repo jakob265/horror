@@ -19,3 +19,6 @@ Thumbs.db
 # Local
 *.log
 voidfreq_audio_*/
+
+# Godot editor cache
+godot/.godot/

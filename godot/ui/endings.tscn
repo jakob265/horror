@@ -1,6 +1,18 @@
-[gd_scene load_steps=2 format=3 uid="uid://b1endings"]
+[gd_scene load_steps=3 format=3 uid="uid://b1endings"]
 
 [ext_resource type="Script" path="res://scripts/ui/endings.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="ContinueStyle"]
+bg_color = Color(0.06, 0.10, 0.16, 0.92)
+border_color = Color(0.42, 0.62, 0.78, 0.75)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+content_margin_left = 18
+content_margin_top = 10
+content_margin_right = 18
+content_margin_bottom = 10
 
 [node name="Endings" type="Control"]
 anchor_right = 1.0
@@ -11,6 +23,7 @@ script = ExtResource("1")
 color = Color(0, 0, 0, 1)
 anchor_right = 1.0
 anchor_bottom = 1.0
+mouse_filter = 2
 
 [node name="LinesBox" type="VBoxContainer" parent="."]
 anchor_left = 0.20
@@ -18,31 +31,55 @@ anchor_top = 0.18
 anchor_right = 0.80
 anchor_bottom = 0.85
 alignment = 0
-theme_override_constants/separation = 8
+theme_override_constants/separation = 6
+mouse_filter = 2
 
 [node name="Title" type="Label" parent="."]
 text = "VOID FREQUENCY"
 horizontal_alignment = 1
 anchor_left = 0.5
-anchor_top = 0.42
-offset_left = -220
-offset_right = 220
-theme_override_font_sizes/font_size = 42
-theme_override_colors/font_color = Color(0.90, 0.90, 0.94, 1)
+anchor_top = 0.40
+offset_left = -260
+offset_right = 260
+theme_override_font_sizes/font_size = 56
+theme_override_colors/font_color = Color(0.93, 0.95, 1.0, 1)
+theme_override_colors/font_shadow_color = Color(0.40, 0.62, 0.78, 0.7)
+theme_override_constants/shadow_outline_size = 14
+mouse_filter = 2
 
 [node name="Subtitle" type="Label" parent="."]
 horizontal_alignment = 1
 anchor_left = 0.5
 anchor_top = 0.52
-offset_left = -240
-offset_right = 240
-theme_override_font_sizes/font_size = 18
-theme_override_colors/font_color = Color(0.75, 0.78, 0.86, 1)
+offset_left = -280
+offset_right = 280
+theme_override_font_sizes/font_size = 20
+theme_override_colors/font_color = Color(0.78, 0.50, 0.42, 0.95)
+mouse_filter = 2
 
 [node name="Continue" type="Button" parent="."]
-text = "[ Return to Main Menu ]"
+text = "[ RETURN TO MAIN MENU ]"
 anchor_left = 0.5
-anchor_top = 0.72
-offset_left = -180
-offset_right = 180
-offset_bottom = 50
+anchor_top = 0.68
+offset_left = -200
+offset_top = -22
+offset_right = 200
+offset_bottom = 22
+theme_override_styles/normal = SubResource("ContinueStyle")
+theme_override_styles/hover = SubResource("ContinueStyle")
+theme_override_styles/focus = SubResource("ContinueStyle")
+theme_override_styles/pressed = SubResource("ContinueStyle")
+theme_override_colors/font_color = Color(0.82, 0.92, 1.0, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 16
+
+[node name="SkipHint" type="Label" parent="."]
+text = "press  E  /  ENTER  /  SPACE  to skip"
+horizontal_alignment = 1
+anchor_left = 0.5
+anchor_top = 0.94
+offset_left = -200
+offset_right = 200
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.42, 0.50, 0.62, 0.7)
+mouse_filter = 2

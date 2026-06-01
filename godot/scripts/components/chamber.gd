@@ -1,12 +1,20 @@
 class_name Chamber
 extends RefCounted
 # Shared geometry helpers. Mirrors scenes/_chamber.py.
+# Materials are routed through SurfaceFactory so every box gets PBR
+# (procedural normal + roughness + AO) keyed off the box name / tint.
 
 const DOOR_W := 1.4
 const DOOR_H := 2.4
 
+# Set by ActUtil.setup_lighting() so add_floor_ceiling can drop matching
+# ceiling fixtures automatically. Defaults to a cool clinical white.
+static var current_light_color: Color = Color(0.92, 0.95, 1.0)
+static var current_light_energy: float = 4.5
+static var current_light_range: float = 14.0
 
-static func _make_box(size: Vector3, position: Vector3, color: Color, name: String = "box", with_collider: bool = true) -> StaticBody3D:
+
+static func _make_box(size: Vector3, position: Vector3, color: Color, name: String = "box", with_collider: bool = true, surface: String = "") -> StaticBody3D:
 	var body := StaticBody3D.new()
 	body.name = name
 	body.position = position
@@ -14,10 +22,9 @@ static func _make_box(size: Vector3, position: Vector3, color: Color, name: Stri
 	var box := BoxMesh.new()
 	box.size = size
 	mesh.mesh = box
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = color
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
-	mesh.material_override = mat
+	var cat: String = surface if surface != "" else SurfaceFactory.infer_category(name, color)
+	mesh.material_override = SurfaceFactory.get_material(cat, color)
+	mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	body.add_child(mesh)
 	if with_collider:
 		var shape := CollisionShape3D.new()
@@ -33,6 +40,57 @@ static func add_floor_ceiling(parent: Node3D, w: float, d: float, h: float, floo
 	parent.add_child(floor_body)
 	var ceil_body := _make_box(Vector3(w, 0.2, d), center + Vector3(0, h, 0), ceiling_color, "ceiling")
 	parent.add_child(ceil_body)
+	_add_ceiling_fixtures(parent, w, d, h, center)
+
+
+static func _add_ceiling_fixtures(parent: Node3D, w: float, d: float, h: float, center: Vector3) -> void:
+	# Layout 1, 2, or 4 fixtures depending on room size, embedded just below
+	# the ceiling so they cast realistic downlight. Each fixture is an emissive
+	# panel + an OmniLight3D so the room reads even without the flashlight.
+	var positions: Array = []
+	var area := w * d
+	if area < 24.0:
+		positions = [Vector3(0, 0, 0)]
+	elif area < 80.0:
+		positions = [Vector3(0, 0, -d * 0.22), Vector3(0, 0, d * 0.22)]
+	else:
+		var hx: float = w * 0.22
+		var hz: float = d * 0.22
+		positions = [
+			Vector3(-hx, 0, -hz), Vector3(hx, 0, -hz),
+			Vector3(-hx, 0, hz),  Vector3(hx, 0, hz),
+		]
+	for p_raw in positions:
+		var p: Vector3 = center + p_raw + Vector3(0, h - 0.05, 0)
+		_make_ceiling_fixture(parent, p)
+
+
+static func _make_ceiling_fixture(parent: Node3D, pos: Vector3) -> void:
+	# Recessed emissive panel
+	var panel := MeshInstance3D.new()
+	panel.name = "ceiling_fixture"
+	var bm := BoxMesh.new()
+	bm.size = Vector3(0.9, 0.06, 0.5)
+	panel.mesh = bm
+	var emi := StandardMaterial3D.new()
+	emi.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+	emi.albedo_color = current_light_color
+	emi.emission_enabled = true
+	emi.emission = current_light_color
+	emi.emission_energy_multiplier = 3.0
+	panel.material_override = emi
+	panel.position = pos
+	parent.add_child(panel)
+	# Omni light below it
+	var light := OmniLight3D.new()
+	light.name = "ceiling_light"
+	light.light_color = current_light_color
+	light.light_energy = current_light_energy
+	light.omni_range = current_light_range
+	light.omni_attenuation = 1.4
+	light.shadow_enabled = false
+	light.position = pos + Vector3(0, -0.25, 0)
+	parent.add_child(light)
 
 
 static func add_wall(parent: Node3D, axis: String, fixed: float, span_min: float, span_max: float, h: float, color: Color, gap_center = null) -> void:
@@ -66,17 +124,58 @@ static func add_wall(parent: Node3D, axis: String, fixed: float, span_min: float
 			pos = Vector3(mid, h / 2, fixed)
 			size = Vector3(length, h, 0.2)
 		parent.add_child(_make_box(size, pos, color, "wall_seg"))
-	# Header above the opening
-	var header_h := h - DOOR_H
-	var hpos: Vector3
-	var hsize: Vector3
+	# Header above the opening — skip if the ceiling is below the door height
+	var header_h: float = max(0.0, h - DOOR_H)
+	if header_h > 0.001:
+		var hpos: Vector3
+		var hsize: Vector3
+		if axis == "x":
+			hpos = Vector3(fixed, DOOR_H + header_h / 2, gap_center)
+			hsize = Vector3(0.2, header_h, DOOR_W + 0.2)
+		else:
+			hpos = Vector3(gap_center, DOOR_H + header_h / 2, fixed)
+			hsize = Vector3(DOOR_W + 0.2, header_h, 0.2)
+		parent.add_child(_make_box(hsize, hpos, color, "header"))
+	# Frame every opening so it reads as a doorway, not a bare hole.
+	_add_doorframe(parent, axis, fixed, gap_center)
+
+
+# A door leaf swung open in the opening, so a doorway reads as a real door
+# rather than a bare hole. Non-colliding (purely visual) so it never blocks.
+static func _add_open_door(parent: Node3D, axis: String, fixed: float, gap_center: float) -> void:
+	var pivot := Node3D.new()
+	var leaf_size: Vector3
+	var leaf_offset: Vector3
 	if axis == "x":
-		hpos = Vector3(fixed, DOOR_H + header_h / 2, gap_center)
-		hsize = Vector3(0.2, header_h, DOOR_W + 0.2)
+		pivot.position = Vector3(fixed + 0.13, 0, gap_center - DOOR_W / 2.0)
+		leaf_size = Vector3(0.07, DOOR_H - 0.05, DOOR_W)
+		leaf_offset = Vector3(0, DOOR_H / 2.0, DOOR_W / 2.0)
 	else:
-		hpos = Vector3(gap_center, DOOR_H + header_h / 2, fixed)
-		hsize = Vector3(DOOR_W + 0.2, header_h, 0.2)
-	parent.add_child(_make_box(hsize, hpos, color, "header"))
+		pivot.position = Vector3(gap_center - DOOR_W / 2.0, 0, fixed + 0.13)
+		leaf_size = Vector3(DOOR_W, DOOR_H - 0.05, 0.07)
+		leaf_offset = Vector3(DOOR_W / 2.0, DOOR_H / 2.0, 0)
+	pivot.rotation_degrees.y = 112.0
+	var leaf := _make_box(leaf_size, leaf_offset, Color(0.20, 0.22, 0.26), "door_leaf", false, SurfaceFactory.CAT_WALL_METAL)
+	pivot.add_child(leaf)
+	parent.add_child(pivot)
+
+
+# A framed doorway with an invisible collision wall over the opening - the
+# entry you came through, blocked so you can't back out into the void.
+static func invis_wall(parent: Node3D, axis: String, fixed: float, gap_center: float) -> void:
+	_add_doorframe(parent, axis, fixed, gap_center)
+	var body := StaticBody3D.new()
+	var col := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	if axis == "x":
+		box.size = Vector3(0.4, 4.0, DOOR_W + 0.8)
+		body.position = Vector3(fixed, 2.0, gap_center)
+	else:
+		box.size = Vector3(DOOR_W + 0.8, 4.0, 0.4)
+		body.position = Vector3(gap_center, 2.0, fixed)
+	col.shape = box
+	body.add_child(col)
+	parent.add_child(body)
 
 
 static func add_door(parent: Node3D, axis: String, fixed: float, gap_center: float, label: String, color: Color, on_open: Callable = Callable(), interact_label: String = "", sealed: bool = false) -> Node3D:
@@ -88,7 +187,7 @@ static func add_door(parent: Node3D, axis: String, fixed: float, gap_center: flo
 	else:
 		size = Vector3(DOOR_W, DOOR_H, 0.10)
 		pos = Vector3(gap_center, DOOR_H / 2, fixed)
-	var door := _make_box(size, pos, color, "door_" + label)
+	var door := _make_box(size, pos, color, "door_" + label, true, SurfaceFactory.CAT_WALL_METAL)
 	parent.add_child(door)
 	if not sealed:
 		var lbl := interact_label if interact_label != "" else ("Open " + label)
@@ -110,6 +209,48 @@ static func add_door(parent: Node3D, axis: String, fixed: float, gap_center: flo
 					on_open.call()
 		})
 	return door
+
+
+static func _add_doorframe(parent: Node3D, axis: String, fixed: float, gap_center: float) -> void:
+	# A thin emissive trim around the door so it reads as a portal even unlit.
+	var trim_col := Color(0.18, 0.32, 0.42)
+	var trim_emit := Color(0.45, 0.78, 0.95)
+	var thickness := 0.03
+	var depth := 0.18
+	var horiz: Vector3
+	var vert: Vector3
+	var top_pos: Vector3
+	var left_pos: Vector3
+	var right_pos: Vector3
+	if axis == "x":
+		# wall runs along z; door normal is x
+		horiz = Vector3(depth, thickness, DOOR_W + 2 * thickness)
+		vert = Vector3(depth, DOOR_H, thickness)
+		top_pos = Vector3(fixed, DOOR_H + thickness / 2, gap_center)
+		left_pos = Vector3(fixed, DOOR_H / 2, gap_center - DOOR_W / 2 - thickness / 2)
+		right_pos = Vector3(fixed, DOOR_H / 2, gap_center + DOOR_W / 2 + thickness / 2)
+	else:
+		horiz = Vector3(DOOR_W + 2 * thickness, thickness, depth)
+		vert = Vector3(thickness, DOOR_H, depth)
+		top_pos = Vector3(gap_center, DOOR_H + thickness / 2, fixed)
+		left_pos = Vector3(gap_center - DOOR_W / 2 - thickness / 2, DOOR_H / 2, fixed)
+		right_pos = Vector3(gap_center + DOOR_W / 2 + thickness / 2, DOOR_H / 2, fixed)
+	for entry in [[horiz, top_pos], [vert, left_pos], [vert, right_pos]]:
+		var bm := MeshInstance3D.new()
+		var box := BoxMesh.new()
+		box.size = entry[0]
+		bm.mesh = box
+		var mat := StandardMaterial3D.new()
+		mat.shading_mode = BaseMaterial3D.SHADING_MODE_PER_PIXEL
+		mat.albedo_color = trim_col
+		mat.emission_enabled = true
+		mat.emission = trim_emit
+		mat.emission_energy_multiplier = 0.9
+		mat.metallic = 0.6
+		mat.roughness = 0.4
+		bm.material_override = mat
+		bm.position = entry[1]
+		parent.add_child(bm)
 
 
 static func add_room(parent: Node3D, w: float, d: float, h: float, floor_color: Color, ceiling_color: Color, wall_color: Color, center: Vector3 = Vector3.ZERO, entry: Dictionary = {}, exits: Array = []) -> Dictionary:
@@ -141,7 +282,39 @@ static func add_room(parent: Node3D, w: float, d: float, h: float, floor_color: 
 
 
 # Quick textured-box helper for props
-static func make_prop_box(parent: Node3D, size: Vector3, position: Vector3, color: Color, with_collider: bool = true, name: String = "prop") -> StaticBody3D:
-	var b := _make_box(size, position, color, name, with_collider)
+static func make_prop_box(parent: Node3D, size: Vector3, position: Vector3, color: Color, with_collider: bool = true, name: String = "prop", surface: String = "") -> StaticBody3D:
+	var b := _make_box(size, position, color, name, with_collider, surface)
 	parent.add_child(b)
 	return b
+
+
+# A proper chair: thin seat on four legs with a backrest, instead of a solid
+# block. Returns the StaticBody3D root (one collider for the whole chair) so it
+# can be rotated/tipped and handed to Interactable.attach. The open front faces
+# +Z in local space; set facing_deg so the backrest points away from the table.
+static func make_chair(parent: Node3D, base: Vector3, color: Color, facing_deg: float = 0.0, seat_h: float = 0.45) -> StaticBody3D:
+	var root := StaticBody3D.new()
+	root.name = "chair"
+	root.position = base
+	root.rotation_degrees = Vector3(0, facing_deg, 0)
+	parent.add_child(root)
+	# Single block collider covering the whole chair so the player can't walk through.
+	var shape := CollisionShape3D.new()
+	var col := BoxShape3D.new()
+	var total_h := seat_h + 0.62
+	col.size = Vector3(0.50, total_h, 0.50)
+	shape.shape = col
+	shape.position = Vector3(0, total_h / 2.0, -0.06)
+	root.add_child(shape)
+	var leg_color := color.darkened(0.3)
+	var parts := [
+		[Vector3(0.46, 0.07, 0.46), Vector3(0, seat_h, 0), color],              # seat
+		[Vector3(0.46, 0.55, 0.06), Vector3(0, seat_h + 0.30, -0.21), color],   # backrest
+	]
+	for lz in [-0.18, 0.18]:
+		for lx in [-0.18, 0.18]:
+			parts.append([Vector3(0.05, seat_h, 0.05), Vector3(lx, seat_h / 2.0, lz), leg_color])
+	for p in parts:
+		var part := _make_box(p[0], p[1], p[2], "chair_part", false)
+		root.add_child(part)
+	return root

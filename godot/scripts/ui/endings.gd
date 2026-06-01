@@ -1,93 +1,91 @@
 extends Control
-# Endings A (DESTROY) and B (LISTEN). Mirrors systems/endings.py.
+# VESPER endings: SEAL (leave it to dream), BURN (destroy it), SUCCUMB (join it),
+# MERCY (let it sleep - reached only by laying the gun down in the boss's final
+# phase, after it asks in Kael's voice).
 
 signal finished
 
-const ENDING_A := [
-	"The array is silent.",
+const ENDING_SEAL := [
+	"The charges go down the shaft in a string of red lights.",
 	"",
-	"OLEN's voice stops mid-sentence.",
-	"You don't hear the rest of it.",
+	"You climb while the ice screams shut beneath you.",
 	"",
-	"You stand in the dark for a long time.",
+	"A thousand metres of glacier sits back down over the wound,",
+	"the way it sat before there were names for anything.",
 	"",
-	"You find the emergency beacon in the supply cabinet.",
-	"You activate it.",
-	"In 72 hours, a rescue vessel will arrive.",
+	"You break the surface into a grey, enormous dawn -",
+	"the first light in twenty-one days. It does not warm you.",
 	"",
-	"You sit down in the corridor outside Felix's cabin.",
-	"You don't go inside.",
-	"You look at the drawing on the floor through the open door.",
-	"You don't move it.",
+	"Your report will say: total loss. Cause undetermined.",
+	"It will not say that you closed a door, not an ending -",
 	"",
-	"You think about Eli.",
-	"You think about all of it.",
-	"You let yourself think about all of it.",
-	"",
-	"You realize you haven't done that before. Not all the way.",
-	"You let yourself.",
-	"",
-	"When the rescue ship comes, there is a message waiting.",
-	"It is from Amara Okafor, age seven.",
-	"She wants to know if you knew her dad.",
-	"She wants to know if he was happy.",
-	"",
-	"You write back.",
-	"You tell her he was.",
-	"You tell her he talked about her every day.",
-	"You tell her that he called her his favorite thing in the universe",
-	"and that you know for certain he meant it.",
-	"",
-	"She writes back three words.",
-	"'Thank you, Mara.'",
-	"",
-	"You didn't know she knew your name.",
-	"",
-	"You realize Felix must have told her.",
-	"Some Sunday, on some call, he must have talked about you.",
-	"",
-	"You let that be real.",
-	"You let it matter.",
+	"that something under the oldest ice on earth is dreaming,",
+	"that it knows your name now,",
+	"and that it is patient.",
 ]
 
-const ENDING_B := [
-	"You understand now.",
+const ENDING_BURN := [
+	"You open the fuel lines and walk the flare to the lip.",
 	"",
-	"It was never malicious.",
-	"It was just a pattern looking for a shape to take.",
-	"It found yours.",
+	"The dark breathes up at you. It speaks - in Kael's voice,",
+	"in Renn's, in one almost your own - and asks you to stay.",
 	"",
-	"The grief.",
-	"The guilt.",
-	"The door you never closed.",
+	"You drop the flare.",
 	"",
-	"It walked in.",
+	"The nest burns like it has wanted to for ten thousand years.",
+	"The screaming is six people you came to save.",
+	"It is grateful.",
 	"",
-	"You are still here.",
-	"You are still - you.",
-	"But the edges of you are softer now.",
-	"Less separate.",
+	"You run up through the fire and you do not look back.",
+	"Dawn, when you reach it, is the colour of the flare.",
 	"",
-	"You think about Eli.",
-	"For the first time, it doesn't hurt.",
-	"You don't ask yourself if that is mercy or erasure.",
-	"You have stopped being able to tell the difference.",
+	"You killed it. You are almost sure you killed it.",
+	"You will be almost sure for the rest of your life.",
+]
+
+const ENDING_MERCY := [
+	"You lower the gun.",
 	"",
-	"You stand very still.",
-	"You face the wall.",
+	"You did not have words for what the thing in front of you was",
+	"until it asked for sleep in a voice you'd have known anywhere.",
 	"",
-	"Somewhere in the station, something wakes up.",
-	"It finds its way to you.",
-	"It stands beside you.",
+	"You did not kill it. You did not stay. You let it lie down.",
 	"",
-	"In the frequency, something that was Felix says your name.",
-	"You know it isn't Felix.",
-	"You answer anyway.",
+	"The chamber dims like a lamp being lifted away.",
+	"The cocooned go quiet, one by one, the way a room goes quiet",
+	"when the people in it are finally able to rest.",
 	"",
-	"The station broadcasts.",
-	"Into the dark.",
-	"Calling.",
-	"Waiting for someone to hear.",
+	"You walk out alone. The cavity does not follow.",
+	"The ice does not seal it - the ice does not need to.",
+	"",
+	"You file no report. There would be no way to say it.",
+	"",
+	"You think about them, every winter, when the light goes early.",
+	"You think they are sleeping. You think you are not lying to yourself.",
+	"You are not entirely sure.",
+	"",
+	"You did the kindest thing you could think of.",
+	"You will spend the rest of your life trusting that that was enough.",
+]
+
+
+const ENDING_SUCCUMB := [
+	"You stop running.",
+	"",
+	"It is such a small thing, stopping.",
+	"The warmth comes up to meet you, and it gets it exactly right.",
+	"",
+	"Everyone the cold ever took from you is in there, waiting.",
+	"You go to them. You have been going the whole way down.",
+	"",
+	"Far above, a traverse finds an empty station and turns back.",
+	"They log seven lost instead of six.",
+	"They never find the seventh.",
+	"",
+	"In the warm dark, something that is partly you",
+	"settles in to wait for the next light to come down.",
+	"",
+	"You are not afraid anymore. You are not alone anymore.",
 ]
 
 @onready var bg: ColorRect = $BG
@@ -95,60 +93,118 @@ const ENDING_B := [
 @onready var title: Label = $Title
 @onready var subtitle: Label = $Subtitle
 @onready var button: Button = $Continue
+@onready var skip_hint: Label = $SkipHint
 
 var button_armed := false
+var streaming := false
+var _pending_lines: Array = []
+var _pending_sub: String = ""
 
 
 func _ready() -> void:
 	title.visible = false
 	subtitle.visible = false
 	button.visible = false
+	if skip_hint:
+		skip_hint.visible = false
 	button.pressed.connect(_on_continue)
+	process_mode = Node.PROCESS_MODE_ALWAYS
 
 
-func play_ending_a() -> void:
+func play_ending_seal() -> void:
 	AudioManager.ramp_ending_hum(0.50, 2.0)
 	get_tree().create_timer(2.1).timeout.connect(AudioManager.cut_hum)
 	bg.color = Color(0, 0, 0, 1)
-	_stream(ENDING_A, 4.0, 1.4, 1.2, "You came back.")
+	_stream(ENDING_SEAL, 2.0, 0.6, 0.62, "You sealed it.")
 
 
-func play_ending_b() -> void:
-	AudioManager.ramp_ending_hum(0.35, 8.0)
-	bg.color = Color(1.0, 0.86, 0.71, 0)
+func play_ending_burn() -> void:
+	AudioManager.ramp_ending_hum(0.45, 3.0)
+	bg.color = Color(0.5, 0.12, 0.05, 0)
 	var tween := create_tween()
-	tween.tween_property(bg, "color", Color(1.0, 0.86, 0.71, 1), 4.0).set_delay(2.0)
-	tween.tween_property(bg, "color", Color(0, 0, 0, 1), 2.0).set_delay(0.5)
-	_stream(ENDING_B, 9.0, 1.4, 1.1, "Something answered.")
+	tween.tween_property(bg, "color", Color(0.6, 0.18, 0.06, 1), 2.5).set_delay(1.0)
+	tween.tween_property(bg, "color", Color(0, 0, 0, 1), 2.2).set_delay(0.6)
+	_stream(ENDING_BURN, 2.0, 0.6, 0.62, "You burned it out.")
+
+
+func play_ending_succumb() -> void:
+	AudioManager.ramp_ending_hum(0.35, 6.0)
+	bg.color = Color(0.7, 0.78, 0.9, 0)
+	var tween := create_tween()
+	tween.tween_property(bg, "color", Color(0.7, 0.78, 0.9, 1), 3.5).set_delay(1.5)
+	tween.tween_property(bg, "color", Color(0, 0, 0, 1), 2.0).set_delay(0.4)
+	_stream(ENDING_SUCCUMB, 4.0, 0.6, 0.6, "You stayed.")
+
+
+func play_ending_mercy() -> void:
+	AudioManager.ramp_ending_hum(0.30, 4.0)
+	get_tree().create_timer(2.4).timeout.connect(AudioManager.cut_hum)
+	bg.color = Color(0.04, 0.06, 0.09, 1)
+	var tween := create_tween()
+	tween.tween_property(bg, "color", Color(0.02, 0.03, 0.05, 1), 4.0).set_delay(1.0)
+	_stream(ENDING_MERCY, 2.4, 0.6, 0.62, "You let it sleep.")
 
 
 func _stream(lines: Array, start_delay: float, gap_blank: float, gap_line: float, sub: String) -> void:
+	streaming = true
+	_pending_sub = sub
+	_pending_lines.clear()
 	var delay := start_delay
 	for raw in lines:
 		var line: String = raw.strip_edges()
 		if line == "":
 			delay += gap_blank
 			continue
-		var current_delay := delay
-		get_tree().create_timer(current_delay).timeout.connect(
-			func(): _add_line(line)
-		)
+		_pending_lines.append({"at": delay, "text": line})
 		delay += gap_line
-	# Show title + button
-	get_tree().create_timer(delay + 2.0).timeout.connect(
-		func():
-			for c in lines_box.get_children():
-				c.queue_free()
-			title.visible = true
-			subtitle.text = sub
-			subtitle.visible = true
+	get_tree().create_timer(1.5).timeout.connect(_show_skip_hint)
+	_tick_lines(0)
+	_schedule_finish(delay + 1.4)
+
+
+func _tick_lines(idx: int) -> void:
+	if not streaming or idx >= _pending_lines.size():
+		return
+	var entry: Dictionary = _pending_lines[idx]
+	var at: float = float(entry["at"])
+	var t := get_tree().create_timer(at if idx == 0 else max(0.05, float(_pending_lines[idx]["at"]) - float(_pending_lines[idx - 1]["at"])))
+	t.timeout.connect(func():
+		if not streaming or not is_instance_valid(self):
+			return
+		_add_line(entry["text"])
+		_tick_lines(idx + 1)
 	)
-	get_tree().create_timer(delay + 5.0).timeout.connect(
-		func():
-			button.visible = true
-			button_armed = true
-			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+
+func _schedule_finish(after: float) -> void:
+	get_tree().create_timer(after).timeout.connect(func():
+		if not streaming or not is_instance_valid(self):
+			return
+		_show_finish()
 	)
+
+
+func _show_skip_hint() -> void:
+	if skip_hint and is_instance_valid(skip_hint):
+		skip_hint.visible = true
+		var tween := create_tween()
+		skip_hint.modulate.a = 0.0
+		tween.tween_property(skip_hint, "modulate:a", 1.0, 0.8)
+
+
+func _show_finish() -> void:
+	for c in lines_box.get_children():
+		c.queue_free()
+	title.visible = true
+	subtitle.text = _pending_sub
+	subtitle.visible = true
+	if skip_hint:
+		skip_hint.visible = false
+	button.visible = true
+	button_armed = true
+	streaming = false
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	button.grab_focus()
 
 
 func _add_line(line: String) -> void:
@@ -156,16 +212,20 @@ func _add_line(line: String) -> void:
 	lbl.text = line
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.add_theme_font_size_override("font_size", 16)
-	lbl.add_theme_color_override("font_color", Color(0.90, 0.90, 0.92, 0.0))
+	lbl.add_theme_color_override("font_color", Color(0.90, 0.90, 0.92, 1.0))
+	lbl.modulate.a = 0.0
 	lines_box.add_child(lbl)
 	var tween := create_tween()
-	tween.tween_property(lbl, "modulate:a", 1.0, 0.8)
+	tween.tween_property(lbl, "modulate:a", 1.0, 0.5)
 
 
 func handle_input(event: InputEvent) -> void:
-	if not button_armed: return
-	if event is InputEventKey and event.pressed:
-		if event.keycode in [KEY_ENTER, KEY_E, KEY_SPACE]:
+	if event is InputEventKey and event.pressed and not event.echo:
+		if streaming and event.keycode in [KEY_ENTER, KEY_E, KEY_SPACE, KEY_ESCAPE]:
+			streaming = false
+			_show_finish()
+			return
+		if button_armed and event.keycode in [KEY_ENTER, KEY_E, KEY_SPACE]:
 			_on_continue()
 
 

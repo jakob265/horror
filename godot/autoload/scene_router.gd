@@ -4,20 +4,23 @@ extends Node
 signal scene_changed(act_name: String)
 
 const ACT_SCENES := {
-	"act1":         "res://scenes/acts/act1_cryo.tscn",
-	"act2":         "res://scenes/acts/act2_decon.tscn",
-	"act_med":      "res://scenes/acts/act_med.tscn",
-	"act3":         "res://scenes/acts/act3_corridor.tscn",
-	"act4":         "res://scenes/acts/act4_lounge.tscn",
-	"act_mess":     "res://scenes/acts/act_mess.tscn",
-	"act5":         "res://scenes/acts/act5_lab.tscn",
-	"act6":         "res://scenes/acts/act6_hydro.tscn",
-	"act7":         "res://scenes/acts/act7_engineering.tscn",
-	"act_storage":  "res://scenes/acts/act_storage.tscn",
-	"act8":         "res://scenes/acts/act8_bridge.tscn",
-	"act_maint":    "res://scenes/acts/act_maint.tscn",
-	"act9":         "res://scenes/acts/act9_approach.tscn",
-	"act10":        "res://scenes/acts/act10_array.tscn",
+	"act0":  "res://scenes/acts/act0_outer.tscn",        # The Outer Station
+	"act1":  "res://scenes/acts/act1_surface.tscn",     # The Surface
+	"act1_5": "res://scenes/acts/act1_5_oldwing.tscn",   # The Old Wing
+	"act2":  "res://scenes/acts/act2_dormitory.tscn",   # The Dormitory Wing
+	"act3":  "res://scenes/acts/act3_mess.tscn",         # The Mess & Infirmary
+	"act3_5": "res://scenes/acts/act3_5_crawl.tscn",     # The Crawl Space
+	"act4":  "res://scenes/acts/act4_labs.tscn",         # The Sample Labs
+	"act4_5": "res://scenes/acts/act4_5_crestfall.tscn", # Crestfall-9
+	"act5":  "res://scenes/acts/act5_generator.tscn",    # The Generator Hall
+	"act6":  "res://scenes/acts/act6_morgue.tscn",       # Cold Storage
+	"act6_5": "res://scenes/acts/act6_5_evac.tscn",      # Evac Sublevel
+	"act7":  "res://scenes/acts/act7_shaft.tscn",        # The Drill Shaft
+	"act7_5": "res://scenes/acts/act7_5_deep.tscn",      # Deep Drill 1500-2000m
+	"act8":  "res://scenes/acts/act8_caves.tscn",        # The Ice Caves
+	"act8_5": "res://scenes/acts/act8_5_cathedral.tscn", # The Bone Cathedral
+	"act9":  "res://scenes/acts/act9_chamber.tscn",      # The Sealed Chamber
+	"act10": "res://scenes/acts/act10_choice.tscn",      # The Choice
 }
 
 var world_root: Node3D = null
@@ -74,6 +77,9 @@ func _build(act_name: String) -> void:
 		return
 	current_scene = packed.instantiate()
 	world_root.add_child(current_scene)
+	# Bake the hunter's navmesh now that the act's geometry is in the tree.
+	if current_scene is Node3D:
+		ActUtil.bake_navmesh(current_scene)
 
 
 func _fade_to_black(duration: float, on_done: Callable) -> void:

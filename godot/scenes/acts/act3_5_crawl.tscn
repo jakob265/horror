@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b35act3_5_crawl"]
+
+[ext_resource type="Script" path="res://scripts/acts/act3_5_crawl.gd" id="1"]
+
+[node name="act3_5_crawl" type="Node3D"]
+script = ExtResource("1")

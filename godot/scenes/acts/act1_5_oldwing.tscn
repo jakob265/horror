@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b15act1_5_oldwing"]
+
+[ext_resource type="Script" path="res://scripts/acts/act1_5_oldwing.gd" id="1"]
+
+[node name="act1_5_oldwing" type="Node3D"]
+script = ExtResource("1")

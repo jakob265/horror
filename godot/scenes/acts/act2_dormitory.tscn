@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b2act2_dormitory"]
+
+[ext_resource type="Script" path="res://scripts/acts/act2_dormitory.gd" id="1"]
+
+[node name="act2_dormitory" type="Node3D"]
+script = ExtResource("1")

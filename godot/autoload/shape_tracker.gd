@@ -15,10 +15,25 @@ func clear() -> void:
 	AudioManager.set_signal_proximity_volume(0.0)
 
 
-func update(player_pos: Vector3, dt: float) -> void:
-	var target: float = 0.0
+func reset_stalkers(player_pos: Vector3) -> void:
 	for s in shapes:
-		if not is_instance_valid(s) or not s.visible:
+		if is_instance_valid(s) and s.has_method("reset_stalk"):
+			s.reset_stalk(player_pos)
+
+
+func update(player_pos: Vector3, dt: float) -> void:
+	# Prune freed shapes (e.g. peekers that vanished for good).
+	for i in range(shapes.size() - 1, -1, -1):
+		if not is_instance_valid(shapes[i]):
+			shapes.remove_at(i)
+	var target: float = 0.0
+	var camera: Camera3D = InteractionManager.camera
+	for s in shapes:
+		if not is_instance_valid(s):
+			continue
+		if s.has_method("update_behavior"):
+			s.update_behavior(player_pos, camera, dt)
+		if not s.visible:
 			continue
 		var d: float = s.global_position.distance_to(player_pos)
 		if d < 4.0:

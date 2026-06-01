@@ -6,9 +6,70 @@ const ORDER := [
 	"note_1", "note_2", "note_3", "note_4", "note_5", "note_6", "note_7",
 	"note_8", "note_9", "note_10", "note_11", "note_12", "note_13",
 	"note_14", "note_15", "note_16", "note_17", "note_18",
+	"v_arrival", "v_bay", "v_bunk", "v_quarters", "v_mess", "v_infirm", "v_labs", "v_gen", "v_morgue", "v_shaft", "v_caves", "v_chamber",
 ]
 
 const ALL := {
+	"v_arrival": {
+		"title": "RELIEF DISPATCH - Vesper Station",
+		"location": "Clipboard, loading bay",
+		"body": "CONTRACT 4471-K. You're the relief tech. You already know the shape of it: Vesper went quiet twenty-one days ago, mid-storm, and the company would rather pay you than write off the hardware.\n\nLast packet we logged was four seconds of carrier and one word, repeated, that the decoder won't print. Probably ice on the dish. Probably.\n\nJob's simple. Get the aux generator lit so the locks and the heat come back. Find the six of them - Kael, Renn, Pak, Bell, Frey, Sundqvist - and sit tight. The traverse comes for all of you when the weather breaks. Not before.\n\nYour lamp is the only light that works down here until you fix that. [F] switches it. [R] drops in a fresh cell when one dies - and they die fast, so don't burn light you don't need."
+	},
+	"v_bay": {
+		"title": "Scratched into the generator housing",
+		"location": "Loading bay",
+		"body": "WE CUT THE POWER OURSELVES. don't undo it. it follows the light - the bright rooms are where they went.\n\nif you lit the gen to read this then turn it off and go back up the ice while you still cast a shadow worth keeping.\n\n- too late for Bell"
+	},
+	"v_bunk": {
+		"title": "Bunk diary - T. Renn",
+		"location": "Dormitory, lower bunk",
+		"body": "Day 9 since the drill broke through. We pulled up a core that wasn't core - dark, soft, warm to the touch at minus forty. Kael sealed it in the sample lab and we all pretended that was the end of it.\n\nIt wasn't. Frey stopped sleeping first. Then Pak. They'd just stand in the dark rooms with the lights off and their eyes open. When I asked Pak what she was looking at she said 'it's easier to see when you stop trying to.'\n\nWe cut the breakers wing by wing. Kael swears it can't find you in the dark - that it tracks the light, the warm, the moving. So we take shifts in the lockers now, breathing slow, waiting for the thing in the corridor to pass.\n\nIf that sounds like madness, good. Madness I could fix. This I can't."
+	},
+	"v_quarters": {
+		"title": "Wing lockdown - Dr. I. Kael",
+		"location": "Crew quarters desk",
+		"body": "I'm logging this in case logging still means anything.\n\nThe dormitory wing is sealed. The key is on my desk and I am leaving it there on purpose, because I am not going to need it again and someone might.\n\nRules, for whoever you are: kill your lamp when you hear it. Don't run in a straight line where it can see the length of you. Get small, get dark, get behind a door. It is fast and it is patient and it used to be Aldous Frey, which is the part I can't write about yet.\n\nThe door north opens on the mess, and past that the labs, and past that the shaft we should never have drilled. Don't go down. You'll go down. Everyone goes down.\n\n- Iris"
+	},
+	"v_mess": {
+		"title": "Mess roster, scrawled over",
+		"location": "Mess hall counter",
+		"body": "Someone's crossed out three weeks of duty names and written across the whole sheet in grease pencil:\n\nWE DON'T EAT TOGETHER ANYMORE. we don't do anything together. Frey just watches.\n\nlower, smaller: meds cabinet still locked, code's Pak's birthday 0317, if your hands shake bad enough to need it you've earned it.\n\nand at the very bottom, pressed so hard it tore the paper: IT IS WEARING SUNDQVIST NOW. DO NOT ANSWER IF HE CALLS YOU BY YOUR FIRST NAME."
+	},
+	"v_infirm": {
+		"title": "Infirmary log - Dr. S. Pak",
+		"location": "Infirmary, clipboard",
+		"body": "Patients: all of them. Symptoms: none I can name.\n\nNo fever, no lesions, no neurological deficit on any test I can still run. They are, by every instrument I own, perfectly healthy. They have simply stopped being afraid of the dark, and started being afraid of each other.\n\nI took a tissue sample from the core in the lab. Under the scope it isn't cells. It's the same dark filament, branching, and when I leave the slide in the warm it grows toward the lamp. Toward the light. Always the light.\n\nI think we are all slides now. I think it left us in the warm and it is growing us toward something.\n\nWhoever finds this: the labs key is on the breaker side. Restore the line, take the door, and please - turn the lights back off behind you."
+	},
+	"v_labs": {
+		"title": "Sample lab - Dr. R. Sundqvist",
+		"location": "Sample lab workstation",
+		"body": "We kept it at minus sixty and it grew anyway. We kept it dark and it grew toward the inspection lamp, every filament of it, like a field of black wheat leaning at a sun.\n\nKael calls it a specimen. It is not a specimen. A specimen is dead or it is studied; this is neither. I have stopped calling it the core. In my notes now I call it the seed, because that is what it is doing - it is planting.\n\nThe containment cracked on day eleven. Not from inside. The lock simply opened, from the panel, in Frey's hand, while Frey stood very still and watched it the way you watch someone you love sleeping.\n\nWe should have left it in the ice. Write that on my headstone if there's anyone left to cut one. WE SHOULD HAVE LEFT IT IN THE ICE.\n\nIt knows my name now. When it uses my voice it gets the warmth right. That's the cruel part. It gets the warmth exactly right."
+	},
+	"v_gen": {
+		"title": "Plant log - T. Renn (eng.)",
+		"location": "Generator hall control desk",
+		"body": "Whoever's reading this wants the main bus back. Of course you do. Heat, locks, light. I wanted it too, at first.\n\nSequence is taped to the desk: prime COOLANT with the wheel-handle, charge FUEL with a can off the rack, then throw the main breaker. Three greens and she lights.\n\nHere's what the manual won't tell you. The second this hall goes bright, every dark thing in Vesper turns and looks at it. You will have maybe ninety seconds of light before it's standing in it with you. Use them to leave. Do not stand and admire your work.\n\nI lit her four times trying to raise the traverse on a warm line. Four times I had to kill her again and run. The fifth time I didn't get to her in time.\n\nIf you're me-shaped and still reading: I'm sorry about the hall. I'm sorry about all of it. - R"
+	},
+	"v_morgue": {
+		"title": "Cold store tally",
+		"location": "Cold storage",
+		"body": "We brought them here because it was the coldest room and that felt like the decent thing. Six drawers. We labelled them. We are scientists; we labelled them.\n\nThey did not stay in the drawers.\n\nNot walking - nothing so simple you could shoot it. Just: you'd seal a drawer at the start of a shift and find it open at the end, and the body a little nearer the lamp, and no one would admit to having moved it.\n\nSo we locked the cold store. From the outside. As if the cold were the thing we needed to keep in.\n\nIt isn't slowed by cold. I should have understood that from the first core sample. Cold is not its weakness. Cold is its country. We drilled a hole into its country and we are standing in the doorway with the light on, surprised that something came to look.\n\nDon't trust a face you find down here. Especially not a kind one."
+	},
+	"v_shaft": {
+		"title": "Drill log - A. Frey",
+		"location": "Shaft head, clipboard",
+		"body": "Final depth 1,114 m. We stopped because we broke through into a void - an open cavity in the ice that has no business existing at this depth, this temperature, this pressure. The drill string just dropped, free, for two full seconds.\n\nThere is a space down there. A big one. Older than the ice around it by every dating method we've got, which is impossible, because the ice IS the oldest thing here. Something is down there that the glacier formed around the way a pearl forms around grit.\n\nThe cage only goes down. Kael keeps saying that like it's reassuring. It only goes down.\n\nI have been having the thought, lately, that we did not find the cavity. That the cavity has been waiting, and it let us drill, the way you'd hold still and let a mosquito land.\n\nI'm going down again tomorrow. I want to. That's the part I can't explain to the others. I want to go down.\n\n- Frey"
+	},
+	"v_caves": {
+		"title": "Last entry - Dr. I. Kael",
+		"location": "The cavity",
+		"body": "It isn't many. I have to write this down while I still know it.\n\nI keep counting six shapes in the dark and there are not six of anything down here. There is one. The cavity is one body, and the ice grew around it the way skin grows, and we drilled through the skin and were surprised that it flinched.\n\nThe crew aren't dead. They aren't alive. They're it now, wearing them - the way your hand is you. When Frey speaks to me in the dark it is not Frey and it is also, exactly and unbearably, Frey.\n\nI came down here to end it. I understand now there is nothing to end that isn't also us. You can seal it back under the ice and leave it to dream. You can burn the nest and lose yourself to the cold trying. Or you can stop running and let it make you part of something that is never, ever alone again - and God help me, that last one is the one it whispers, and it is starting to sound like rest.\n\nGo to the chamber. See the rest of it. Then decide what mercy means.\n\n- Iris"
+	},
+	"v_chamber": {
+		"title": "Your recorder",
+		"location": "The sealed chamber",
+		"body": "I've stopped pretending I'm going to file a report.\n\nThey're all here. The whole crew. They turn to look when my lamp passes over them and they have the kindest faces - that's the thing nobody warned me about, that it would be kind.\n\nKael's note said: decide what mercy means. I'm standing in the place where I have to.\n\nThere are three ways out of this chamber and only one of them is a door.\n\nI can bring the shaft down and leave it sleeping under the ice, and live the rest of my life knowing it's there.\n\nI can open the fuel lines and burn the whole nest, and them with it, and call that a rescue.\n\nOr I can put the lamp down. It's so cold down here. It's so cold, and the warm is right there, and it knows my name, and it is saying it the way someone says it who is glad you came home.\n\nWhoever finds this: I'm sorry. I think I've known which one I'd choose since the surface."
+	},
 	"note_1": {
 		"title": "Personal Recorder - Dr. Mara Voss",
 		"location": "Cryo Bay floor",
